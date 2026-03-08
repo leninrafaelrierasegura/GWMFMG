@@ -531,7 +531,7 @@ Below we simulate the non-stationary field and plot the graph and the non-statio
 u_non_stat <- simulate(op)
 # Plot the graph
 plot_graph <- logo_graph$plot(vertex_size = 2, vertex_color = "#0000C8", edge_width = 2) +
-  ggtitle("MetricGraph package's logo") +
+  #ggtitle("MetricGraph package's logo") +
   theme_minimal() +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(hjust = 0.5, size = 12),
@@ -539,7 +539,7 @@ plot_graph <- logo_graph$plot(vertex_size = 2, vertex_color = "#0000C8", edge_wi
         legend.key.height = unit(1, "cm")) 
 # Plot the non-stationary field
 plot_sim <- logo_graph$plot_function(X = u_non_stat, vertex_size = 0, edge_width = 2) +
-  ggtitle("Simulated non-stationary process") +
+  #ggtitle("Simulated non-stationary process") +
   theme_minimal() +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(hjust = 0.5, size = 12),

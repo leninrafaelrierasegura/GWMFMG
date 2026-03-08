@@ -409,8 +409,7 @@ p_err_int <- ggplot(dat, aes(nu, error, colour = as.factor(m))) +
         axis.text = element_text(size = 12),         # Axis text
         legend.title = element_text(size = 14),      # Legend title
         legend.text = element_text(size = 12)) +
-  labs(x = "$\\alpha\\mbox{ }(\\mbox{Smoothness parameter})$", y = "$\\mbox{Covariance Error}$", color = "$m$") +
-  ggtitle("$\\mbox{Interval graph}$") 
+  labs(x = "$\\alpha\\mbox{ }(\\mbox{Smoothness parameter})$", y = "$\\mbox{Covariance Error}$", color = "$m$") #+ ggtitle("$\\mbox{Interval graph}$") 
 
 myggsave(p_err_int, width = 12, height = 6)
 ```
@@ -711,8 +710,7 @@ p_err_cir <- ggplot(dat, aes(nu, error, colour = as.factor(m))) +
         axis.text = element_text(size = 12),         # Axis text
         legend.title = element_text(size = 14),      # Legend title
         legend.text = element_text(size = 12)) +
-  labs(x = "$\\alpha\\mbox{ }(\\mbox{Smoothness parameter})$", y = "$\\mbox{Covariance Error}$", color = "$m$") +
-  ggtitle("$\\mbox{Circle graph}$") 
+  labs(x = "$\\alpha\\mbox{ }(\\mbox{Smoothness parameter})$", y = "$\\mbox{Covariance Error}$", color = "$m$") #+ ggtitle("$\\mbox{Circle graph}$") 
 
 myggsave(p_err_cir, width = 12, height = 6)
 ```
@@ -1479,8 +1477,7 @@ p_err_tad <- ggplot(dat, aes(nu, error, colour = as.factor(m))) +
         axis.text = element_text(size = 12),         # Axis text
         legend.title = element_text(size = 14),      # Legend title
         legend.text = element_text(size = 12)) +
-  labs(x = "$\\alpha\\mbox{ }(\\mbox{Smoothness parameter})$", y = "$\\mbox{Covariance Error}$", color = "$m$") +
-  ggtitle("$\\mbox{Tadpole graph}$") 
+  labs(x = "$\\alpha\\mbox{ }(\\mbox{Smoothness parameter})$", y = "$\\mbox{Covariance Error}$", color = "$m$") #+ ggtitle("$\\mbox{Tadpole graph}$") 
 
 myggsave(p_err_tad, width = 12, height = 6)
 ```
