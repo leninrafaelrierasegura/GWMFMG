@@ -133,6 +133,21 @@ dx1 <- e1_fin_x - e1_ini_x
 dy1 <- e1_fin_y - e1_ini_y
 dz1 <- e1_fin_z - e1_ini_z
 
+
+e2_ini_x <- 0; e2_ini_y <- 1; e2_ini_z <- 0
+e2_fin_x <- 0; e2_fin_y <- 0; e2_fin_z <- 0
+
+# Midpoint
+xm2 <- (e2_fin_x + e2_ini_x)/2
+ym2 <- (e2_fin_y + e2_ini_y)/2
+zm2 <- (e2_fin_z + e2_ini_z)/2
+
+# Direction vector
+dx2 <- e2_fin_x - e2_ini_x
+dy2 <- e2_fin_y - e2_ini_y
+dz2 <- e2_fin_z - e2_ini_z
+
+# for the circle
 r <- 1/pi
 cx <- 1 + r
 cy <- 0
@@ -216,7 +231,41 @@ p11 <- graph$plot_function(rep(0,nrow(graph$mesh$V)),
          margin = list(l = 0, r = 0, b = 0, t = 0),
          showlegend = FALSE,
          font = list(family = "Palatino"))
+
+
+
+p2int <- graph$plot_function(rep(0,nrow(graph$mesh$V)), 
+                           vertex_size = gsw,
+                           type = "plotly", 
+                           line_width = gsw, 
+                           edge_width = gsw, 
+                           line_color = "black")|>
+  config(mathjax = 'cdn') |>
+    add_trace(
+  type = "cone",
+  x = xm2,
+  y = ym2,
+  z = zm2,
+  u = dx2,
+  v = dy2,
+  w = dz2,
+  sizemode = "absolute",
+  sizeref = sizeref,
+  showscale = FALSE,
+  showlegend = FALSE,
+  colorscale = list(c(0, 1), c("green", "green")),
+  cmin = 0,
+  cmax = 1
+) |>
+  layout(font = list(family = "Palatino"),
+         scene =  c(notes_int, layout_int),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+
+
 save(p11, file = here::here("data_files/interval_graph.Rdata"))
+save(p2int, file = here::here("data_files/interval_graph_flip_edge.Rdata"))
 ```
 
 ## Circle graph
@@ -832,6 +881,37 @@ p3
 
 
 :::
+
+
+::::
+
+
+# Plots part 1
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Interval graph $\\Gamma_I = (\\mathcal{V}, \\mathcal{E})$ with $\\mathcal{V} = \\{v_1, v_2\\}$ and $\\mathcal{E} = \\{e_1\\}$.")}
+load(here::here("data_files/interval_graph.Rdata"))
+p11
+```
+
+:::
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Interval graph $\\Gamma_I = (\\mathcal{V}, \\mathcal{E})$ with $\\mathcal{V} = \\{v_1, v_2\\}$ and $\\mathcal{E} = \\{e_1\\}$, where $e_1$ is flipped.")}
+load(here::here("data_files/interval_graph_flip_edge.Rdata"))
+p2int
+```
+
+
+:::
+
+
 
 
 ::::
