@@ -120,6 +120,41 @@ source(here::here("functionality1.R"))
 Below we plot the interval graph $\Gamma_I = (\mathcal{V}, \mathcal{E})$ with $\mathcal{V} = \{v_1, v_2\}$ and $\mathcal{E} = \{e_1\}$, where $e_1$ is the edge connecting $v_1$ and $v_2$. 
 
 ```{r}
+e1_ini_x <- 0; e1_ini_y <- 0; e1_ini_z <- 0
+e1_fin_x <- 1; e1_fin_y <- 0; e1_fin_z <- 0
+
+# Midpoint
+xm1 <- (e1_fin_x + e1_ini_x)/2
+ym1 <- (e1_fin_y + e1_ini_y)/2
+zm1 <- (e1_fin_z + e1_ini_z)/2
+
+# Direction vector
+dx1 <- e1_fin_x - e1_ini_x
+dy1 <- e1_fin_y - e1_ini_y
+dz1 <- e1_fin_z - e1_ini_z
+
+r <- 1/pi
+cx <- 1 + r
+cy <- 0
+
+# parameter value where the cone will be placed
+t0 <- 0
+
+# position on the curve
+x0 <- cx + r*cos(t0)
+y0 <- cy + r*sin(t0)
+z0 <- 0
+
+# tangent vector (derivative)
+dx <- -r*sin(t0)
+dy <-  r*cos(t0)
+dz <- 0
+
+sizeref <- 0.1
+```
+
+
+```{r}
 n <- 3#333
 graph <- gets.graph.interval(n = n)
 
@@ -160,6 +195,22 @@ p11 <- graph$plot_function(rep(0,nrow(graph$mesh$V)),
                            edge_width = gsw, 
                            line_color = "black")|>
   config(mathjax = 'cdn') |>
+    add_trace(
+  type = "cone",
+  x = ym1,
+  y = xm1,
+  z = zm1,
+  u = dy1,
+  v = dx1,
+  w = dz1,
+  sizemode = "absolute",
+  sizeref = sizeref,
+  showscale = FALSE,
+  showlegend = FALSE,
+  colorscale = list(c(0, 1), c("green", "green")),
+  cmin = 0,
+  cmax = 1
+) |>
   layout(font = list(family = "Palatino"),
          scene =  c(notes_int, layout_int),
          margin = list(l = 0, r = 0, b = 0, t = 0),
@@ -198,6 +249,22 @@ p22 <- graph$plot_function(rep(0,nrow(graph$mesh$V)),
                            edge_width = gsw, 
                            line_color = "black") %>% 
   config(mathjax = 'cdn') %>% 
+  add_trace(
+    type = "cone",
+    x = y0,
+    y = x0,
+    z = z0,
+    u = dy,
+    v = dx,
+    w = dz,
+    sizemode = "absolute",
+    sizeref = sizeref,
+    showscale = FALSE,
+    showlegend = FALSE,
+    colorscale = list(c(0,1), c("green","green")),
+    cmin = 0,
+    cmax = 1
+  ) |>
   layout(font = list(family = "Palatino"),
          scene =  c(notes_cir, layout_int),
          margin = list(l = 0, r = 0, b = 0, t = 0),
@@ -247,6 +314,38 @@ p33 <- graph$plot_function(rep(0,nrow(graph$mesh$V)),
                            edge_width = gsw, 
                            line_color = "black") |>
   config(mathjax = 'cdn') |>
+      add_trace(
+  type = "cone",
+  x = ym1,
+  y = xm1,
+  z = zm1,
+  u = dy1,
+  v = dx1,
+  w = dz1,
+  sizemode = "absolute",
+  sizeref = sizeref,
+  showscale = FALSE,
+  showlegend = FALSE,
+  colorscale = list(c(0, 1), c("green", "green")),
+  cmin = 0,
+  cmax = 1
+) |>
+  add_trace(
+    type = "cone",
+    x = y0,
+    y = x0,
+    z = z0,
+    u = dy,
+    v = dx,
+    w = dz,
+    sizemode = "absolute",
+    sizeref = sizeref,
+    showscale = FALSE,
+    showlegend = FALSE,
+    colorscale = list(c(0,1), c("green","green")),
+    cmin = 0,
+    cmax = 1
+  ) |>
   layout(font = list(family = "Palatino"),
          scene =  c(notes_tad_1, layout_int),
          margin = list(l = 0, r = 0, b = 0, t = 0),
