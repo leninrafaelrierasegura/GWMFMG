@@ -731,7 +731,7 @@ kkk12
 
 ::: {}
 
-```{r, eval =TRUE, fig.height = 7, out.width = "100%"}
+```{r, echo = FALSE, eval =TRUE, fig.height = 7, out.width = "100%"}
 load(here::here("data_files/kkk7.Rdata"))
 kkk7
 ```
@@ -740,7 +740,7 @@ kkk7
 
 ::: {}
 
-```{r, eval =TRUE, fig.height = 7, out.width = "100%"}
+```{r, echo = FALSE, eval =TRUE, fig.height = 7, out.width = "100%"}
 load(here::here("data_files/kkk8.Rdata"))
 kkk8
 ```
@@ -751,7 +751,7 @@ kkk8
 ::: {}
 
 
-```{r, eval =TRUE, fig.height = 7, out.width = "100%"}
+```{r, echo = FALSE, eval =TRUE, fig.height = 7, out.width = "100%"}
 load(here::here("data_files/kkk9.Rdata"))
 kkk9
 ```
