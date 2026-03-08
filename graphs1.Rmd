@@ -170,7 +170,7 @@ save(p11, file = here::here("data_files/interval_graph.Rdata"))
 
 ## Circle graph
 
-Below we plot the circle graph $\Gamma_C = (\mathcal{V}, \mathcal{E})$ with $\mathcal{V} = \{v_1\}$ and $\mathcal{E} = \{e_1\}$, where $e_1$ is the edge connecting $v_1$ to itself.
+Below we plot the circle graph $\Gamma_C = (\mathcal{V}, \mathcal{E})$ with $\mathcal{V} = \{v_2\}$ and $\mathcal{E} = \{e_2\}$, where $e_2$ is the edge connecting $v_2$ to itself.
 
 ```{r}
 n <- 6#666
@@ -179,13 +179,13 @@ graph <- gets.graph.circle(n = n)
 notes_cir <- list(annotations = list(
              list(
                x = 0, y = 1, z = 0,
-               text = TeX("v_1"),
+               text = TeX("v_2"),
                textangle = 0, ax = 0, ay = 35,
                font = list(color = "black", size = gfsize),
                arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
              list(
                x = 0, y = 1 + 2/pi, z = 0,
-               text = TeX("e_1"),
+               text = TeX("e_2"),
                textangle = 0, ax = 0, ay = 35,
                font = list(color = "black", size = gfsize),
                arrowcolor = "rgba(0,0,0,0)")))

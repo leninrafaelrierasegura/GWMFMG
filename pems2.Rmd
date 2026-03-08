@@ -482,7 +482,7 @@ ggsave(here("data_files/replicate14_3_with_prediction.png"), width = 11.2, heigh
 ```
 
 
-```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Speed observations (in mph) on the highway network of the city of San Jose in California, recorded on April 3, 2017. The left panels are zoomed-in areas of the panel to the right.")}
+```{r, eval = TRUE, out.width="1120px", out.height="543px", fig.cap = captioner("Speed observations (in mph) on the highway network of the city of San Jose in California, recorded on April 3, 2017. The left panels are zoomed-in areas of the panel to the right.")}
 knitr::include_graphics(here("data_files/replicate14_3_with_prediction.png"))
 ```
 

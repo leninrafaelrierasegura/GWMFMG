@@ -476,7 +476,7 @@ ggsave(here("data_files/stand_log_sigma_3.png"), width = 11.2, height = 5.43, pl
 save(final_plot, file = here("data_files/stand_log_sigma_3.RData"))
 ```
 
-```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Standardized logarithm of the standard deviation of the first part of the data. Points represent the point value at each available location, and edges represent the $\\mathrm{std.cov}(s)$ covariate.")}
+```{r, eval = TRUE, out.width="1120px", out.height="543px", fig.cap = captioner("Standardized logarithm of the standard deviation of the first part of the data. Points represent the point value at each available location, and edges represent the $\\mathrm{std.cov}(s)$ covariate.")}
 # Print the combined plot
 knitr::include_graphics(here::here("data_files/stand_log_sigma_3.png"))
 ```
@@ -641,7 +641,7 @@ ggsave(here("data_files/mean_better_3.png"), width = 11.2, height = 5.43, plot =
 ```
 
 
-```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Average speeds of the first part of the data. Points represent the point value at each available location, and edges represent the $\\mathrm{mean.cov}(s)$ covariate.")}
+```{r, eval = TRUE, out.width="1120px", out.height="543px", fig.cap = captioner("Average speeds of the first part of the data. Points represent the point value at each available location, and edges represent the $\\mathrm{mean.cov}(s)$ covariate.")}
 knitr::include_graphics(here::here("data_files/mean_better_3.png"))
 ```
 
@@ -750,7 +750,7 @@ ggsave(here("data_files/replicate14_3.png"), width = 11.2, height = 5.43, plot =
 ```
 
 
-```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Speed observations (in mph) on the highway network of the city of San Jose in California, recorded on April 3, 2017. The left panels are zoomed-in areas of the panel to the right.")}
+```{r, eval = TRUE, out.width="1120px", out.height="543px", fig.cap = captioner("Speed observations (in mph) on the highway network of the city of San Jose in California, recorded on April 3, 2017. The left panels are zoomed-in areas of the panel to the right.")}
 knitr::include_graphics(here::here("data_files/replicate14_3.png"))
 ```
 
