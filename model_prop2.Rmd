@@ -1,0 +1,418 @@
+---
+title: "Model properties ($\\nu$ non-fixed)"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+Go back to the [About page](about.html). To see how the covariance function changes when the location changes, go to [model_prop1.html](model_prop1.html).
+
+::: {.custom-box}
+This vignette illustrates how our proposed approach allows for Gaussian processes with general smoothness and non-stationary covariance on any compact metric graph. Recall that these processes are defined as solutions to 
+\begin{equation}\label{SPDE}\tag{SPDE}
+(\kappa^2 - \Delta_{\Gamma})^{\alpha/2}(\tau u) = \Wcal, \quad \text{on $\Gamma$}, 
+\end{equation}
+where $\Delta_{\Gamma}$ is the so-called Kirchhoff--Laplacian, $\tau(\cdot)$ and $\kappa(\cdot)$ are spatially varying functions that control the marginal variance and practical correlation range, respectively, $\alpha>1/2$ controls the smoothness, and $\Wcal$ is Gaussian white noise defined on a probability space $\pare{\Omega,\mathcal{F},\mathbb{P}}$.
+:::
+
+
+Below we set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(1982) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+Below we load the necessary libraries and define the auxiliary functions.
+
+```{r, eval = TRUE}
+library(rSPDE)
+library(MetricGraph)
+
+library(dplyr)
+library(plotly)
+library(scales)
+library(patchwork)
+library(tidyr)
+
+library(here)
+library(rmarkdown)
+# Cite all loaded packages
+library(grateful) 
+
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+Below we define function `compute_pcr()`, which computes the practical correlation. It receives the output of the [`rSPDE::spde.matern.operators()`](https://davidbolin.github.io/rSPDE/reference/spde.matern.operators.html) function (when evaluated on compatible parameters) and a threshold `cor_threshold`. Using the correlation matrix and the geodesic distance matrix, for each point in the mesh, it computes the practical correlation range as the minimum geodesic distance such that the correlation is below a given threshold `cor_threshold` (usually defined as 0.1). The function returns a vector with the practical correlation range for each point in the mesh.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+```{r}
+compute_pcr <- function(op, cor_threshold) {
+  
+  # Compute the covariance matrix
+  cov_matrix <- covariance_mesh(op)  
+  # Compute the correlation matrix
+  cor_matrix <-cov2cor(cov_matrix)
+  # Compute the geodesic distance matrix
+  op$graph$compute_geodist_mesh() 
+  # Extract the geodesic distance matrix
+  dist_matrix <- op$graph$mesh$geo_dist 
+  # Initialize the vector to store the practical correlation range
+  pcr <- numeric(dim(cor_matrix)[1]) 
+  
+  process_row <- function(row_index) {
+    # For each row_index, create an auxiliary matrix aux_mat with the correlation and geodesic distance
+    aux_mat <- cbind(cor_matrix[row_index, ], dist_matrix[row_index, ]) 
+    # Order the auxiliary matrix by the geodesic distance
+    ordered_aux_mat <- aux_mat[order(aux_mat[, 2]), ] 
+    # Filter the auxiliary ordered matrix by the correlation threshold
+    filtered_aux_mat <- ordered_aux_mat[ordered_aux_mat[,1] < cor_threshold, ] 
+    if (nrow(filtered_aux_mat) > 0) {
+      # Return the minimum geodesic distance such that the correlation is below the threshold
+      return(filtered_aux_mat[1, 2]) 
+    } else {
+      # If the condition is not satisfied, record the minimum correlation value and return an error message
+      min <- min(aux_mat[, 1])
+      stop(paste0("The condition cor_matrix[row_index, ] < cor_threshold is not satisfied for row_index = ", 
+                  row_index, ". Increase cor_threshold. The minimum value of cor_matrix[row_index, ] is ",
+                  min))
+    }
+  }
+  
+  pcr <- sapply(1:dim(cor_matrix)[1], process_row)
+  
+  return(pcr)
+}
+```
+
+
+Below we build the `MetricGraph` package's logo graph.
+
+```{r}
+# This is a function from MetricGraph package that returns a list of edges
+edges <- logo_lines() 
+# Create a new graph object
+logo_graph <- metric_graph$new(edges = edges, perform_merges = TRUE) 
+# Prune the vertices
+#logo_graph$prune_vertices()
+# Build the mesh
+h <- 0.05
+logo_graph$build_mesh(h = h) 
+# Extract the mesh locations in Euclidean coordinates
+xypoints <- logo_graph$mesh$V
+```
+
+# Non-stationary features
+
+Below we define $\tau(\cdot)$ (`model_for_tau`) and $\kappa(\cdot)$ (`model_for_kappa`) in \eqref{SPDE} as $\tau(s) = \exp(0.05\cdot(x(s)-y(s)))$ and $\kappa(s) = \exp(0.1\cdot(x(s)-y(s)))$, where $(x(s),y(s))$ are Euclidean coordinates on the plane. These choices make $\tau(\cdot)$ and $\kappa(\cdot)$ large in the bottom-right region of the `MetricGraph` package's logo, as shown in Figure 2.
+
+```{r}
+# Define an auxiliary variable
+aux <- 0.1*(xypoints[,1] - xypoints[,2])
+# Define the matrices B.tau and B.kappa
+B.tau <- cbind(0, 1, 0, 0.5*aux, 0)
+B.kappa <- cbind(0, 0, 1, 0, aux)
+# Log-regression coefficients
+theta <- c(0, 0, 1, 1) 
+# Define the models for tau and kappa
+model_for_tau <- exp(B.tau[,-1]%*%theta)
+model_for_kappa <- exp(B.kappa[,-1]%*%theta)
+```
+
+Below we consider $\alpha = 0.9, 1.3, 2.1$ and compute the covariance between $s_0$ and all other points on the mesh. 
+
+```{r}
+# Choose a row number, any between 1 and dim(est_cov_matrix1)[1]
+#point2 <- c(0.03971546, 2.39628)
+point2 <- c(5,4)
+rownumber <- which.min((xypoints[,1]-point2[1])^2 + (xypoints[,2]-point2[2])^2) 
+# Choose alpha
+nu1 <- 0.4
+alpha1 <- nu1 + 1/2
+# Compute the operator
+op1 <- rSPDE::spde.matern.operators(graph = logo_graph, 
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta, 
+                                      alpha = alpha1)
+# Compute the covariance between the rownumber-th point and all other points
+est_cov_matrix1 <- covariance_mesh(op1)
+rowfromcov1 <- est_cov_matrix1[rownumber, ]
+# Choose alpha
+nu2 <- 0.8
+alpha2 <- nu2 + 1/2
+# Compute the operator
+op2 <- rSPDE::spde.matern.operators(graph = logo_graph, 
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta, 
+                                      alpha = alpha2)
+# Compute the covariance between the rownumber-th point and all other points
+est_cov_matrix2 <- covariance_mesh(op2)
+rowfromcov2 <- est_cov_matrix2[rownumber, ]
+# Choose alpha
+nu3 <- 1.6
+alpha3 <- nu3 + 1/2
+# Compute the operator
+op3 <- rSPDE::spde.matern.operators(graph = logo_graph, 
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta, 
+                                      alpha = alpha3)
+# Compute the covariance between the rownumber-th point and all other points
+est_cov_matrix3 <- covariance_mesh(op3)
+rowfromcov3 <- est_cov_matrix3[rownumber, ]
+
+```
+
+
+# Covariance plots
+
+Below we plot the covariance functions $\varrho^{\alpha}(s_0,\cdot)=\text{Cov}(u(s_0),u(\cdot))$ for different smoothness parameter $\nu$ on the `MetricGraph` package's logo. 
+
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+```{r}
+# Create a plot for the covariance between point1 and all other points
+c1 <- logo_graph$plot_function(data = rowfromcov1, vertex_size = 0) +
+  ggtitle("$\\varrho^{0.9}(s_0,\\cdot)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[rownumber,1], y = xypoints[rownumber,2], size = 1, color = "black") +
+  annotate("text", x = xypoints[rownumber,1] - 0.8, y = xypoints[rownumber,2], label = "$s_0$", size = 3, hjust = 0, color = "black")
+# Create a plot for the covariance between point2 and all other points
+c2 <- logo_graph$plot_function(data = rowfromcov2, vertex_size = 0) +
+  ggtitle("$\\varrho^{1.3}(s_0,\\cdot)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[rownumber,1], y = xypoints[rownumber,2], size = 1, color = "black") +
+  annotate("text", x = xypoints[rownumber,1] - 0.8, y = xypoints[rownumber,2], label = "$s_0$", size = 3, hjust = 0, color = "black")
+# Create a plot for the covariance between point3 and all other points
+c3 <- logo_graph$plot_function(data = rowfromcov3, vertex_size = 0) +
+  ggtitle("$\\varrho^{2.1}(s_0,\\cdot)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[rownumber,1], y = xypoints[rownumber,2], size = 1, color = "black") +
+  annotate("text", x = xypoints[rownumber,1] - 0.8, y = xypoints[rownumber,2], label = "$s_0$", size = 3, hjust = 0, color = "black")
+# Combine the three plots
+csmp2 <- c1 + c2 + c3
+# Save the combined plot
+#ggsave(here("data_files/cov_plots_diff_nu.png"), plot = csmp2, width = 13.83, height = 4.5, dpi = 300)
+myggsave(csmp2, width = 13.83, height = 4.5)
+save(csmp2, file = here::here("data_files/csmp2.Rdata"))
+```
+
+
+```{r, eval = TRUE, out.width="1383px", out.height="450px", fig.cap = captioner("Example of covariance functions $\\varrho^{\\alpha}(s_0,\\cdot)$ for different smoothness parameter $\\alpha$ on the `MetricGraph` package's logo.")}
+knitr::include_graphics(here::here("data_files/tikzpic/csmp2.pdf"))
+```
+
+
+Below we show 3D plots of the covariance functions $\varrho^{\alpha}(s_0,\cdot)=\text{Cov}(u(s_0),u(\cdot))$ for different smoothness parameter $\nu$ on the `MetricGraph` package's logo. 
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+```{r}
+p1 <- logo_graph$plot_function(X = rowfromcov1, vertex_size = 1, plotly = TRUE, edge_color = "black", edge_width = 7, line_color = "#0000C8", line_width = 7)
+p2 <- logo_graph$plot_function(X = rowfromcov2, vertex_size = 1, plotly = TRUE, edge_color = "black", edge_width = 7, line_color = "red", line_width = 7, p = p1)
+p3 <- logo_graph$plot_function(X = rowfromcov3, vertex_size = 1, plotly = TRUE, edge_color = "black", edge_width = 7, line_color = "darkgreen", line_width = 7, p = p2)
+p_B <- p3 %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1.8, y = 1.8, z = 1.8),
+           camera = list(
+      eye = list(x = 3, y = 2, z = 1),  # Adjust the viewpoint
+      center = list(x = 0, y = 0, z = 0)),     # Focus point
+           annotations = list(
+             list(
+               x = 2, y = 2, z = 0.21,
+               text = TeX("$\\varrho^{0.9}(s_0,\\cdot)$"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 2, y = 2, z = 0.14,
+               text = TeX("$\\varrho^{1.3}(s_0,\\cdot)$"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 2, y = 2, z = 0.08,
+               text = TeX("$\\varrho^{2.1}(s_0,\\cdot)$"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "darkgreen", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[rownumber,2], y = xypoints[rownumber,1], z = 0,
+               text = TeX("s_0"),
+               textangle = 0, ax = 0, ay = -25,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)")))) %>%
+  add_trace(x = xypoints[rownumber, 2], y = xypoints[rownumber, 1], z = 0, mode = "markers", type = "scatter3d",
+            marker = list(size = 7, color = "black", symbol = 104))
+# Save the 3D plot
+save(p_B, file = here("data_files/3d_cov_plots_diff_nu.RData"))
+```
+
+
+:::: {style="display: grid; grid-template-columns: 670px 670px; grid-column-gap: 0px;"}
+
+
+::: {}
+
+```{r, eval = TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Example of covariance functions $\\varrho^\\alpha(s_i,\\cdot)$, $i=1,2,3$ for three locations with different standard deviations and practical correlation ranges on the `MetricGraph` package's logo.")}
+load(here("data_files/3d_cov_plots_diff_loc.RData"))
+p_A
+```
+
+
+:::
+
+
+::: {}
+
+
+
+```{r, eval = TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Example of covariance functions $\\varrho^{\\alpha}(s_0,\\cdot)$ for different smoothness parameter $\\alpha$ on the `MetricGraph` package's logo.")}
+load(here("data_files/3d_cov_plots_diff_nu.RData"))
+p_B
+```
+
+
+:::
+
+
+::::
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+

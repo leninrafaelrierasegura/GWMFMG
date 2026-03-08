@@ -1,0 +1,568 @@
+---
+title: "Model properties ($\\nu$ fixed)"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+
+Go back to the [About page](about.html). To see how the covariance function changes when $\nu$ changes, go to [model_prop2.html](model_prop2.html).
+
+::: {.custom-box}
+This vignette illustrates how our proposed approach allows for Gaussian processes with general smoothness and non-stationary covariance on any compact metric graph. Recall that these processes are defined as solutions to 
+\begin{equation}\label{SPDE}\tag{SPDE}
+(\kappa^2 - \Delta_{\Gamma})^{\alpha/2}(\tau u) = \Wcal, \quad \text{on $\Gamma$}, 
+\end{equation}
+where $\Delta_{\Gamma}$ is the so-called Kirchhoff--Laplacian, $\tau(\cdot)$ and $\kappa(\cdot)$ are spatially varying functions that control the marginal variance and practical correlation range, respectively, $\alpha>1/2$ controls the smoothness, and $\Wcal$ is Gaussian white noise defined on a probability space $\pare{\Omega,\mathcal{F},\mathbb{P}}$.
+:::
+
+
+Below we set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(1982) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+Below we load the necessary libraries and define the auxiliary functions.
+
+```{r, eval = TRUE}
+library(rSPDE)
+library(MetricGraph)
+
+library(dplyr)
+library(plotly)
+library(scales)
+library(patchwork)
+library(tidyr)
+
+library(here)
+library(rmarkdown)
+# Cite all loaded packages
+library(grateful) 
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+Below we define function `compute_pcr()`, which computes the practical correlation. It receives the output of the [`rSPDE::spde.matern.operators()`](https://davidbolin.github.io/rSPDE/reference/spde.matern.operators.html) function (when evaluated on compatible parameters) and a threshold `cor_threshold`. Using the correlation matrix and the geodesic distance matrix, for each point in the mesh, it computes the practical correlation range as the minimum geodesic distance such that the correlation is below a given threshold `cor_threshold` (usually defined as 0.1). The function returns a vector with the practical correlation range for each point in the mesh.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+```{r}
+compute_pcr <- function(op, cor_threshold) {
+  
+  # Compute the covariance matrix
+  cov_matrix <- covariance_mesh(op) 
+  # Compute the correlation matrix
+  cor_matrix <-cov2cor(cov_matrix)
+  # Compute the geodesic distance matrix
+  op$graph$compute_geodist_mesh() 
+  # Extract the geodesic distance matrix
+  dist_matrix <- op$graph$mesh$geo_dist 
+  # Initialize the vector to store the practical correlation range
+  pcr <- numeric(dim(cor_matrix)[1]) 
+  
+  process_row <- function(row_index) {
+    # For each row_index, create an auxiliary matrix aux_mat with the correlation and geodesic distance
+    aux_mat <- cbind(cor_matrix[row_index, ], dist_matrix[row_index, ]) 
+    # Order the auxiliary matrix by the geodesic distance
+    ordered_aux_mat <- aux_mat[order(aux_mat[, 2]), ] 
+    # Filter the auxiliary ordered matrix by the correlation threshold
+    filtered_aux_mat <- ordered_aux_mat[ordered_aux_mat[,1] < cor_threshold, ] 
+    if (nrow(filtered_aux_mat) > 0) {
+      # Return the minimum geodesic distance such that the correlation is below the threshold
+      return(filtered_aux_mat[1, 2]) 
+    } else {
+      # If the condition is not satisfied, record the minimum correlation value and return an error message
+      min <- min(aux_mat[, 1])
+      stop(paste0("The condition cor_matrix[row_index, ] < cor_threshold is not satisfied for row_index = ", 
+                  row_index, ". Increase cor_threshold. The minimum value of cor_matrix[row_index, ] is ",
+                  min))
+    }
+  }
+  
+  pcr <- sapply(1:dim(cor_matrix)[1], process_row)
+  
+  return(pcr)
+}
+```
+
+
+Below we build the `MetricGraph` package's logo graph.
+
+```{r}
+# This is a function from MetricGraph package that returns a list of edges
+edges <- logo_lines() 
+# Create a new graph object
+logo_graph <- metric_graph$new(edges = edges, perform_merges = TRUE) 
+# Prune the vertices
+#logo_graph$prune_vertices()
+# Build the mesh
+h <- 0.05
+logo_graph$build_mesh(h = h) 
+# Extract the mesh locations in Euclidean coordinates
+xypoints <- logo_graph$mesh$V
+```
+
+# Non-stationary features
+
+Below we define $\tau(\cdot)$ (`model_for_tau`) and $\kappa(\cdot)$ (`model_for_kappa`) in \eqref{SPDE} as $\tau(s) = \exp(0.05\cdot(x(s)-y(s)))$ and $\kappa(s) = \exp(0.1\cdot(x(s)-y(s)))$, where $(x(s),y(s))$ are Euclidean coordinates on the plane. These choices make $\tau(\cdot)$ and $\kappa(\cdot)$ large in the bottom-right region of the `MetricGraph` package's logo, as shown in Figure 2.
+
+```{r}
+# Define an auxiliary variable
+aux <- 0.1*(xypoints[,1] - xypoints[,2])
+# Define the matrices B.tau and B.kappa
+B.tau = cbind(0, 1, 0, 0.5*aux, 0)
+B.kappa = cbind(0, 0, 1, 0, aux)
+# Log-regression coefficients
+theta <- c(0, 0, 1, 1) 
+# Define the models for tau and kappa
+model_for_tau <- exp(B.tau[,-1]%*%theta)
+model_for_kappa <- exp(B.kappa[,-1]%*%theta)
+```
+
+Below we choose $\alpha = 0.9$ and compute the covariance matrix, the practical correlation range, and the standard deviation.
+
+```{r}
+# Choose alpha
+nu = 0.4
+alpha = nu + 1/2
+# Compute the operator
+op <- rSPDE::spde.matern.operators(graph = logo_graph,
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta,
+                                      alpha = alpha)
+# Compute the covariance matrix
+est_cov_matrix <- covariance_mesh(op)
+# Compute the practical correlation range
+cor_threshold <- 0.1
+est_range <- compute_pcr(op, cor_threshold)
+# Compute the standard deviation
+est_sigma <- sqrt(Matrix::diag(est_cov_matrix))
+```
+
+Below we plot the models for $\tau(\cdot)$ and $\kappa(\cdot)$, the practical correlation range, and the standard deviation. The blue, red, and green points represent the locations $s_1$, $s_2$, and $s_3$, respectively. 
+
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+```{r}
+# Choose three points
+point1 <- c(0.5670, 7.0243)
+point2 <- c(0.03971546, 2.39628)
+point3 <- c(10, 3)
+# Find the indices of the three points
+m1 <- which.min((xypoints[,1]-point1[1])^2 + (xypoints[,2]-point1[2])^2)
+m2 <- which.min((xypoints[,1]-point2[1])^2 + (xypoints[,2]-point2[2])^2)
+m3 <- which.min((xypoints[,1]-point3[1])^2 + (xypoints[,2]-point3[2])^2)
+# Create a plot of the model for tau
+TAU <- logo_graph$plot_function(X = model_for_tau, vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\tau(s) = e^{0.05\\cdot(x(s)-y(s))}$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) 
+# Create a plot of the model for kappa
+KAPPA <- logo_graph$plot_function(X = model_for_kappa, vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\kappa(s) = e^{0.1\\cdot(x(s)-y(s))}$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) 
+# Create a plot for the practical correlation range
+r1 <- logo_graph$plot_function(X = est_range, vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\rho(s)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[m1,1], y = xypoints[m1,2], size = 2, color = "#0000C8") +
+  annotate("point", x = xypoints[m2,1], y = xypoints[m2,2], size = 2, color = "red") +
+  annotate("point", x = xypoints[m3,1], y = xypoints[m3,2], size = 2, color = "darkgreen") +
+  annotate("text", x = xypoints[m1,1] + 0.1, y = xypoints[m1,2] - 0.4, label = "$s_1$", size = 4, hjust = 0, color = "black") +
+  annotate("text", x = xypoints[m2,1] + 0.4, y = xypoints[m2,2], label = "$s_2$", size = 4, hjust = 0, color = "black") +
+  annotate("text", x = xypoints[m3,1] - 0.8, y = xypoints[m3,2], label = "$s_3$", size = 4, hjust = 0, color = "black")
+# Create a plot for the standard deviation
+s1 <- logo_graph$plot_function(X = est_sigma, vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\sigma(s)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm"))  +
+  annotate("point", x = xypoints[m1,1], y = xypoints[m1,2], size = 2, color = "#0000C8") +
+  annotate("point", x = xypoints[m2,1], y = xypoints[m2,2], size = 2, color = "red") +
+  annotate("point", x = xypoints[m3,1], y = xypoints[m3,2], size = 2, color = "darkgreen") +
+  annotate("text", x = xypoints[m1,1] + 0.1, y = xypoints[m1,2] - 0.4, label = "$s_1$", size = 4, hjust = 0, color = "black") +
+  annotate("text", x = xypoints[m2,1] + 0.4, y = xypoints[m2,2], label = "$s_2$", size = 4, hjust = 0, color = "black") +
+  annotate("text", x = xypoints[m3,1] - 0.8, y = xypoints[m3,2], label = "$s_3$", size = 4, hjust = 0, color = "black")
+# Combine the four plots
+four_plots <- (TAU + KAPPA) / (s1 + r1)
+# Save the combined plot
+#ggsave(here("data_files/four_plots.png"), plot = four_plots, width = 9.22, height = 7.05, dpi = 300)
+myggsave(four_plots, width = 9.22, height = 7.05)
+save(four_plots, file = here::here("data_files/four_plots.Rdata"))
+```
+
+
+
+```{r, eval = TRUE, out.width="922px", out.height="705px", fig.cap = captioner("Top row: Non-stationary models for $\\tau(\\cdot)$ and $\\kappa(\\cdot)$. Bottom row: Non-stationary standard deviation $\\sigma(\\cdot)$ and practical correlation range $\\rho(\\cdot)$ on the `MetricGraph` package's logo.")}
+knitr::include_graphics(here::here("data_files/tikzpic/four_plots.pdf"))
+```
+
+
+
+# Covariance plots
+
+Below we plot the covariance functions $\varrho^\alpha(s_i,\cdot)=\text{Cov}(u(s_i),u(\cdot))$, $i=1,2,3$, for three locations with different standard deviations and practical correlation ranges on the `MetricGraph` package's logo.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+```{r}
+# Create a plot for the covariance between point1 and all other points
+c1 <- logo_graph$plot_function(X = est_cov_matrix[m1, ], vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\varrho^\\alpha(s_1,\\cdot)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[m1,1], y = xypoints[m1,2], size = 1, color = "#0000C8") +
+  annotate("text", x = xypoints[m1,1] + 0.1, y = xypoints[m1,2] - 0.4, label = "$s_1$", size = 4, hjust = 0, color = "black")
+# Create a plot for the covariance between point2 and all other points
+c2 <- logo_graph$plot_function(X = est_cov_matrix[m2, ], vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\varrho^\\alpha(s_2,\\cdot)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[m2,1], y = xypoints[m2,2], size = 1, color = "red") +
+  annotate("text", x = xypoints[m2,1] + 0.4, y = xypoints[m2,2], label = "$s_2$", size = 4, hjust = 0, color = "black")
+# Create a plot for the covariance between point3 and all other points
+c3 <- logo_graph$plot_function(X = est_cov_matrix[m3, ], vertex_size = 0, edge_width = 2) +
+  ggtitle("$\\varrho^\\alpha(s_3,\\cdot)$") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) +
+  annotate("point", x = xypoints[m3,1], y = xypoints[m3,2], size = 1, color = "darkgreen") +
+  annotate("text", x = xypoints[m3,1] - 0.8, y = xypoints[m3,2], label = "$s_3$", size = 4, hjust = 0, color = "black")
+# Combine the three plots
+cs <- c1 + c2 + c3
+# Save the combined plot
+#ggsave(here("data_files/cov_plots_diff_loc.png"), plot = cs, width = 13.83, height = 4.5, dpi = 300)
+myggsave(cs, width = 13.83, height = 4.5)
+save(cs, file = here::here("data_files/cs.Rdata"))
+```
+
+```{r, eval = TRUE, out.width="1383px", out.height="450px", fig.cap = captioner("Example of covariance functions $\\varrho^\\alpha(s_i,\\cdot)$, $i=1,2,3$ for three locations with different standard deviations and practical correlation ranges on the `MetricGraph` package's logo.")}
+knitr::include_graphics(here::here("data_files/tikzpic/cs.pdf"))
+```
+
+Below we show 3D plots of the covariance functions $\varrho^\alpha(s_i,\cdot)$, $i=1,2,3$, for three locations with different standard deviations and practical correlation ranges on the `MetricGraph` package's logo. The practical correlation range $\rho(s_i)$ and the standard deviation $\sigma(s_i)$ are also shown for each location $s_i$.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+```{r}
+p1 <- logo_graph$plot_function(X = est_cov_matrix[m1, ], vertex_size = 1, plotly = TRUE, edge_color = "black", edge_width = 7, line_color = "#0000C8", line_width = 7)
+p2 <- logo_graph$plot_function(X = est_cov_matrix[m2, ], vertex_size = 1, plotly = TRUE, edge_color = "black", edge_width = 7, line_color = "red", line_width = 7, p = p1)
+p3 <- logo_graph$plot_function(X = est_cov_matrix[m3, ], vertex_size = 1, plotly = TRUE, edge_color = "black", edge_width = 7, line_color = "darkgreen", line_width = 7, p = p2)
+p_A <- p3 %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1.8, y = 1.8, z = 1.8),
+           camera = list(
+      eye = list(x = 3, y = 2, z = 1),  # Adjust the viewpoint
+      center = list(x = 0, y = 0, z = 0)),     # Focus point
+           annotations = list(
+             list(
+               x = 3, y = 4, z = 1.4,
+               text = TeX("\\rho(s_i)"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 4, z = 1.23,
+               text = TeX(paste0("\\bullet\\mbox{ ", truncate_to_two(est_range[m1]), "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 4, z = 1.11,
+               text = TeX(paste0("\\bullet\\mbox{ ", truncate_to_two(est_range[m2]), "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 4, z = 0.99,
+               text = TeX(paste0("\\bullet\\mbox{ ", truncate_to_two(est_range[m3]), "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "darkgreen", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 6, z = 1.4,
+               text = TeX("\\sigma(s_i)"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 6, z = 1.23,
+               text = TeX(paste0("\\bullet\\mbox{ ", truncate_to_two(est_sigma[m1]), "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 6, z = 1.11,
+               text = TeX(paste0("\\bullet\\mbox{ ", truncate_to_two(est_sigma[m2]), "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 6, z = 0.99,
+               text = TeX(paste0("\\bullet\\mbox{ ", truncate_to_two(est_sigma[m3]), "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "darkgreen", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 8, z = 1.4,
+               text = TeX("\\alpha"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 3, y = 8, z = 1.23,
+               text = TeX(paste0("\\bullet\\mbox{ ", alpha, "}")),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[m1, 2], y = xypoints[m1, 1], z = 0,
+               text = TeX("s_1"),
+               textangle = 0, ax = 0, ay = -25,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[m2, 2], y = xypoints[m2, 1], z = 0,
+               text = TeX("s_2"),
+               textangle = 0, ax = 0, ay = -25,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[m3, 2], y = xypoints[m3, 1], z = 0,
+               text = TeX("s_3"),
+               textangle = 0, ax = 0, ay = 25,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[m1, 2], y = xypoints[m1, 1], z = max(est_cov_matrix[m1, ]) + 0.3,
+               text = TeX("\\varrho^\\alpha(s_1,\\cdot)"),
+               textangle = 0, ax = 0, ay = 15,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[m2, 2], y = xypoints[m2, 1], z = max(est_cov_matrix[m2, ]) + 0.3,
+               text = TeX("\\varrho^\\alpha(s_2,\\cdot)"),
+               textangle = 0, ax = 0, ay = 15,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = xypoints[m3, 2], y = xypoints[m3, 1], z = max(est_cov_matrix[m3, ]) + 0.3,
+               text = TeX("\\varrho^\\alpha(s_3,\\cdot)"),
+               textangle = 0, ax = 0, ay = 15,
+               font = list(color = "darkgreen", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)")))) %>%
+  add_trace(x = xypoints[m1, 2], y = xypoints[m1, 1], z = 0, mode = "markers", type = "scatter3d",
+            marker = list(size = gsw, color = "#0000C8", symbol = 104)) %>%
+  add_trace(x = xypoints[m2, 2], y = xypoints[m2, 1], z = 0, mode = "markers", type = "scatter3d",
+            marker = list(size = gsw, color = "red", symbol = 104)) %>%
+  add_trace(x = xypoints[m3, 2], y = xypoints[m3, 1], z = 0, mode = "markers", type = "scatter3d",
+            marker = list(size = gsw, color = "darkgreen", symbol = 104))
+# Save the 3D plot
+save(p_A, file = here("data_files/3d_cov_plots_diff_loc.RData"))
+```
+
+
+:::: {style="display: grid; grid-template-columns: 670px 670px; grid-column-gap: 0px;"}
+
+
+::: {}
+
+
+```{r, eval = TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Example of covariance functions $\\varrho^\\alpha(s_i,\\cdot)$, $i=1,2,3$ for three locations with different standard deviations and practical correlation ranges on the `MetricGraph` package's logo.")}
+load(here::here("data_files/3d_cov_plots_diff_loc.RData"))
+p_A
+```
+
+
+:::
+
+
+::::
+
+Below we simulate the non-stationary field and plot the graph and the non-stationary field.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+```{r}
+# Simulate the non-stationary field
+u_non_stat <- simulate(op)
+# Plot the graph
+plot_graph <- logo_graph$plot(vertex_size = 2, vertex_color = "#0000C8", edge_width = 2) +
+  ggtitle("MetricGraph package's logo") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) 
+# Plot the non-stationary field
+plot_sim <- logo_graph$plot_function(X = u_non_stat, vertex_size = 0, edge_width = 2) +
+  ggtitle("Simulated non-stationary process") +
+  theme_minimal() +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(hjust = 0.5, size = 12),
+        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(1, "cm")) 
+# Combine the two plots
+graph_plus_sim <- plot_graph + plot_sim
+# Save the combined plot
+#ggsave(here("data_files/graph_plus_sim.png"), plot = graph_plus_sim, width = 9.22, height = 4.01, dpi = 300)
+myggsave(graph_plus_sim, width = 9.22, height = 4.01)
+save(graph_plus_sim, file = here("data_files/graph_plus_sim.RData"))
+```
+
+
+```{r, eval = TRUE, out.width="922px", out.height="401px", fig.cap = captioner("`MetricGraph` package's logo and a simulated non-stationary process on it.")}
+knitr::include_graphics(here::here("data_files/tikzpic/graph_plus_sim.pdf"))
+```
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+

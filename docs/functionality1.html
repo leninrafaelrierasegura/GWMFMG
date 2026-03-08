@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Functionality</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/clipboard-2.0.6/clipboard.min.js"></script>
+<link href="site_libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+<script src="site_libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+<script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa-solid fa-clipboard\" style=\"color: #00008B\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"<i class=\"fa fa-times-circle\" style=\"color: #F94144\"><\/i>"})</script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="visual.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">GWMFMG</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    PeMS
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="pems1.html">PeMS 1</a>
+    </li>
+    <li>
+      <a href="pems2.html">PeMS 2</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Model Properties
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model_prop1.html">Model Properties 1</a>
+    </li>
+    <li>
+      <a href="model_prop2.html">Model Properties 2</a>
+    </li>
+    <li>
+      <a href="model_prop3.html">Model Properties 3</a>
+    </li>
+    <li>
+      <a href="model_prop4.html">Model Properties 4</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="graphs1.html">Basis Functions</a>
+</li>
+<li>
+  <a href="approximation.html">Approximation</a>
+</li>
+<li>
+  <a href="num_error.html">Numerical Error</a>
+</li>
+<li>
+  <a href="conv_rates.html">Convergence Rates</a>
+</li>
+<li>
+  <a href="sim_study.html">Simulation study</a>
+</li>
+<li>
+  <a href="mplots.html">Additional illustrations</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://arxiv.org/abs/0000.00000">
+    <span class="fa fa-file-pdf"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/leninrafaelrierasegura/GWMFMG">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Functionality</h1>
+<h4 class="date">Last modified: 08-03-2026.</h4>
+
+</div>
+
+
+<p>Go back to the <a href="about.html">Contents</a> page.</p>
+<div style="color: #2c3e50; text-align: right;">
+<hr />
+<p><strong>Press Show to reveal the code chunks.</strong></p>
+<hr />
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Create a clipboard button on the rendered HTML page</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;clipboard.R&quot;</span>)); clipboard</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#set.seed(1982) </span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># Set global options for all code chunks</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="co"># Disable messages printed by R code chunks</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">message =</span> <span class="cn">FALSE</span>,    </span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="co"># Disable warnings printed by R code chunks</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">warning =</span> <span class="cn">FALSE</span>,    </span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="co"># Show R code within code chunks in output</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="at">echo =</span> <span class="cn">TRUE</span>,        </span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="co"># Include both R code and its results in output</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="at">include =</span> <span class="cn">TRUE</span>,     </span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="co"># Evaluate R code chunks</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">eval =</span> <span class="cn">TRUE</span>,       </span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="co"># Enable caching of R code chunks for faster rendering</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">cache =</span> <span class="cn">FALSE</span>,      </span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="co"># Align figures in the center of the output</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="at">fig.align =</span> <span class="st">&quot;center&quot;</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="co"># Enable retina display for high-resolution figures</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="at">retina =</span> <span class="dv">2</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="co"># Show errors in the output instead of stopping rendering</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  <span class="at">error =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>  <span class="co"># Do not collapse code and output into a single block</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>  <span class="at">collapse =</span> <span class="cn">FALSE</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>)</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co"># Start the figure counter</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>fig_count <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co"># Define the captioner function</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>captioner <span class="ot">&lt;-</span> <span class="cf">function</span>(caption) {</span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  fig_count <span class="ot">&lt;&lt;-</span> fig_count <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">&quot;Figure &quot;</span>, fig_count, <span class="st">&quot;: &quot;</span>, caption)</span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(MetricGraph)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">library</span>(reshape2)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">library</span>(slackr)</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;keys.R&quot;</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="fu">slackr_setup</span>(<span class="at">token =</span> token) <span class="co"># token comes from keys.R</span></span></code></pre></div>
+<pre><code>## [1] &quot;Successfully connected to Slack&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Color for axis name and axis numbers</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>colaxnn <span class="ot">&lt;-</span> <span class="st">&quot;gray&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co"># Global font size</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>gfsize <span class="ot">&lt;-</span> <span class="dv">16</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># Dark blue color</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>mydarkblue <span class="ot">&lt;-</span> <span class="st">&quot;#0000C8&quot;</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co"># Global size or widht for objects</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>gsw <span class="ot">&lt;-</span> <span class="dv">7</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>gets.graph.interval <span class="ot">&lt;-</span> <span class="cf">function</span>(n){</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  edge <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  edges <span class="ot">=</span> <span class="fu">list</span>(edge)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  graph <span class="ot">&lt;-</span> metric_graph<span class="sc">$</span><span class="fu">new</span>(<span class="at">edges =</span> edges)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  graph<span class="sc">$</span><span class="fu">build_mesh</span>(<span class="at">n =</span> n)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">return</span>(graph)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>gets.graph.circle <span class="ot">&lt;-</span> <span class="cf">function</span>(n){</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  r <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>(pi)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  theta <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span><span class="sc">-</span>pi,<span class="at">to=</span>pi,<span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  edge <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span><span class="sc">+</span>r<span class="sc">+</span>r<span class="sc">*</span><span class="fu">cos</span>(theta),r<span class="sc">*</span><span class="fu">sin</span>(theta))</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  edges <span class="ot">=</span> <span class="fu">list</span>(edge)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  graph <span class="ot">&lt;-</span> metric_graph<span class="sc">$</span><span class="fu">new</span>(<span class="at">edges =</span> edges)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  graph<span class="sc">$</span><span class="fu">build_mesh</span>(<span class="at">n =</span> n)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">return</span>(graph)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Function to build a tadpole graph and create a mesh</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>gets.graph.tadpole <span class="ot">&lt;-</span> <span class="cf">function</span>(h){</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  edge1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>))</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  theta <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span><span class="sc">-</span>pi,<span class="at">to=</span>pi,<span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  edge2 <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span><span class="sc">+</span><span class="dv">1</span><span class="sc">/</span>pi<span class="sc">+</span><span class="fu">cos</span>(theta)<span class="sc">/</span>pi,<span class="fu">sin</span>(theta)<span class="sc">/</span>pi)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  edges <span class="ot">&lt;-</span> <span class="fu">list</span>(edge1, edge2)</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  graph <span class="ot">&lt;-</span> metric_graph<span class="sc">$</span><span class="fu">new</span>(<span class="at">edges =</span> edges, <span class="at">verbose =</span> <span class="dv">0</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  graph<span class="sc">$</span><span class="fu">set_manual_edge_lengths</span>(<span class="at">edge_lengths =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  graph<span class="sc">$</span><span class="fu">build_mesh</span>(<span class="at">h =</span> h)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="fu">return</span>(graph)</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Function to order the vertices for plotting</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>plotting.order <span class="ot">&lt;-</span> <span class="cf">function</span>(v, graph){</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  edge_number <span class="ot">&lt;-</span> graph<span class="sc">$</span>mesh<span class="sc">$</span>VtE[, <span class="dv">1</span>]</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  pos <span class="ot">&lt;-</span> <span class="fu">sum</span>(edge_number <span class="sc">==</span> <span class="dv">1</span>)<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">c</span>(v[<span class="dv">1</span>], v[<span class="dv">3</span><span class="sc">:</span>pos], v[<span class="dv">2</span>], v[(pos<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(v)], v[<span class="dv">2</span>]))</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Original camera</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>eye <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">5</span>, <span class="at">y =</span> <span class="dv">3</span>, <span class="at">z =</span> <span class="dv">4</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>center <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> (<span class="dv">1</span><span class="sc">+</span><span class="dv">2</span><span class="sc">/</span>pi)<span class="sc">/</span><span class="dv">2</span>, <span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">0</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co"># Fraction to move toward center (zoom in)</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="dv">0</span>  <span class="co"># 50% closer</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>new_eye <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>  <span class="at">x =</span> eye<span class="sc">$</span>x <span class="sc">+</span> f <span class="sc">*</span> (center<span class="sc">$</span>x <span class="sc">-</span> eye<span class="sc">$</span>x),</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  <span class="at">y =</span> eye<span class="sc">$</span>y <span class="sc">+</span> f <span class="sc">*</span> (center<span class="sc">$</span>y <span class="sc">-</span> eye<span class="sc">$</span>y),</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="at">z =</span> eye<span class="sc">$</span>z <span class="sc">+</span> f <span class="sc">*</span> (center<span class="sc">$</span>z <span class="sc">-</span> eye<span class="sc">$</span>z)</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>)</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>tadpole.layout <span class="ot">&lt;-</span> <span class="cf">function</span>(x_range, y_range, z_range){</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;x&quot;</span>, <span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn)),  <span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn), <span class="at">range =</span> x_range),</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>              <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;y&quot;</span>, <span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn)),  <span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn), <span class="at">range =</span> y_range),</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>              <span class="at">zaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;z&quot;</span>, <span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn)),  <span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn), <span class="at">range =</span> z_range),</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>              <span class="at">aspectratio =</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">2</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">+</span><span class="dv">2</span><span class="sc">/</span>pi), </span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>                                 <span class="at">y =</span> <span class="dv">2</span><span class="sc">*</span>(<span class="dv">2</span><span class="sc">/</span>pi), </span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>                                 <span class="at">z =</span> <span class="dv">1</span><span class="sc">*</span>(<span class="dv">2</span><span class="sc">/</span>pi)),</span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>              <span class="at">camera =</span> <span class="fu">list</span>(<span class="at">eye =</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">5</span>, <span class="at">y =</span> <span class="dv">3</span>, <span class="at">z =</span> <span class="dv">4</span>),</span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>                            <span class="at">center =</span> <span class="fu">list</span>(<span class="at">x =</span> (<span class="dv">1</span><span class="sc">+</span><span class="dv">2</span><span class="sc">/</span>pi)<span class="sc">/</span><span class="dv">2</span>, <span class="at">y =</span> <span class="dv">0</span>, <span class="at">z =</span> <span class="dv">0</span>))))</span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a>}</span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a>tadpole.layout.with.zoom <span class="ot">&lt;-</span> <span class="cf">function</span>(x_range, y_range, z_range){</span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;x&quot;</span>, <span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn)),  <span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn), <span class="at">range =</span> x_range),</span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a>              <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;y&quot;</span>, <span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn)),  <span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn), <span class="at">range =</span> y_range),</span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a>              <span class="at">zaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;z&quot;</span>, <span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn)),  <span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">color =</span> colaxnn), <span class="at">range =</span> z_range),</span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a>              <span class="at">aspectratio =</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">2</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">+</span><span class="dv">2</span><span class="sc">/</span>pi), </span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a>                                 <span class="at">y =</span> <span class="dv">2</span><span class="sc">*</span>(<span class="dv">2</span><span class="sc">/</span>pi), </span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a>                                 <span class="at">z =</span> <span class="dv">1</span><span class="sc">*</span>(<span class="dv">2</span><span class="sc">/</span>pi)),</span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>              <span class="at">camera =</span> <span class="fu">list</span>(<span class="at">eye =</span> new_eye,</span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a>                            <span class="at">center =</span> center)))</span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>myggsave <span class="ot">&lt;-</span> <span class="cf">function</span>(plot, <span class="at">width =</span> <span class="fl">9.22</span>, <span class="at">height =</span> <span class="fl">7.05</span>) {</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  </span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  dir_to_save <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;data_files/tikzpic&quot;</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  obj_name <span class="ot">&lt;-</span> <span class="fu">deparse</span>(<span class="fu">substitute</span>(plot))</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  tex_name <span class="ot">&lt;-</span> <span class="fu">file.path</span>(dir_to_save, <span class="fu">paste0</span>(obj_name, <span class="st">&quot;.tex&quot;</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  </span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="co"># Create directory if it doesn&#39;t exist</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(dir_to_save)) <span class="fu">dir.create</span>(dir_to_save, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  </span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  <span class="co"># Save TikZ plot</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  tikzDevice<span class="sc">::</span><span class="fu">tikz</span>(tex_name, <span class="at">standAlone =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> width, <span class="at">height =</span> height)</span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="fu">print</span>(plot)</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  </span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  <span class="co"># Compile to PDF</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  <span class="fu">system</span>(<span class="fu">paste0</span>(<span class="st">&quot;pdflatex -output-directory=&quot;</span>, dir_to_save, <span class="st">&quot; &quot;</span>, tex_name))</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>  </span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="co"># Remove auxiliary files</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  aux_ext <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;.aux&quot;</span>, <span class="st">&quot;.log&quot;</span>, <span class="st">&quot;.tex&quot;</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>  <span class="cf">for</span> (ext <span class="cf">in</span> aux_ext) {</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>    f <span class="ot">&lt;-</span> <span class="fu">file.path</span>(dir_to_save, <span class="fu">paste0</span>(obj_name, ext))</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">file.exists</span>(f)) <span class="fu">file.remove</span>(f)</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>  }</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>  </span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>  <span class="co"># Remove any temporary raster images generated by tikzDevice</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>  ras_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>    dir_to_save,</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(obj_name, <span class="st">&quot;_ras[0-9]+</span><span class="sc">\\</span><span class="st">.png$&quot;</span>),</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>  )</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(ras_files) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="fu">file.remove</span>(ras_files)</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>  </span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;PDF saved at: &quot;</span>, <span class="fu">file.path</span>(dir_to_save, <span class="fu">paste0</span>(obj_name, <span class="st">&quot;.pdf&quot;</span>)))</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">library</span>(reticulate)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>combine_plotly_grid_pdf <span class="ot">&lt;-</span> <span class="cf">function</span>(plots, <span class="at">output_pdf =</span> <span class="st">&quot;combined_grid.pdf&quot;</span>, </span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>                                    <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">width =</span> <span class="dv">1400</span>, <span class="at">height =</span> <span class="dv">1000</span>, <span class="at">scale =</span> <span class="dv">2</span>, </span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>                                    <span class="at">resolution =</span> <span class="dv">300</span>, <span class="at">spacing =</span> <span class="dv">50</span>) {</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="fu">py_config</span>() <span class="co"># Check Python configuration</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.list</span>(plots) <span class="sc">||</span> <span class="fu">length</span>(plots) <span class="sc">&lt;</span> <span class="dv">2</span>) {</span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">&quot;plots must be a list of at least two plotly objects&quot;</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  }</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  </span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="co"># Temporary PNG files</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  tmp_files <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">seq_along</span>(plots), <span class="cf">function</span>(i) <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.png&quot;</span>))</span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>  </span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>  <span class="co"># Save all plots as PNGs</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(plots)) {</span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>    plotly<span class="sc">::</span><span class="fu">save_image</span>(plots[[i]], tmp_files[i], <span class="at">width =</span> width, <span class="at">height =</span> height, <span class="at">scale =</span> scale)</span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>  }</span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>  </span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>  <span class="co"># Convert temporary files to JSON array for Python</span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a>  py_tmp_files <span class="ot">&lt;-</span> <span class="fu">toJSON</span>(tmp_files, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a>  </span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a>  <span class="co"># Python code using glue (variables directly substituted)</span></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a>  py_code <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">&quot;</span></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="st">from PIL import Image</span></span>
+<span id="cb12-28"><a href="#cb12-28" tabindex="-1"></a><span class="st">import math</span></span>
+<span id="cb12-29"><a href="#cb12-29" tabindex="-1"></a></span>
+<span id="cb12-30"><a href="#cb12-30" tabindex="-1"></a><span class="st">files = {py_tmp_files}</span></span>
+<span id="cb12-31"><a href="#cb12-31" tabindex="-1"></a><span class="st">images = [Image.open(f) for f in files]</span></span>
+<span id="cb12-32"><a href="#cb12-32" tabindex="-1"></a></span>
+<span id="cb12-33"><a href="#cb12-33" tabindex="-1"></a><span class="st">ncol = {ncol}</span></span>
+<span id="cb12-34"><a href="#cb12-34" tabindex="-1"></a><span class="st">nrow = math.ceil(len(images)/ncol)</span></span>
+<span id="cb12-35"><a href="#cb12-35" tabindex="-1"></a><span class="st">spacing = {spacing}</span></span>
+<span id="cb12-36"><a href="#cb12-36" tabindex="-1"></a></span>
+<span id="cb12-37"><a href="#cb12-37" tabindex="-1"></a><span class="st">cell_width = max(img.width for img in images)</span></span>
+<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a><span class="st">cell_height = max(img.height for img in images)</span></span>
+<span id="cb12-39"><a href="#cb12-39" tabindex="-1"></a></span>
+<span id="cb12-40"><a href="#cb12-40" tabindex="-1"></a><span class="st">combined_width = cell_width * ncol + spacing * (ncol - 1)</span></span>
+<span id="cb12-41"><a href="#cb12-41" tabindex="-1"></a><span class="st">combined_height = cell_height * nrow + spacing * (nrow - 1)</span></span>
+<span id="cb12-42"><a href="#cb12-42" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" tabindex="-1"></a><span class="st">combined = Image.new(&#39;RGB&#39;, (combined_width, combined_height), (255, 255, 255))</span></span>
+<span id="cb12-44"><a href="#cb12-44" tabindex="-1"></a></span>
+<span id="cb12-45"><a href="#cb12-45" tabindex="-1"></a><span class="st">for idx, img in enumerate(images):</span></span>
+<span id="cb12-46"><a href="#cb12-46" tabindex="-1"></a><span class="st">    row = idx // ncol</span></span>
+<span id="cb12-47"><a href="#cb12-47" tabindex="-1"></a><span class="st">    col = idx % ncol</span></span>
+<span id="cb12-48"><a href="#cb12-48" tabindex="-1"></a><span class="st">    x = col * (cell_width + spacing)</span></span>
+<span id="cb12-49"><a href="#cb12-49" tabindex="-1"></a><span class="st">    y = row * (cell_height + spacing)</span></span>
+<span id="cb12-50"><a href="#cb12-50" tabindex="-1"></a><span class="st">    combined.paste(img, (x, y))</span></span>
+<span id="cb12-51"><a href="#cb12-51" tabindex="-1"></a></span>
+<span id="cb12-52"><a href="#cb12-52" tabindex="-1"></a><span class="st">combined.save(r&#39;{output_pdf}&#39;, &#39;PDF&#39;, resolution={resolution})</span></span>
+<span id="cb12-53"><a href="#cb12-53" tabindex="-1"></a><span class="st">  &quot;</span>)</span>
+<span id="cb12-54"><a href="#cb12-54" tabindex="-1"></a>  </span>
+<span id="cb12-55"><a href="#cb12-55" tabindex="-1"></a>  <span class="co"># Run Python code</span></span>
+<span id="cb12-56"><a href="#cb12-56" tabindex="-1"></a>  <span class="fu">py_run_string</span>(py_code)</span>
+<span id="cb12-57"><a href="#cb12-57" tabindex="-1"></a>  </span>
+<span id="cb12-58"><a href="#cb12-58" tabindex="-1"></a>  <span class="co"># Clean up temporary files</span></span>
+<span id="cb12-59"><a href="#cb12-59" tabindex="-1"></a>  <span class="fu">file.remove</span>(tmp_files)</span>
+<span id="cb12-60"><a href="#cb12-60" tabindex="-1"></a>  </span>
+<span id="cb12-61"><a href="#cb12-61" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;Combined PDF saved to: &quot;</span>, output_pdf)</span>
+<span id="cb12-62"><a href="#cb12-62" tabindex="-1"></a>}</span>
+<span id="cb12-63"><a href="#cb12-63" tabindex="-1"></a></span>
+<span id="cb12-64"><a href="#cb12-64" tabindex="-1"></a><span class="co"># p1 &lt;- plot_ly(z = ~volcano, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Plot 1&quot;)</span></span>
+<span id="cb12-65"><a href="#cb12-65" tabindex="-1"></a><span class="co"># p2 &lt;- plot_ly(z = ~volcano + 5, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Plot 2&quot;)</span></span>
+<span id="cb12-66"><a href="#cb12-66" tabindex="-1"></a><span class="co"># p3 &lt;- plot_ly(z = ~volcano + 10, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Plot 3&quot;)</span></span>
+<span id="cb12-67"><a href="#cb12-67" tabindex="-1"></a><span class="co"># p4 &lt;- plot_ly(z = ~volcano + 15, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Plot 4&quot;)</span></span>
+<span id="cb12-68"><a href="#cb12-68" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb12-69"><a href="#cb12-69" tabindex="-1"></a><span class="co"># combine_plotly_grid_pdf(list(p1, p2, p3, p4), output_pdf = &quot;plots_2x2.pdf&quot;, ncol = 4)</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">library</span>(reticulate)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>combine_plotly_pdf <span class="ot">&lt;-</span> <span class="cf">function</span>(p1, p2, <span class="at">output_pdf =</span> <span class="st">&quot;combined_side_by_side.pdf&quot;</span>, </span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>                               <span class="at">width =</span> <span class="dv">1400</span>, <span class="at">height =</span> <span class="dv">1000</span>, <span class="at">scale =</span> <span class="dv">2</span>, <span class="at">resolution =</span> <span class="dv">300</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>                               <span class="at">spacing =</span> <span class="dv">50</span>) {</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  <span class="fu">py_config</span>() <span class="co"># Check Python configuration</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>  <span class="co"># Temporary PNG paths</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>  tmp1 <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.png&quot;</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>  tmp2 <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.png&quot;</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  </span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>  <span class="co"># Save the plotly plots as PNGs</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>  plotly<span class="sc">::</span><span class="fu">save_image</span>(p1, tmp1, <span class="at">width =</span> width, <span class="at">height =</span> height, <span class="at">scale =</span> scale)</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>  plotly<span class="sc">::</span><span class="fu">save_image</span>(p2, tmp2, <span class="at">width =</span> width, <span class="at">height =</span> height, <span class="at">scale =</span> scale)</span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>  </span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>  <span class="co"># Python code to combine PNGs side by side</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>  <span class="fu">py_run_string</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a><span class="st">from PIL import Image</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a><span class="st">img1 = Image.open(r&#39;%s&#39;)</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a><span class="st">img2 = Image.open(r&#39;%s&#39;)</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="st"># Compute dimensions</span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a><span class="st">combined_width = img1.width + img2.width + %d</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="st">combined_height = max(img1.height, img2.height)</span></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a><span class="st">combined = Image.new(&#39;RGB&#39;, (combined_width, combined_height), (255, 255, 255))</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="st">combined.paste(img1, (0, 0))</span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a><span class="st">combined.paste(img2, (img1.width + %d, 0))</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a><span class="st"># Save as PDF</span></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a><span class="st">combined.save(r&#39;%s&#39;, &#39;PDF&#39;, resolution=%d)</span></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="st">&quot;</span>, tmp1, tmp2, spacing, spacing, output_pdf, resolution))</span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a>  </span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>  <span class="co"># Remove temporary PNGs</span></span>
+<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a>  <span class="fu">file.remove</span>(tmp1, tmp2)</span>
+<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a>  </span>
+<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;Combined PDF saved to: &quot;</span>, output_pdf)</span>
+<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a>}</span>
+<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a></span>
+<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a></span>
+<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a><span class="co"># # Create example 3D plotly plots</span></span>
+<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a><span class="co"># p1 &lt;- plot_ly(z = ~volcano, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Plot 1&quot;)</span></span>
+<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a><span class="co"># p2 &lt;- plot_ly(z = ~volcano + 10, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Plot 2&quot;)</span></span>
+<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb13-47"><a href="#cb13-47" tabindex="-1"></a><span class="co"># # Combine into one PDF</span></span>
+<span id="cb13-48"><a href="#cb13-48" tabindex="-1"></a><span class="co"># combine_plotly_pdf(p1, p2, output_pdf = &quot;my_plots.pdf&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">library</span>(reticulate)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>combine_plotly_pdf_single <span class="ot">&lt;-</span> <span class="cf">function</span>(p, <span class="at">output_pdf =</span> <span class="st">&quot;single_plot.pdf&quot;</span>, </span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>                                      <span class="at">width =</span> <span class="dv">1400</span>, <span class="at">height =</span> <span class="dv">1000</span>, <span class="at">scale =</span> <span class="dv">2</span>, </span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>                                      <span class="at">resolution =</span> <span class="dv">300</span>) {</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  <span class="fu">py_config</span>()  <span class="co"># Check Python configuration</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>  </span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>  <span class="co"># Temporary PNG path</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>  tmp_png <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.png&quot;</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>  </span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>  <span class="co"># Save the Plotly plot as PNG</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a>  plotly<span class="sc">::</span><span class="fu">save_image</span>(p, tmp_png, <span class="at">width =</span> width, <span class="at">height =</span> height, <span class="at">scale =</span> scale)</span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>  </span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>  <span class="co"># Python code: open PNG, convert to RGB, save as PDF</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a>  <span class="fu">py_run_string</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="st">from PIL import Image</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="st">img = Image.open(r&#39;%s&#39;)</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="st">img_rgb = img.convert(&#39;RGB&#39;)</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="st">img_rgb.save(r&#39;%s&#39;, &#39;PDF&#39;, resolution=%d)</span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="st">&quot;</span>, tmp_png, output_pdf, resolution))</span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>  </span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>  <span class="co"># Clean up temporary PNG</span></span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>  <span class="fu">file.remove</span>(tmp_png)</span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>  </span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;PDF saved to: &quot;</span>, <span class="fu">normalizePath</span>(output_pdf))</span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a>}</span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co"># combine_plotly_pdf_single(p3, output_pdf = &quot;single_plot.pdf&quot;)</span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co"># # Example plot</span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co"># p1 &lt;- plot_ly(z = ~volcano, type = &quot;surface&quot;) %&gt;% layout(title = &quot;Single Plot&quot;)</span></span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="co"># # Save as PDF</span></span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="co"># combine_plotly_pdf_single(p1, output_pdf = &quot;single_plot.pdf&quot;)</span></span></code></pre></div>
+<div id="references" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> References</h1>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>grateful<span class="sc">::</span><span class="fu">cite_packages</span>(<span class="at">output =</span> <span class="st">&quot;paragraph&quot;</span>, <span class="at">out.dir =</span> <span class="st">&quot;.&quot;</span>)</span></code></pre></div>
+<p>We used R version 4.5.2 <span class="citation">(R Core Team
+2025a)</span> and the following R packages: cowplot v. 1.2.0 <span
+class="citation">(Wilke 2025)</span>, ggmap v. 4.0.2 <span
+class="citation">(Kahle and Wickham 2013)</span>, ggpubr v. 0.6.3 <span
+class="citation">(Kassambara 2026)</span>, ggtext v. 0.1.2 <span
+class="citation">(Wilke and Wiernik 2022)</span>, glue v. 1.8.0 <span
+class="citation">(Hester and Bryan 2024)</span>, grid v. 4.5.2 <span
+class="citation">(R Core Team 2025b)</span>, here v. 1.0.1 <span
+class="citation">(Müller 2020)</span>, htmltools v. 0.5.8.1 <span
+class="citation">(Cheng et al. 2024)</span>, INLA v. 25.11.22 <span
+class="citation">(Rue, Martino, and Chopin 2009; Lindgren, Rue, and
+Lindström 2011; Martins et al. 2013; Lindgren and Rue 2015; De Coninck
+et al. 2016; Rue et al. 2017; Verbosio et al. 2017; Bakka et al. 2018;
+Kourounis, Fuchs, and Schenk 2018)</span>, inlabru v. 2.13.0 <span
+class="citation">(Yuan et al. 2017; Bachl et al. 2019)</span>, knitr v.
+1.50 <span class="citation">(Xie 2014, 2015, 2025)</span>, latex2exp v.
+0.9.8 <span class="citation">(Meschiari 2026)</span>, Matrix v. 1.7.3
+<span class="citation">(Bates, Maechler, and Jagan 2025)</span>,
+MetricGraph v. 1.5.0.9000 <span class="citation">(Bolin, Simas, and
+Wallin 2023a, 2023b, 2024, 2025; Bolin et al. 2024)</span>,
+OpenStreetMap v. 0.4.1 <span class="citation">(Fellows and Stotz
+2025)</span>, patchwork v. 1.3.1 <span class="citation">(Pedersen
+2025)</span>, plotly v. 4.11.0 <span class="citation">(Sievert
+2020)</span>, plotrix v. 3.8.14 <span class="citation">(J 2006)</span>,
+renv v. 1.1.7 <span class="citation">(Ushey and Wickham 2026)</span>,
+reshape2 v. 1.4.4 <span class="citation">(Wickham 2007)</span>,
+reticulate v. 1.44.1 <span class="citation">(Ushey, Allaire, and Tang
+2025)</span>, rmarkdown v. 2.30 <span class="citation">(Xie, Allaire,
+and Grolemund 2018; Xie, Dervieux, and Riederer 2020; Allaire et al.
+2025)</span>, rSPDE v. 2.5.2.9000 <span class="citation">(Bolin and
+Kirchner 2020; Bolin and Simas 2023; Bolin, Simas, and Xiong
+2024)</span>, scales v. 1.4.0 <span class="citation">(Wickham, Pedersen,
+and Seidel 2025)</span>, sf v. 1.1.0 <span class="citation">(E. Pebesma
+2018; E. Pebesma and Bivand 2023)</span>, slackr v. 3.4.0 <span
+class="citation">(Kaye et al. 2025)</span>, sp v. 2.2.1 <span
+class="citation">(E. J. Pebesma and Bivand 2005; Bivand, Pebesma, and
+Gomez-Rubio 2013)</span>, tidyverse v. 2.0.0 <span
+class="citation">(Wickham et al. 2019)</span>, tikzDevice v. 0.12.6
+<span class="citation">(Sharpsteen and Bracken 2023)</span>, viridis v.
+0.6.5 <span class="citation">(Garnier et al. 2024)</span>, xaringanExtra
+v. 0.8.0 <span class="citation">(Aden-Buie and Warkentin
+2024)</span>.</p>
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+<div id="ref-xaringanExtra" class="csl-entry">
+Aden-Buie, Garrick, and Matthew T. Warkentin. 2024. <em><span
+class="nocase">xaringanExtra</span>: Extras and Extensions for
+<span>“<span class="nocase">xaringan</span>”</span> Slides</em>. <a
+href="https://doi.org/10.32614/CRAN.package.xaringanExtra">https://doi.org/10.32614/CRAN.package.xaringanExtra</a>.
+</div>
+<div id="ref-rmarkdown2025" class="csl-entry">
+Allaire, JJ, Yihui Xie, Christophe Dervieux, Jonathan McPherson, Javier
+Luraschi, Kevin Ushey, Aron Atkins, et al. 2025. <em><span
+class="nocase">rmarkdown</span>: Dynamic Documents for r</em>. <a
+href="https://github.com/rstudio/rmarkdown">https://github.com/rstudio/rmarkdown</a>.
+</div>
+<div id="ref-inlabru2019" class="csl-entry">
+Bachl, Fabian E., Finn Lindgren, David L. Borchers, and Janine B.
+Illian. 2019. <span>“<span class="nocase">inlabru</span>: An
+<span>R</span> Package for <span>Bayesian</span> Spatial Modelling from
+Ecological Survey Data.”</span> <em>Methods in Ecology and
+Evolution</em> 10: 760–66. <a
+href="https://doi.org/10.1111/2041-210X.13168">https://doi.org/10.1111/2041-210X.13168</a>.
+</div>
+<div id="ref-INLA2018f" class="csl-entry">
+Bakka, Haakon, Håvard Rue, Geir-Arne Fuglstad, Andrea I. Riebler, David
+Bolin, Janine Illian, Elias Krainski, Daniel P. Simpson, and Finn K.
+Lindgren. 2018. <span>“Spatial Modelling with <span>INLA</span>:
+<span>A</span> Review.”</span> <em>WIRES (Invited Extended Review)</em>
+xx (Feb): xx–. <a
+href="http://arxiv.org/abs/1802.06350">http://arxiv.org/abs/1802.06350</a>.
+</div>
+<div id="ref-Matrix" class="csl-entry">
+Bates, Douglas, Martin Maechler, and Mikael Jagan. 2025.
+<em><span>Matrix</span>: Sparse and Dense Matrix Classes and
+Methods</em>. <a
+href="https://doi.org/10.32614/CRAN.package.Matrix">https://doi.org/10.32614/CRAN.package.Matrix</a>.
+</div>
+<div id="ref-sp2013" class="csl-entry">
+Bivand, Roger S., Edzer Pebesma, and Virgilio Gomez-Rubio. 2013.
+<em>Applied Spatial Data Analysis with <span>R</span>, Second
+Edition</em>. Springer, NY. <a
+href="https://asdar-book.org/">https://asdar-book.org/</a>.
+</div>
+<div id="ref-rSPDE2020" class="csl-entry">
+Bolin, David, and Kristin Kirchner. 2020. <span>“The Rational
+<span>SPDE</span> Approach for <span>Gaussian</span> Random Fields with
+General Smoothness.”</span> <em>Journal of Computational and Graphical
+Statistics</em> 29 (2): 274–85. <a
+href="https://doi.org/10.1080/10618600.2019.1665537">https://doi.org/10.1080/10618600.2019.1665537</a>.
+</div>
+<div id="ref-MetricGraph2024c" class="csl-entry">
+Bolin, David, Mihály Kovács, Vivek Kumar, and Alexandre B. Simas. 2024.
+<span>“Regularity and Numerical Approximation of Fractional Elliptic
+Differential Equations on Compact Metric Graphs.”</span> <em>Mathematics
+of Computation</em> 93 (349): 2439–72. <a
+href="https://doi.org/10.1090/mcom/3929">https://doi.org/10.1090/mcom/3929</a>.
+</div>
+<div id="ref-rSPDE2023" class="csl-entry">
+Bolin, David, and Alexandre B. Simas. 2023. <em><span
+class="nocase">rSPDE</span>: Rational Approximations of Fractional
+Stochastic Partial Differential Equations</em>. <a
+href="https://CRAN.R-project.org/package=rSPDE">https://CRAN.R-project.org/package=rSPDE</a>.
+</div>
+<div id="ref-MetricGraph2023a" class="csl-entry">
+Bolin, David, Alexandre B. Simas, and Jonas Wallin. 2023a.
+<em><span>MetricGraph</span>: Random Fields on Metric Graphs</em>. <a
+href="https://CRAN.R-project.org/package=MetricGraph">https://CRAN.R-project.org/package=MetricGraph</a>.
+</div>
+<div id="ref-MetricGraph2023e" class="csl-entry">
+———. 2023b. <span>“Statistical Inference for Gaussian Whittle-Matérn
+Fields on Metric Graphs.”</span> <em>arXiv Preprint
+arXiv:2304.10372</em>. <a
+href="https://doi.org/10.48550/arXiv.2304.10372">https://doi.org/10.48550/arXiv.2304.10372</a>.
+</div>
+<div id="ref-MetricGraph2024b" class="csl-entry">
+———. 2024. <span>“Gaussian Whittle-Matérn Fields on Metric
+Graphs.”</span> <em>Bernoulli</em> 30 (2): 1611–39. <a
+href="https://doi.org/10.3150/23-BEJ1647">https://doi.org/10.3150/23-BEJ1647</a>.
+</div>
+<div id="ref-MetricGraph2025d" class="csl-entry">
+———. 2025. <span>“Markov Properties of Gaussian Random Fields on Compact
+Metric Graphs.”</span> <em>Bernoulli</em>. <a
+href="https://doi.org/10.48550/arXiv.2304.03190">https://doi.org/10.48550/arXiv.2304.03190</a>.
+</div>
+<div id="ref-rSPDE2024" class="csl-entry">
+Bolin, David, Alexandre B. Simas, and Zhen Xiong. 2024.
+<span>“Covariance-Based Rational Approximations of Fractional SPDEs for
+Computationally Efficient Bayesian Inference.”</span> <em>Journal of
+Computational and Graphical Statistics</em> 33 (1): 64–74. <a
+href="https://doi.org/10.1080/10618600.2023.2231051">https://doi.org/10.1080/10618600.2023.2231051</a>.
+</div>
+<div id="ref-htmltools" class="csl-entry">
+Cheng, Joe, Carson Sievert, Barret Schloerke, Winston Chang, Yihui Xie,
+and Jeff Allen. 2024. <em><span class="nocase">htmltools</span>: Tools
+for HTML</em>. <a
+href="https://github.com/rstudio/htmltools">https://github.com/rstudio/htmltools</a>.
+</div>
+<div id="ref-INLA2016g" class="csl-entry">
+De Coninck, Arne, Bernard De Baets, Drosos Kourounis, Fabio Verbosio,
+Olaf Schenk, Steven Maenhout, and Jan Fostier. 2016.
+<span>“<span>Needles</span>: Toward Large-Scale Genomic Prediction with
+Marker-by-Environment Interaction.”</span> <em>Genetics</em> 203 (1):
+543–55. <a
+href="https://doi.org/10.1534/genetics.115.179887">https://doi.org/10.1534/genetics.115.179887</a>.
+</div>
+<div id="ref-OpenStreetMap" class="csl-entry">
+Fellows, Ian, and Jan-Peter Stotz. 2025. <em><span>OpenStreetMap</span>:
+Access to Open Street Map Raster Images</em>. <a
+href="https://doi.org/10.32614/CRAN.package.OpenStreetMap">https://doi.org/10.32614/CRAN.package.OpenStreetMap</a>.
+</div>
+<div id="ref-viridis" class="csl-entry">
+Garnier, Simon, Ross, Noam, Rudis, Robert, Camargo, et al. 2024.
+<em><span class="nocase">viridis(Lite)</span> - Colorblind-Friendly
+Color Maps for r</em>. <a
+href="https://doi.org/10.5281/zenodo.4679423">https://doi.org/10.5281/zenodo.4679423</a>.
+</div>
+<div id="ref-glue" class="csl-entry">
+Hester, Jim, and Jennifer Bryan. 2024. <em><span
+class="nocase">glue</span>: Interpreted String Literals</em>. <a
+href="https://glue.tidyverse.org/">https://glue.tidyverse.org/</a>.
+</div>
+<div id="ref-plotrix" class="csl-entry">
+J, Lemon. 2006. <span>“<span>Plotrix</span>: A Package in the Red Light
+District of r.”</span> <em>R-News</em> 6 (4): 8–12.
+</div>
+<div id="ref-ggmap" class="csl-entry">
+Kahle, David, and Hadley Wickham. 2013. <span>“<span
+class="nocase">ggmap</span>: Spatial Visualization with Ggplot2.”</span>
+<em>The R Journal</em> 5 (1): 144–61. <a
+href="https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf">https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf</a>.
+</div>
+<div id="ref-ggpubr" class="csl-entry">
+Kassambara, Alboukadel. 2026. <em><span class="nocase">ggpubr</span>:
+<span>“<span class="nocase">ggplot2</span>”</span> Based Publication
+Ready Plots</em>. <a
+href="https://doi.org/10.32614/CRAN.package.ggpubr">https://doi.org/10.32614/CRAN.package.ggpubr</a>.
+</div>
+<div id="ref-slackr" class="csl-entry">
+Kaye, Matt, Bob Rudis, Andrie de Vries, and Jonathan Sidi. 2025.
+<em><span class="nocase">slackr</span>: Send Messages, Images, r Objects
+and Files to <span>“<span>Slack</span>”</span> Channels/Users</em>. <a
+href="https://github.com/mrkaye97/slackr">https://github.com/mrkaye97/slackr</a>.
+</div>
+<div id="ref-INLA2018i" class="csl-entry">
+Kourounis, D., A. Fuchs, and O. Schenk. 2018. <span>“Towards the Next
+Generation of Multiperiod Optimal Power Flow Solvers.”</span> <em>IEEE
+Transactions on Power Systems</em> PP (99): 1–10. <a
+href="https://doi.org/10.1109/TPWRS.2017.2789187">https://doi.org/10.1109/TPWRS.2017.2789187</a>.
+</div>
+<div id="ref-INLA2015d" class="csl-entry">
+Lindgren, Finn, and Håvard Rue. 2015. <span>“Bayesian Spatial Modelling
+with <span>R</span>-<span>INLA</span>.”</span> <em>Journal of
+Statistical Software</em> 63 (19): 1–25. <a
+href="http://www.jstatsoft.org/v63/i19/">http://www.jstatsoft.org/v63/i19/</a>.
+</div>
+<div id="ref-INLA2011c" class="csl-entry">
+Lindgren, Finn, Håvard Rue, and Johan Lindström. 2011. <span>“An
+Explicit Link Between <span>Gaussian</span> Fields and
+<span>Gaussian</span> <span>Markov</span> Random Fields: The Stochastic
+Partial Differential Equation Approach (with Discussion).”</span>
+<em>Journal of the Royal Statistical Society B</em> 73 (4): 423–98.
+</div>
+<div id="ref-INLA2013b" class="csl-entry">
+Martins, Thiago G., Daniel Simpson, Finn Lindgren, and Håvard Rue. 2013.
+<span>“Bayesian Computing with <span>INLA</span>: <span>N</span>ew
+Features.”</span> <em>Computational Statistics and Data Analysis</em>
+67: 68–83.
+</div>
+<div id="ref-latex2exp" class="csl-entry">
+Meschiari, Stefano. 2026. <em>Latex2exp: Use LaTeX Expressions in
+Plots</em>. <a
+href="https://doi.org/10.32614/CRAN.package.latex2exp">https://doi.org/10.32614/CRAN.package.latex2exp</a>.
+</div>
+<div id="ref-here" class="csl-entry">
+Müller, Kirill. 2020. <em><span class="nocase">here</span>: A Simpler
+Way to Find Your Files</em>. <a
+href="https://doi.org/10.32614/CRAN.package.here">https://doi.org/10.32614/CRAN.package.here</a>.
+</div>
+<div id="ref-sf2018" class="csl-entry">
+Pebesma, Edzer. 2018. <span>“<span class="nocase">Simple Features for R:
+Standardized Support for Spatial Vector Data</span>.”</span>
+<em><span>The R Journal</span></em> 10 (1): 439–46. <a
+href="https://doi.org/10.32614/RJ-2018-009">https://doi.org/10.32614/RJ-2018-009</a>.
+</div>
+<div id="ref-sp2005" class="csl-entry">
+Pebesma, Edzer J., and Roger Bivand. 2005. <span>“Classes and Methods
+for Spatial Data in <span>R</span>.”</span> <em>R News</em> 5 (2): 9–13.
+<a
+href="https://CRAN.R-project.org/doc/Rnews/">https://CRAN.R-project.org/doc/Rnews/</a>.
+</div>
+<div id="ref-sf2023" class="csl-entry">
+Pebesma, Edzer, and Roger Bivand. 2023. <em><span class="nocase">Spatial
+Data Science: With applications in R</span></em>. <span>Chapman and
+Hall/CRC</span>. <a
+href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
+</div>
+<div id="ref-patchwork" class="csl-entry">
+Pedersen, Thomas Lin. 2025. <em><span class="nocase">patchwork</span>:
+The Composer of Plots</em>. <a
+href="https://doi.org/10.32614/CRAN.package.patchwork">https://doi.org/10.32614/CRAN.package.patchwork</a>.
+</div>
+<div id="ref-base" class="csl-entry">
+R Core Team. 2025a. <em><span>R</span>: A Language and Environment for
+Statistical Computing</em>. Vienna, Austria: R Foundation for
+Statistical Computing. <a
+href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-grid" class="csl-entry">
+———. 2025b. <em><span>R</span>: A Language and Environment for
+Statistical Computing</em>. Vienna, Austria: R Foundation for
+Statistical Computing. <a
+href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-INLA2009a" class="csl-entry">
+Rue, Håvard, Sara Martino, and Nicholas Chopin. 2009. <span>“Approximate
+<span>Bayesian</span> Inference for Latent <span>Gaussian</span> Models
+Using Integrated Nested <span>Laplace</span> Approximations (with
+Discussion).”</span> <em>Journal of the Royal Statistical Society B</em>
+71: 319–92.
+</div>
+<div id="ref-INLA2017e" class="csl-entry">
+Rue, Håvard, Andrea I. Riebler, Sigrunn H. Sørbye, Janine B. Illian,
+Daniel P. Simpson, and Finn K. Lindgren. 2017. <span>“Bayesian Computing
+with <span>INLA</span>: <span>A</span> Review.”</span> <em>Annual
+Reviews of Statistics and Its Applications</em> 4 (March): 395–421. <a
+href="http://arxiv.org/abs/1604.00860">http://arxiv.org/abs/1604.00860</a>.
+</div>
+<div id="ref-tikzDevice" class="csl-entry">
+Sharpsteen, Charlie, and Cameron Bracken. 2023. <em><span
+class="nocase">tikzDevice</span>: R Graphics Output in LaTeX
+Format</em>. <a
+href="https://doi.org/10.32614/CRAN.package.tikzDevice">https://doi.org/10.32614/CRAN.package.tikzDevice</a>.
+</div>
+<div id="ref-plotly" class="csl-entry">
+Sievert, Carson. 2020. <em>Interactive Web-Based Data Visualization with
+r, Plotly, and Shiny</em>. Chapman; Hall/CRC. <a
+href="https://plotly-r.com">https://plotly-r.com</a>.
+</div>
+<div id="ref-reticulate" class="csl-entry">
+Ushey, Kevin, JJ Allaire, and Yuan Tang. 2025. <em><span
+class="nocase">reticulate</span>: Interface to
+<span>“<span>Python</span>”</span></em>. <a
+href="https://doi.org/10.32614/CRAN.package.reticulate">https://doi.org/10.32614/CRAN.package.reticulate</a>.
+</div>
+<div id="ref-renv" class="csl-entry">
+Ushey, Kevin, and Hadley Wickham. 2026. <em><span
+class="nocase">renv</span>: Project Environments</em>. <a
+href="https://doi.org/10.32614/CRAN.package.renv">https://doi.org/10.32614/CRAN.package.renv</a>.
+</div>
+<div id="ref-INLA2017h" class="csl-entry">
+Verbosio, Fabio, Arne De Coninck, Drosos Kourounis, and Olaf Schenk.
+2017. <span>“Enhancing the Scalability of Selected Inversion
+Factorization Algorithms in Genomic Prediction.”</span> <em>Journal of
+Computational Science</em> 22 (Supplement C): 99–108. <a
+href="https://doi.org/10.1016/j.jocs.2017.08.013">https://doi.org/10.1016/j.jocs.2017.08.013</a>.
+</div>
+<div id="ref-reshape2" class="csl-entry">
+Wickham, Hadley. 2007. <span>“Reshaping Data with the <span
+class="nocase">reshape</span> Package.”</span> <em>Journal of
+Statistical Software</em> 21 (12): 1–20. <a
+href="http://www.jstatsoft.org/v21/i12/">http://www.jstatsoft.org/v21/i12/</a>.
+</div>
+<div id="ref-tidyverse" class="csl-entry">
+Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy
+D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019.
+<span>“Welcome to the <span class="nocase">tidyverse</span>.”</span>
+<em>Journal of Open Source Software</em> 4 (43): 1686. <a
+href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
+</div>
+<div id="ref-scales" class="csl-entry">
+Wickham, Hadley, Thomas Lin Pedersen, and Dana Seidel. 2025. <em><span
+class="nocase">scales</span>: Scale Functions for Visualization</em>. <a
+href="https://scales.r-lib.org">https://scales.r-lib.org</a>.
+</div>
+<div id="ref-cowplot" class="csl-entry">
+Wilke, Claus O. 2025. <em><span class="nocase">cowplot</span>:
+Streamlined Plot Theme and Plot Annotations for <span>“<span
+class="nocase">ggplot2</span>”</span></em>. <a
+href="https://doi.org/10.32614/CRAN.package.cowplot">https://doi.org/10.32614/CRAN.package.cowplot</a>.
+</div>
+<div id="ref-ggtext" class="csl-entry">
+Wilke, Claus O., and Brenton M. Wiernik. 2022. <em><span
+class="nocase">ggtext</span>: Improved Text Rendering Support for
+<span>“<span class="nocase">ggplot2</span>”</span></em>. <a
+href="https://doi.org/10.32614/CRAN.package.ggtext">https://doi.org/10.32614/CRAN.package.ggtext</a>.
+</div>
+<div id="ref-knitr2014" class="csl-entry">
+Xie, Yihui. 2014. <span>“<span class="nocase">knitr</span>: A
+Comprehensive Tool for Reproducible Research in <span>R</span>.”</span>
+In <em>Implementing Reproducible Computational Research</em>, edited by
+Victoria Stodden, Friedrich Leisch, and Roger D. Peng. Chapman;
+Hall/CRC.
+</div>
+<div id="ref-knitr2015" class="csl-entry">
+———. 2015. <em>Dynamic Documents with <span>R</span> and Knitr</em>. 2nd
+ed. Boca Raton, Florida: Chapman; Hall/CRC. <a
+href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div id="ref-knitr2025" class="csl-entry">
+———. 2025. <em><span class="nocase">knitr</span>: A General-Purpose
+Package for Dynamic Report Generation in <span>R</span></em>. <a
+href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div id="ref-rmarkdown2018" class="csl-entry">
+Xie, Yihui, J. J. Allaire, and Garrett Grolemund. 2018. <em>R Markdown:
+The Definitive Guide</em>. Boca Raton, Florida: Chapman; Hall/CRC. <a
+href="https://bookdown.org/yihui/rmarkdown">https://bookdown.org/yihui/rmarkdown</a>.
+</div>
+<div id="ref-rmarkdown2020" class="csl-entry">
+Xie, Yihui, Christophe Dervieux, and Emily Riederer. 2020. <em>R
+Markdown Cookbook</em>. Boca Raton, Florida: Chapman; Hall/CRC. <a
+href="https://bookdown.org/yihui/rmarkdown-cookbook">https://bookdown.org/yihui/rmarkdown-cookbook</a>.
+</div>
+<div id="ref-inlabru2017" class="csl-entry">
+Yuan, Yuan, Bachl, Fabian E., Lindgren, Finn, Borchers, et al. 2017.
+<span>“Point Process Models for Spatio-Temporal Distance Sampling Data
+from a Large-Scale Survey of Blue Whales.”</span> <em>Ann. Appl.
+Stat.</em> 11 (4): 2270–97. <a
+href="https://doi.org/10.1214/17-AOAS1078">https://doi.org/10.1214/17-AOAS1078</a>.
+</div>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRnVuY3Rpb25hbGl0eSIKZGF0ZTogIkxhc3QgbW9kaWZpZWQ6IGByIGZvcm1hdChTeXMudGltZSgpLCAnJWQtJW0tJVkuJylgIgpvdXRwdXQ6CiAgaHRtbF9kb2N1bWVudDoKICAgIG1hdGhqYXg6ICJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL21hdGhqYXhAMy9lczUvdGV4LW1tbC1jaHRtbC5qcyIKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBmbGF0bHkKICAgIGNvZGVfZm9sZGluZzogc2hvdyAjIGNsYXNzLnNvdXJjZSA9ICJmb2xkLWhpZGUiIHRvIGhpZGUgY29kZSBhbmQgYWRkIGEgYnV0dG9uIHRvIHNob3cgaXQKICAgIGRmX3ByaW50OiBwYWdlZAogICAgdG9jOiB0cnVlCiAgICB0b2NfZmxvYXQ6CiAgICAgIGNvbGxhcHNlZDogdHJ1ZQogICAgICBzbW9vdGhfc2Nyb2xsOiB0cnVlCiAgICBudW1iZXJfc2VjdGlvbnM6IHRydWUKICAgIGZpZ19jYXB0aW9uOiB0cnVlCiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCiAgICBjc3M6IHZpc3VhbC5jc3MKYWx3YXlzX2FsbG93X2h0bWw6IHRydWUKYmlibGlvZ3JhcGh5OiAKICAtIHJlZmVyZW5jZXMuYmliCiAgLSBncmF0ZWZ1bC1yZWZzLmJpYgpoZWFkZXItaW5jbHVkZXM6CiAgLSBcbmV3Y29tbWFuZHtcYXJ9e1xtYXRoYmJ7Un19CiAgLSBcbmV3Y29tbWFuZHtcbGxhdn1bMV17XGxlZnRceyMxXHJpZ2h0XH19CiAgLSBcbmV3Y29tbWFuZHtccGFyZX1bMV17XGxlZnQoIzFccmlnaHQpfQogIC0gXG5ld2NvbW1hbmR7XE5jYWx9e1xtYXRoY2Fse059fQogIC0gXG5ld2NvbW1hbmR7XFZjYWx9e1xtYXRoY2Fse1Z9fQogIC0gXG5ld2NvbW1hbmR7XEVjYWx9e1xtYXRoY2Fse0V9fQogIC0gXG5ld2NvbW1hbmR7XFdjYWx9e1xtYXRoY2Fse1d9fQogIC0gXG5ld2NvbW1hbmR7XGFsbW9zdGV2ZXJ5d2hlcmV9e1xtYXRocm17YS5lLn1cO30KLS0tCgpHbyBiYWNrIHRvIHRoZSBbQ29udGVudHNdKGFib3V0Lmh0bWwpIHBhZ2UuCgo8ZGl2IHN0eWxlPSJjb2xvcjogIzJjM2U1MDsgdGV4dC1hbGlnbjogcmlnaHQ7Ij4KKioqKioqKiogIAo8c3Ryb25nPlByZXNzIFNob3cgdG8gcmV2ZWFsIHRoZSBjb2RlIGNodW5rcy48L3N0cm9uZz4gIAoKKioqKioqKioKPC9kaXY+CgoKYGBge3J9CiMgQ3JlYXRlIGEgY2xpcGJvYXJkIGJ1dHRvbiBvbiB0aGUgcmVuZGVyZWQgSFRNTCBwYWdlCnNvdXJjZShoZXJlOjpoZXJlKCJjbGlwYm9hcmQuUiIpKTsgY2xpcGJvYXJkCiMgU2V0IHNlZWQgZm9yIHJlcHJvZHVjaWJpbGl0eQojc2V0LnNlZWQoMTk4MikgCiMgU2V0IGdsb2JhbCBvcHRpb25zIGZvciBhbGwgY29kZSBjaHVua3MKa25pdHI6Om9wdHNfY2h1bmskc2V0KAogICMgRGlzYWJsZSBtZXNzYWdlcyBwcmludGVkIGJ5IFIgY29kZSBjaHVua3MKICBtZXNzYWdlID0gRkFMU0UsICAgIAogICMgRGlzYWJsZSB3YXJuaW5ncyBwcmludGVkIGJ5IFIgY29kZSBjaHVua3MKICB3YXJuaW5nID0gRkFMU0UsICAgIAogICMgU2hvdyBSIGNvZGUgd2l0aGluIGNvZGUgY2h1bmtzIGluIG91dHB1dAogIGVjaG8gPSBUUlVFLCAgICAgICAgCiAgIyBJbmNsdWRlIGJvdGggUiBjb2RlIGFuZCBpdHMgcmVzdWx0cyBpbiBvdXRwdXQKICBpbmNsdWRlID0gVFJVRSwgICAgIAogICMgRXZhbHVhdGUgUiBjb2RlIGNodW5rcwogIGV2YWwgPSBUUlVFLCAgICAgICAKICAjIEVuYWJsZSBjYWNoaW5nIG9mIFIgY29kZSBjaHVua3MgZm9yIGZhc3RlciByZW5kZXJpbmcKICBjYWNoZSA9IEZBTFNFLCAgICAgIAogICMgQWxpZ24gZmlndXJlcyBpbiB0aGUgY2VudGVyIG9mIHRoZSBvdXRwdXQKICBmaWcuYWxpZ24gPSAiY2VudGVyIiwKICAjIEVuYWJsZSByZXRpbmEgZGlzcGxheSBmb3IgaGlnaC1yZXNvbHV0aW9uIGZpZ3VyZXMKICByZXRpbmEgPSAyLAogICMgU2hvdyBlcnJvcnMgaW4gdGhlIG91dHB1dCBpbnN0ZWFkIG9mIHN0b3BwaW5nIHJlbmRlcmluZwogIGVycm9yID0gVFJVRSwKICAjIERvIG5vdCBjb2xsYXBzZSBjb2RlIGFuZCBvdXRwdXQgaW50byBhIHNpbmdsZSBibG9jawogIGNvbGxhcHNlID0gRkFMU0UKKQojIFN0YXJ0IHRoZSBmaWd1cmUgY291bnRlcgpmaWdfY291bnQgPC0gMAojIERlZmluZSB0aGUgY2FwdGlvbmVyIGZ1bmN0aW9uCmNhcHRpb25lciA8LSBmdW5jdGlvbihjYXB0aW9uKSB7CiAgZmlnX2NvdW50IDw8LSBmaWdfY291bnQgKyAxCiAgcGFzdGUwKCJGaWd1cmUgIiwgZmlnX2NvdW50LCAiOiAiLCBjYXB0aW9uKQp9CgpgYGAKCmBgYHtyfQpsaWJyYXJ5KE1ldHJpY0dyYXBoKQpsaWJyYXJ5KGdncGxvdDIpCmxpYnJhcnkocmVzaGFwZTIpCmxpYnJhcnkoZHBseXIpCmxpYnJhcnkodmlyaWRpcykKbGlicmFyeShwbG90bHkpCmxpYnJhcnkocGF0Y2h3b3JrKQoKbGlicmFyeShzbGFja3IpCnNvdXJjZSgia2V5cy5SIikKc2xhY2tyX3NldHVwKHRva2VuID0gdG9rZW4pICMgdG9rZW4gY29tZXMgZnJvbSBrZXlzLlIKYGBgCgoKYGBge3J9CiMgQ29sb3IgZm9yIGF4aXMgbmFtZSBhbmQgYXhpcyBudW1iZXJzCmNvbGF4bm4gPC0gImdyYXkiCiMgR2xvYmFsIGZvbnQgc2l6ZQpnZnNpemUgPC0gMTYKIyBEYXJrIGJsdWUgY29sb3IKbXlkYXJrYmx1ZSA8LSAiIzAwMDBDOCIKIyBHbG9iYWwgc2l6ZSBvciB3aWRodCBmb3Igb2JqZWN0cwpnc3cgPC0gNwpgYGAKCmBgYHtyfQpnZXRzLmdyYXBoLmludGVydmFsIDwtIGZ1bmN0aW9uKG4pewogIGVkZ2UgPC0gcmJpbmQoYygwLDApLGMoMSwwKSkKICBlZGdlcyA9IGxpc3QoZWRnZSkKICBncmFwaCA8LSBtZXRyaWNfZ3JhcGgkbmV3KGVkZ2VzID0gZWRnZXMpCiAgZ3JhcGgkYnVpbGRfbWVzaChuID0gbikKICByZXR1cm4oZ3JhcGgpCn0KYGBgCgpgYGB7cn0KZ2V0cy5ncmFwaC5jaXJjbGUgPC0gZnVuY3Rpb24obil7CiAgciA9IDEvKHBpKQogIHRoZXRhIDwtIHNlcShmcm9tPS1waSx0bz1waSxsZW5ndGgub3V0ID0gMTAwKQogIGVkZ2UgPC0gY2JpbmQoMStyK3IqY29zKHRoZXRhKSxyKnNpbih0aGV0YSkpCiAgZWRnZXMgPSBsaXN0KGVkZ2UpCiAgZ3JhcGggPC0gbWV0cmljX2dyYXBoJG5ldyhlZGdlcyA9IGVkZ2VzKQogIGdyYXBoJGJ1aWxkX21lc2gobiA9IG4pCiAgcmV0dXJuKGdyYXBoKQp9CmBgYAoKCmBgYHtyfQojIEZ1bmN0aW9uIHRvIGJ1aWxkIGEgdGFkcG9sZSBncmFwaCBhbmQgY3JlYXRlIGEgbWVzaApnZXRzLmdyYXBoLnRhZHBvbGUgPC0gZnVuY3Rpb24oaCl7CiAgZWRnZTEgPC0gcmJpbmQoYygwLDApLGMoMSwwKSkKICB0aGV0YSA8LSBzZXEoZnJvbT0tcGksdG89cGksbGVuZ3RoLm91dCA9IDEwMCkKICBlZGdlMiA8LSBjYmluZCgxKzEvcGkrY29zKHRoZXRhKS9waSxzaW4odGhldGEpL3BpKQogIGVkZ2VzIDwtIGxpc3QoZWRnZTEsIGVkZ2UyKQogIGdyYXBoIDwtIG1ldHJpY19ncmFwaCRuZXcoZWRnZXMgPSBlZGdlcywgdmVyYm9zZSA9IDApCiAgZ3JhcGgkc2V0X21hbnVhbF9lZGdlX2xlbmd0aHMoZWRnZV9sZW5ndGhzID0gYygxLDIpKQogIGdyYXBoJGJ1aWxkX21lc2goaCA9IGgpCiAgcmV0dXJuKGdyYXBoKQp9CmBgYAoKYGBge3J9CiMgRnVuY3Rpb24gdG8gb3JkZXIgdGhlIHZlcnRpY2VzIGZvciBwbG90dGluZwpwbG90dGluZy5vcmRlciA8LSBmdW5jdGlvbih2LCBncmFwaCl7CiAgZWRnZV9udW1iZXIgPC0gZ3JhcGgkbWVzaCRWdEVbLCAxXQogIHBvcyA8LSBzdW0oZWRnZV9udW1iZXIgPT0gMSkrMQogIHJldHVybihjKHZbMV0sIHZbMzpwb3NdLCB2WzJdLCB2Wyhwb3MrMSk6bGVuZ3RoKHYpXSwgdlsyXSkpCn0KYGBgCgpgYGB7cn0KIyBPcmlnaW5hbCBjYW1lcmEKZXllIDwtIGxpc3QoeCA9IDUsIHkgPSAzLCB6ID0gNCkKY2VudGVyIDwtIGxpc3QoeCA9ICgxKzIvcGkpLzIsIHkgPSAwLCB6ID0gMCkKCiMgRnJhY3Rpb24gdG8gbW92ZSB0b3dhcmQgY2VudGVyICh6b29tIGluKQpmIDwtIDAgICMgNTAlIGNsb3NlcgoKbmV3X2V5ZSA8LSBsaXN0KAogIHggPSBleWUkeCArIGYgKiAoY2VudGVyJHggLSBleWUkeCksCiAgeSA9IGV5ZSR5ICsgZiAqIChjZW50ZXIkeSAtIGV5ZSR5KSwKICB6ID0gZXllJHogKyBmICogKGNlbnRlciR6IC0gZXllJHopCikKCnRhZHBvbGUubGF5b3V0IDwtIGZ1bmN0aW9uKHhfcmFuZ2UsIHlfcmFuZ2UsIHpfcmFuZ2UpewogIHJldHVybihsaXN0KHhheGlzID0gbGlzdCh0aXRsZSA9IGxpc3QodGV4dCA9ICJ4IiwgZm9udCA9IGxpc3QoY29sb3IgPSBjb2xheG5uKSksICB0aWNrZm9udCA9IGxpc3QoY29sb3IgPSBjb2xheG5uKSwgcmFuZ2UgPSB4X3JhbmdlKSwKICAgICAgICAgICAgICB5YXhpcyA9IGxpc3QodGl0bGUgPSBsaXN0KHRleHQgPSAieSIsIGZvbnQgPSBsaXN0KGNvbG9yID0gY29sYXhubikpLCAgdGlja2ZvbnQgPSBsaXN0KGNvbG9yID0gY29sYXhubiksIHJhbmdlID0geV9yYW5nZSksCiAgICAgICAgICAgICAgemF4aXMgPSBsaXN0KHRpdGxlID0gbGlzdCh0ZXh0ID0gInoiLCBmb250ID0gbGlzdChjb2xvciA9IGNvbGF4bm4pKSwgIHRpY2tmb250ID0gbGlzdChjb2xvciA9IGNvbGF4bm4pLCByYW5nZSA9IHpfcmFuZ2UpLAogICAgICAgICAgICAgIGFzcGVjdHJhdGlvID0gbGlzdCh4ID0gMiooMSsyL3BpKSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHkgPSAyKigyL3BpKSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHogPSAxKigyL3BpKSksCiAgICAgICAgICAgICAgY2FtZXJhID0gbGlzdChleWUgPSBsaXN0KHggPSA1LCB5ID0gMywgeiA9IDQpLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgY2VudGVyID0gbGlzdCh4ID0gKDErMi9waSkvMiwgeSA9IDAsIHogPSAwKSkpKQp9Cgp0YWRwb2xlLmxheW91dC53aXRoLnpvb20gPC0gZnVuY3Rpb24oeF9yYW5nZSwgeV9yYW5nZSwgel9yYW5nZSl7CiAgcmV0dXJuKGxpc3QoeGF4aXMgPSBsaXN0KHRpdGxlID0gbGlzdCh0ZXh0ID0gIngiLCBmb250ID0gbGlzdChjb2xvciA9IGNvbGF4bm4pKSwgIHRpY2tmb250ID0gbGlzdChjb2xvciA9IGNvbGF4bm4pLCByYW5nZSA9IHhfcmFuZ2UpLAogICAgICAgICAgICAgIHlheGlzID0gbGlzdCh0aXRsZSA9IGxpc3QodGV4dCA9ICJ5IiwgZm9udCA9IGxpc3QoY29sb3IgPSBjb2xheG5uKSksICB0aWNrZm9udCA9IGxpc3QoY29sb3IgPSBjb2xheG5uKSwgcmFuZ2UgPSB5X3JhbmdlKSwKICAgICAgICAgICAgICB6YXhpcyA9IGxpc3QodGl0bGUgPSBsaXN0KHRleHQgPSAieiIsIGZvbnQgPSBsaXN0KGNvbG9yID0gY29sYXhubikpLCAgdGlja2ZvbnQgPSBsaXN0KGNvbG9yID0gY29sYXhubiksIHJhbmdlID0gel9yYW5nZSksCiAgICAgICAgICAgICAgYXNwZWN0cmF0aW8gPSBsaXN0KHggPSAyKigxKzIvcGkpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgeSA9IDIqKDIvcGkpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgeiA9IDEqKDIvcGkpKSwKICAgICAgICAgICAgICBjYW1lcmEgPSBsaXN0KGV5ZSA9IG5ld19leWUsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjZW50ZXIgPSBjZW50ZXIpKSkKfQpgYGAKCgpgYGB7cn0KbXlnZ3NhdmUgPC0gZnVuY3Rpb24ocGxvdCwgd2lkdGggPSA5LjIyLCBoZWlnaHQgPSA3LjA1KSB7CiAgCiAgZGlyX3RvX3NhdmUgPC0gaGVyZTo6aGVyZSgiZGF0YV9maWxlcy90aWt6cGljIikKICBvYmpfbmFtZSA8LSBkZXBhcnNlKHN1YnN0aXR1dGUocGxvdCkpCiAgdGV4X25hbWUgPC0gZmlsZS5wYXRoKGRpcl90b19zYXZlLCBwYXN0ZTAob2JqX25hbWUsICIudGV4IikpCiAgCiAgIyBDcmVhdGUgZGlyZWN0b3J5IGlmIGl0IGRvZXNuJ3QgZXhpc3QKICBpZiAoIWRpci5leGlzdHMoZGlyX3RvX3NhdmUpKSBkaXIuY3JlYXRlKGRpcl90b19zYXZlLCByZWN1cnNpdmUgPSBUUlVFKQogIAogICMgU2F2ZSBUaWtaIHBsb3QKICB0aWt6RGV2aWNlOjp0aWt6KHRleF9uYW1lLCBzdGFuZEFsb25lID0gVFJVRSwgd2lkdGggPSB3aWR0aCwgaGVpZ2h0ID0gaGVpZ2h0KQogIHByaW50KHBsb3QpCiAgZGV2Lm9mZigpCiAgCiAgIyBDb21waWxlIHRvIFBERgogIHN5c3RlbShwYXN0ZTAoInBkZmxhdGV4IC1vdXRwdXQtZGlyZWN0b3J5PSIsIGRpcl90b19zYXZlLCAiICIsIHRleF9uYW1lKSkKICAKICAjIFJlbW92ZSBhdXhpbGlhcnkgZmlsZXMKICBhdXhfZXh0IDwtIGMoIi5hdXgiLCAiLmxvZyIsICIudGV4IikKICBmb3IgKGV4dCBpbiBhdXhfZXh0KSB7CiAgICBmIDwtIGZpbGUucGF0aChkaXJfdG9fc2F2ZSwgcGFzdGUwKG9ial9uYW1lLCBleHQpKQogICAgaWYgKGZpbGUuZXhpc3RzKGYpKSBmaWxlLnJlbW92ZShmKQogIH0KICAKICAjIFJlbW92ZSBhbnkgdGVtcG9yYXJ5IHJhc3RlciBpbWFnZXMgZ2VuZXJhdGVkIGJ5IHRpa3pEZXZpY2UKICByYXNfZmlsZXMgPC0gbGlzdC5maWxlcygKICAgIGRpcl90b19zYXZlLAogICAgcGF0dGVybiA9IHBhc3RlMChvYmpfbmFtZSwgIl9yYXNbMC05XStcXC5wbmckIiksCiAgICBmdWxsLm5hbWVzID0gVFJVRQogICkKICBpZiAobGVuZ3RoKHJhc19maWxlcykgPiAwKSBmaWxlLnJlbW92ZShyYXNfZmlsZXMpCiAgCiAgbWVzc2FnZSgiUERGIHNhdmVkIGF0OiAiLCBmaWxlLnBhdGgoZGlyX3RvX3NhdmUsIHBhc3RlMChvYmpfbmFtZSwgIi5wZGYiKSkpCn0KYGBgCgoKCgpgYGB7cn0KCmxpYnJhcnkocGxvdGx5KQpsaWJyYXJ5KHJldGljdWxhdGUpCmxpYnJhcnkoanNvbmxpdGUpCmxpYnJhcnkoZ2x1ZSkKCmNvbWJpbmVfcGxvdGx5X2dyaWRfcGRmIDwtIGZ1bmN0aW9uKHBsb3RzLCBvdXRwdXRfcGRmID0gImNvbWJpbmVkX2dyaWQucGRmIiwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG5jb2wgPSAyLCB3aWR0aCA9IDE0MDAsIGhlaWdodCA9IDEwMDAsIHNjYWxlID0gMiwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc29sdXRpb24gPSAzMDAsIHNwYWNpbmcgPSA1MCkgewogIHB5X2NvbmZpZygpICMgQ2hlY2sgUHl0aG9uIGNvbmZpZ3VyYXRpb24KICBpZiAoIWlzLmxpc3QocGxvdHMpIHx8IGxlbmd0aChwbG90cykgPCAyKSB7CiAgICBzdG9wKCJwbG90cyBtdXN0IGJlIGEgbGlzdCBvZiBhdCBsZWFzdCB0d28gcGxvdGx5IG9iamVjdHMiKQogIH0KICAKICAjIFRlbXBvcmFyeSBQTkcgZmlsZXMKICB0bXBfZmlsZXMgPC0gc2FwcGx5KHNlcV9hbG9uZyhwbG90cyksIGZ1bmN0aW9uKGkpIHRlbXBmaWxlKGZpbGVleHQgPSAiLnBuZyIpKQogIAogICMgU2F2ZSBhbGwgcGxvdHMgYXMgUE5HcwogIGZvciAoaSBpbiBzZXFfYWxvbmcocGxvdHMpKSB7CiAgICBwbG90bHk6OnNhdmVfaW1hZ2UocGxvdHNbW2ldXSwgdG1wX2ZpbGVzW2ldLCB3aWR0aCA9IHdpZHRoLCBoZWlnaHQgPSBoZWlnaHQsIHNjYWxlID0gc2NhbGUpCiAgfQogIAogICMgQ29udmVydCB0ZW1wb3JhcnkgZmlsZXMgdG8gSlNPTiBhcnJheSBmb3IgUHl0aG9uCiAgcHlfdG1wX2ZpbGVzIDwtIHRvSlNPTih0bXBfZmlsZXMsIGF1dG9fdW5ib3ggPSBUUlVFKQogIAogICMgUHl0aG9uIGNvZGUgdXNpbmcgZ2x1ZSAodmFyaWFibGVzIGRpcmVjdGx5IHN1YnN0aXR1dGVkKQogIHB5X2NvZGUgPC0gZ2x1ZSgiCmZyb20gUElMIGltcG9ydCBJbWFnZQppbXBvcnQgbWF0aAoKZmlsZXMgPSB7cHlfdG1wX2ZpbGVzfQppbWFnZXMgPSBbSW1hZ2Uub3BlbihmKSBmb3IgZiBpbiBmaWxlc10KCm5jb2wgPSB7bmNvbH0KbnJvdyA9IG1hdGguY2VpbChsZW4oaW1hZ2VzKS9uY29sKQpzcGFjaW5nID0ge3NwYWNpbmd9CgpjZWxsX3dpZHRoID0gbWF4KGltZy53aWR0aCBmb3IgaW1nIGluIGltYWdlcykKY2VsbF9oZWlnaHQgPSBtYXgoaW1nLmhlaWdodCBmb3IgaW1nIGluIGltYWdlcykKCmNvbWJpbmVkX3dpZHRoID0gY2VsbF93aWR0aCAqIG5jb2wgKyBzcGFjaW5nICogKG5jb2wgLSAxKQpjb21iaW5lZF9oZWlnaHQgPSBjZWxsX2hlaWdodCAqIG5yb3cgKyBzcGFjaW5nICogKG5yb3cgLSAxKQoKY29tYmluZWQgPSBJbWFnZS5uZXcoJ1JHQicsIChjb21iaW5lZF93aWR0aCwgY29tYmluZWRfaGVpZ2h0KSwgKDI1NSwgMjU1LCAyNTUpKQoKZm9yIGlkeCwgaW1nIGluIGVudW1lcmF0ZShpbWFnZXMpOgogICAgcm93ID0gaWR4IC8vIG5jb2wKICAgIGNvbCA9IGlkeCAlIG5jb2wKICAgIHggPSBjb2wgKiAoY2VsbF93aWR0aCArIHNwYWNpbmcpCiAgICB5ID0gcm93ICogKGNlbGxfaGVpZ2h0ICsgc3BhY2luZykKICAgIGNvbWJpbmVkLnBhc3RlKGltZywgKHgsIHkpKQoKY29tYmluZWQuc2F2ZShyJ3tvdXRwdXRfcGRmfScsICdQREYnLCByZXNvbHV0aW9uPXtyZXNvbHV0aW9ufSkKICAiKQogIAogICMgUnVuIFB5dGhvbiBjb2RlCiAgcHlfcnVuX3N0cmluZyhweV9jb2RlKQogIAogICMgQ2xlYW4gdXAgdGVtcG9yYXJ5IGZpbGVzCiAgZmlsZS5yZW1vdmUodG1wX2ZpbGVzKQogIAogIG1lc3NhZ2UoIkNvbWJpbmVkIFBERiBzYXZlZCB0bzogIiwgb3V0cHV0X3BkZikKfQoKIyBwMSA8LSBwbG90X2x5KHogPSB+dm9sY2FubywgdHlwZSA9ICJzdXJmYWNlIikgJT4lIGxheW91dCh0aXRsZSA9ICJQbG90IDEiKQojIHAyIDwtIHBsb3RfbHkoeiA9IH52b2xjYW5vICsgNSwgdHlwZSA9ICJzdXJmYWNlIikgJT4lIGxheW91dCh0aXRsZSA9ICJQbG90IDIiKQojIHAzIDwtIHBsb3RfbHkoeiA9IH52b2xjYW5vICsgMTAsIHR5cGUgPSAic3VyZmFjZSIpICU+JSBsYXlvdXQodGl0bGUgPSAiUGxvdCAzIikKIyBwNCA8LSBwbG90X2x5KHogPSB+dm9sY2FubyArIDE1LCB0eXBlID0gInN1cmZhY2UiKSAlPiUgbGF5b3V0KHRpdGxlID0gIlBsb3QgNCIpCiMgCiMgY29tYmluZV9wbG90bHlfZ3JpZF9wZGYobGlzdChwMSwgcDIsIHAzLCBwNCksIG91dHB1dF9wZGYgPSAicGxvdHNfMngyLnBkZiIsIG5jb2wgPSA0KQpgYGAKCgpgYGB7cn0KbGlicmFyeShwbG90bHkpCmxpYnJhcnkocmV0aWN1bGF0ZSkKCgpjb21iaW5lX3Bsb3RseV9wZGYgPC0gZnVuY3Rpb24ocDEsIHAyLCBvdXRwdXRfcGRmID0gImNvbWJpbmVkX3NpZGVfYnlfc2lkZS5wZGYiLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHdpZHRoID0gMTQwMCwgaGVpZ2h0ID0gMTAwMCwgc2NhbGUgPSAyLCByZXNvbHV0aW9uID0gMzAwLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3BhY2luZyA9IDUwKSB7CiAgcHlfY29uZmlnKCkgIyBDaGVjayBQeXRob24gY29uZmlndXJhdGlvbgogICMgVGVtcG9yYXJ5IFBORyBwYXRocwogIHRtcDEgPC0gdGVtcGZpbGUoZmlsZWV4dCA9ICIucG5nIikKICB0bXAyIDwtIHRlbXBmaWxlKGZpbGVleHQgPSAiLnBuZyIpCiAgCiAgIyBTYXZlIHRoZSBwbG90bHkgcGxvdHMgYXMgUE5HcwogIHBsb3RseTo6c2F2ZV9pbWFnZShwMSwgdG1wMSwgd2lkdGggPSB3aWR0aCwgaGVpZ2h0ID0gaGVpZ2h0LCBzY2FsZSA9IHNjYWxlKQogIHBsb3RseTo6c2F2ZV9pbWFnZShwMiwgdG1wMiwgd2lkdGggPSB3aWR0aCwgaGVpZ2h0ID0gaGVpZ2h0LCBzY2FsZSA9IHNjYWxlKQogIAogICMgUHl0aG9uIGNvZGUgdG8gY29tYmluZSBQTkdzIHNpZGUgYnkgc2lkZQogIHB5X3J1bl9zdHJpbmcoc3ByaW50ZigiCmZyb20gUElMIGltcG9ydCBJbWFnZQoKaW1nMSA9IEltYWdlLm9wZW4ociclcycpCmltZzIgPSBJbWFnZS5vcGVuKHInJXMnKQoKIyBDb21wdXRlIGRpbWVuc2lvbnMKY29tYmluZWRfd2lkdGggPSBpbWcxLndpZHRoICsgaW1nMi53aWR0aCArICVkCmNvbWJpbmVkX2hlaWdodCA9IG1heChpbWcxLmhlaWdodCwgaW1nMi5oZWlnaHQpCgpjb21iaW5lZCA9IEltYWdlLm5ldygnUkdCJywgKGNvbWJpbmVkX3dpZHRoLCBjb21iaW5lZF9oZWlnaHQpLCAoMjU1LCAyNTUsIDI1NSkpCmNvbWJpbmVkLnBhc3RlKGltZzEsICgwLCAwKSkKY29tYmluZWQucGFzdGUoaW1nMiwgKGltZzEud2lkdGggKyAlZCwgMCkpCgojIFNhdmUgYXMgUERGCmNvbWJpbmVkLnNhdmUociclcycsICdQREYnLCByZXNvbHV0aW9uPSVkKQoiLCB0bXAxLCB0bXAyLCBzcGFjaW5nLCBzcGFjaW5nLCBvdXRwdXRfcGRmLCByZXNvbHV0aW9uKSkKICAKICAjIFJlbW92ZSB0ZW1wb3JhcnkgUE5HcwogIGZpbGUucmVtb3ZlKHRtcDEsIHRtcDIpCiAgCiAgbWVzc2FnZSgiQ29tYmluZWQgUERGIHNhdmVkIHRvOiAiLCBvdXRwdXRfcGRmKQp9CgoKIyAjIENyZWF0ZSBleGFtcGxlIDNEIHBsb3RseSBwbG90cwojIHAxIDwtIHBsb3RfbHkoeiA9IH52b2xjYW5vLCB0eXBlID0gInN1cmZhY2UiKSAlPiUgbGF5b3V0KHRpdGxlID0gIlBsb3QgMSIpCiMgcDIgPC0gcGxvdF9seSh6ID0gfnZvbGNhbm8gKyAxMCwgdHlwZSA9ICJzdXJmYWNlIikgJT4lIGxheW91dCh0aXRsZSA9ICJQbG90IDIiKQojIAojICMgQ29tYmluZSBpbnRvIG9uZSBQREYKIyBjb21iaW5lX3Bsb3RseV9wZGYocDEsIHAyLCBvdXRwdXRfcGRmID0gIm15X3Bsb3RzLnBkZiIpCmBgYAoKYGBge3J9CmxpYnJhcnkocGxvdGx5KQpsaWJyYXJ5KHJldGljdWxhdGUpCgpjb21iaW5lX3Bsb3RseV9wZGZfc2luZ2xlIDwtIGZ1bmN0aW9uKHAsIG91dHB1dF9wZGYgPSAic2luZ2xlX3Bsb3QucGRmIiwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgd2lkdGggPSAxNDAwLCBoZWlnaHQgPSAxMDAwLCBzY2FsZSA9IDIsIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc29sdXRpb24gPSAzMDApIHsKICBweV9jb25maWcoKSAgIyBDaGVjayBQeXRob24gY29uZmlndXJhdGlvbgogIAogICMgVGVtcG9yYXJ5IFBORyBwYXRoCiAgdG1wX3BuZyA8LSB0ZW1wZmlsZShmaWxlZXh0ID0gIi5wbmciKQogIAogICMgU2F2ZSB0aGUgUGxvdGx5IHBsb3QgYXMgUE5HCiAgcGxvdGx5OjpzYXZlX2ltYWdlKHAsIHRtcF9wbmcsIHdpZHRoID0gd2lkdGgsIGhlaWdodCA9IGhlaWdodCwgc2NhbGUgPSBzY2FsZSkKICAKICAjIFB5dGhvbiBjb2RlOiBvcGVuIFBORywgY29udmVydCB0byBSR0IsIHNhdmUgYXMgUERGCiAgcHlfcnVuX3N0cmluZyhzcHJpbnRmKCIKZnJvbSBQSUwgaW1wb3J0IEltYWdlCgppbWcgPSBJbWFnZS5vcGVuKHInJXMnKQppbWdfcmdiID0gaW1nLmNvbnZlcnQoJ1JHQicpCmltZ19yZ2Iuc2F2ZShyJyVzJywgJ1BERicsIHJlc29sdXRpb249JWQpCiIsIHRtcF9wbmcsIG91dHB1dF9wZGYsIHJlc29sdXRpb24pKQogIAogICMgQ2xlYW4gdXAgdGVtcG9yYXJ5IFBORwogIGZpbGUucmVtb3ZlKHRtcF9wbmcpCiAgCiAgbWVzc2FnZSgiUERGIHNhdmVkIHRvOiAiLCBub3JtYWxpemVQYXRoKG91dHB1dF9wZGYpKQp9CiMgY29tYmluZV9wbG90bHlfcGRmX3NpbmdsZShwMywgb3V0cHV0X3BkZiA9ICJzaW5nbGVfcGxvdC5wZGYiKQojICMgRXhhbXBsZSBwbG90CiMgcDEgPC0gcGxvdF9seSh6ID0gfnZvbGNhbm8sIHR5cGUgPSAic3VyZmFjZSIpICU+JSBsYXlvdXQodGl0bGUgPSAiU2luZ2xlIFBsb3QiKQojIAojICMgU2F2ZSBhcyBQREYKIyBjb21iaW5lX3Bsb3RseV9wZGZfc2luZ2xlKHAxLCBvdXRwdXRfcGRmID0gInNpbmdsZV9wbG90LnBkZiIpCmBgYAoKCiMgUmVmZXJlbmNlcwoKYGBge3IsIHB1cmwgPSBGQUxTRX0KZ3JhdGVmdWw6OmNpdGVfcGFja2FnZXMob3V0cHV0ID0gInBhcmFncmFwaCIsIG91dC5kaXIgPSAiLiIpCmBgYAoKCg==</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("functionality1.Rmd");
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

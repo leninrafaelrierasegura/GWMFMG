@@ -1,0 +1,39 @@
+---
+title: "Contents of This Website"
+---
+
+1. PeMS Data
+
+    - [PeMS 1](pems1.html)
+    - [PeMS 2](pems2.html)
+
+2. Model Properties
+
+    - [Model Properties 1](model_prop1.html)
+    - [Model Properties 2](model_prop2.html)
+    - [Model Properties 3](model_prop3.html)
+    - [Model Properties 4](model_prop4.html)
+
+3. Basis Functions
+
+    - [Basis Functions](graphs1.html)
+
+4. Approximation
+
+    - [Approximation](approximation.html)
+
+5. Numerical Error
+
+    - [Numerical Error](num_error.html)
+
+6. Convergence Rates
+
+    - [Convergence Rates](conv_rates.html)
+    
+7. Simulation study
+
+    - [Simulation Study](sim_study.html)
+    
+8. Additional Illustrations
+
+    - [Additional Illustrations](mplots.html)

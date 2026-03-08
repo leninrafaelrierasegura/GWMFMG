@@ -1,0 +1,738 @@
+---
+title: "Convergence Rates"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    # df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+Go back to the [About page](about.html).
+
+Let us set some global options for all code chunks in this document.
+
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(593) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+# Import libraries
+
+```{r, eval = TRUE}
+library(INLA)
+library(inlabru)
+library(rSPDE)
+library(MetricGraph)
+library(Matrix)
+
+library(dplyr)
+library(plotly)
+library(scales)
+library(patchwork)
+library(tidyr)
+library(ggplot2)
+library(reshape2)
+library(sf)
+
+library(here)
+library(rmarkdown)
+library(knitr)
+library(grateful) # Cite all loaded packages
+
+library(latex2exp)
+library(plotrix)
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+# Interval graph
+
+
+```{r, eval = FALSE}
+# Matern covariance function
+matern.covariance <- function(h, kappa, nu, sigma) {
+  if (nu == 1 / 2) {
+    C <- sigma^2 * exp(-kappa * abs(h))
+  } else {
+    C <- (sigma^2 / (2^(nu - 1) * gamma(nu))) *
+      ((kappa * abs(h))^nu) * besselK(kappa * abs(h), nu)
+  }
+  C[h == 0] <- sigma^2
+  return(as.matrix(C))
+}
+
+# Folded.matern.covariance.1d
+folded.matern.covariance.1d.local <- function(x, kappa, nu, sigma,
+                                              L = 1, N = 10,
+                                              boundary = c("neumann",
+                                                           "dirichlet", "periodic")) {
+  boundary <- tolower(boundary[1])
+  if (!(boundary %in% c("neumann", "dirichlet", "periodic"))) {
+    stop("The possible boundary conditions are 'neumann',
+    'dirichlet' or 'periodic'!")
+  }
+  addi <- t(outer(x, x, "+"))
+  diff <- t(outer(x, x, "-"))
+  s1 <- sapply(-N:N, function(j) { 
+    diff + 2 * j * L
+  })
+  s2 <- sapply(-N:N, function(j) {
+    addi + 2 * j * L
+  })
+  if (boundary == "neumann") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) +
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else if (boundary == "dirichlet") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) -
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else {
+    C <- rowSums(matern.covariance(h = s1,
+                                   kappa = kappa, nu = nu, sigma = sigma))
+  }
+  return(matrix(C, nrow = length(x)))
+}
+
+# Function to get the true covariance matrix
+gets_true_cov_mat = function(graph, kappa, nu, sigma, N, boundary){
+  h <- graph$mesh$V[,1]
+  true_cov_mat <- folded.matern.covariance.1d.local(x = h, kappa = kappa, nu = nu, sigma = sigma, N = N, boundary = boundary)
+  return(true_cov_mat)
+}
+
+# Define the graph
+edge <- rbind(c(0,0),c(1,0))
+edges <- list(edge)
+graph <- metric_graph$new(edges = edges)
+
+# parameters
+h.ok <- 2^-10
+type <- "covariance"
+type_rational_approximation = "brasil"
+rho <- 0.5
+#m = 4
+sigma <- 1
+N.folded <- 10
+boundary <- "neumann" # do not change this
+
+# Mesh sizes
+h_aux <- seq(5.5, 4.5, by = -1/4)
+h_vector <- 2^-h_aux
+h_label <- paste0("2^-", h_aux, "")
+h_label_latex <- sprintf("$2^{-%f}$", h_aux)
+
+# Alpha values
+alpha_aux <- c(6, 7, 8, 9, 12)
+alpha_vector <- alpha_aux/8
+alpha_label <- paste0(alpha_aux, "/8")
+theoretical_rate <- pmin(2*alpha_vector-1/2,2)
+
+graph.ok <- graph$clone()
+# Build graph with overkill mesh
+graph.ok$build_mesh(h = h.ok)
+graph.ok$compute_fem()
+
+# Get the overkill mesh locations
+loc.ok <- graph.ok$mesh$VtE # or graph.ok$get_mesh_locations()
+
+# Initialize the list of graphs and the list of projection matrices
+graphs <- list()
+A <- list()
+for(i in 1:length(h_vector)){
+  graphs[[i]] <- graph$clone()
+  graphs[[i]]$build_mesh(h = h_vector[i])
+  A[[i]] <- graphs[[i]]$fem_basis(loc.ok)
+}
+
+cov.error.interval <- matrix(NA, nrow = length(h_vector), ncol = length(alpha_vector))
+
+m_values <- c()
+for (j in 1:length(alpha_vector)) {
+  alpha <- alpha_vector[j]
+  fract_alpha <- alpha - floor(alpha)
+  nu <- alpha - 0.5
+  kappa <- sqrt(8*nu)/rho
+  tau <- sqrt(gamma(nu) / (sigma^2 * kappa^(2*nu) * (4*pi)^(1/2) * gamma(nu + 1/2)))  #sigma = 1, d = 1
+  
+  Sigma.true.interval <- gets_true_cov_mat(graph = graph.ok, 
+                               kappa = kappa,
+                               nu = nu,
+                               sigma = sigma,
+                               N = N.folded,
+                               boundary = boundary)
+  
+  for (i in 1:length(h_vector)) {
+    h <- h_vector[i]
+    m <- min(20, 5*ceiling((min(2*alpha - 1/2,2) + 1/2)^2*log(h)^2/(4*pi^2*fract_alpha)))
+    m_values <- c(m_values, m)
+    
+    Sigma <- matern.operators(alpha = alpha,  
+                             kappa = kappa, 
+                             tau = tau,
+                             m = m, 
+                             graph = graphs[[i]],
+                             type = type,
+                             type_rational_approximation = type_rational_approximation) |> covariance_mesh()
+    
+    Sigma.approx.interval <- A[[i]]%*%Sigma%*%t(A[[i]])
+    
+    cov.error.interval[i,j] <- sqrt(as.double(t(graph.ok$mesh$weights)%*%(Sigma.true.interval - Sigma.approx.interval)^2%*%graph.ok$mesh$weights))
+  }
+}
+
+print(m_values)
+
+slope_interval <- numeric(length(alpha_vector))
+
+for (u in 1:length(alpha_vector)) {
+  slope_interval[u] <- coef(lm(log(cov.error.interval[,u]) ~ log(h_vector)))[2]
+}
+
+
+loglog_line_equation <- function(x1, y1, slope) {
+  b <- log10(y1 / (x1 ^ slope))
+  
+  function(x) {
+    (x ^ slope) * (10 ^ b)
+  }
+}
+
+guiding_lines <- matrix(NA, nrow = length(h_vector), ncol = length(alpha_vector))
+for (j in 1:length(alpha_vector)) {
+  guiding_lines_aux <- matrix(NA, nrow = length(h_vector), ncol = length(h_vector))
+  for(k in 1:length(h_vector)){
+    point_x1 <- h_vector[k]
+    point_y1 <- cov.error.interval[k, j]
+    slope <- theoretical_rate[j]
+    line <- loglog_line_equation(x1 = point_x1, y1 = point_y1, slope = slope)
+    guiding_lines_aux[,k] <- line(h_vector)
+  }
+  guiding_lines[,j] <- apply(guiding_lines_aux, 1, mean)
+}
+guiding_lines1 <- guiding_lines
+
+
+df <- as.data.frame(cbind(h_vector, cov.error.interval))
+colnames(df) <- c("h_vector", alpha_vector)
+df_melted <- melt(df, id.vars = "h_vector", variable.name = "column", value.name = "value")
+df_melted1 <- df_melted
+
+save(alpha_vector, h_vector, theoretical_rate, slope_interval, df_melted1, guiding_lines1, file = here::here("data_files/conv_rates_interval.RData"))
+```
+
+
+# Circle graph
+
+
+```{r, eval = FALSE}
+# Matern covariance function
+matern.covariance <- function(h, kappa, nu, sigma) {
+  if (nu == 1 / 2) {
+    C <- sigma^2 * exp(-kappa * abs(h))
+  } else {
+    C <- (sigma^2 / (2^(nu - 1) * gamma(nu))) *
+      ((kappa * abs(h))^nu) * besselK(kappa * abs(h), nu)
+  }
+  C[h == 0] <- sigma^2
+  return(as.matrix(C))
+}
+
+# Folded.matern.covariance.1d
+folded.matern.covariance.1d.local <- function(x, kappa, nu, sigma, L = 1, N = 10, boundary = c("neumann",
+                                                                                               "dirichlet", "periodic")) {
+  boundary <- tolower(boundary[1])
+  if (!(boundary %in% c("neumann", "dirichlet", "periodic"))) {
+    stop("The possible boundary conditions are 'neumann',
+    'dirichlet' or 'periodic'!")
+  }
+  addi = t(outer(x, x, "+"))
+  diff = t(outer(x, x, "-"))
+  s1 <- sapply(-N:N, function(j) { # s1 is a matrix of size length(h)x(2N+1)
+    diff + 2 * j * L
+  })
+  s2 <- sapply(-N:N, function(j) {
+    addi + 2 * j * L
+  })
+  if (boundary == "neumann") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) +
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else if (boundary == "dirichlet") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) -
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else {
+    C <- rowSums(matern.covariance(h = s1,
+                                   kappa = kappa, nu = nu, sigma = sigma))
+  }
+  return(matrix(C, nrow = length(x)))
+}
+
+# Function to get the true covariance matrix
+gets_true_cov_mat = function(graph, kappa, nu, sigma, N, boundary){
+  h = c(0,graph$get_edge_lengths()[1]*graph$mesh$PtE[,2])
+  true_cov_mat = folded.matern.covariance.1d.local(x = h, kappa = kappa, nu = nu, sigma = sigma, N = N, boundary = boundary)
+  return(true_cov_mat)
+}
+
+# Define the graph
+r <- 1/(pi)
+theta <- seq(from = -pi, to = pi, length.out = 100)
+edge <- cbind(1+r+r*cos(theta), r*sin(theta))
+edges <- list(edge)
+graph <- metric_graph$new(edges = edges)
+
+# parameters
+h.ok <- 2^-10
+type <- "covariance"
+type_rational_approximation = "brasil"
+rho <- 0.5
+#m = 4
+sigma <- 1
+N.folded <- 10
+boundary <- "periodic" # Do not change this
+
+# Mesh sizes
+h_aux <- seq(5.5, 4.5, by = -1/4)
+h_vector <- 2^-h_aux
+h_label <- paste0("2^-", h_aux, "")
+h_label_latex <- sprintf("$2^{-%f}$", h_aux)
+
+# Beta values
+alpha_aux <- c(6, 7, 8, 9, 12)
+alpha_vector <- alpha_aux/8
+alpha_label <- paste0(alpha_aux, "/8")
+theoretical_rate <- pmin(2*alpha_vector-1/2,2)
+
+graph.ok <- graph$clone()
+# Build graph with overkill mesh
+graph.ok$build_mesh(h = h.ok)
+graph.ok$compute_fem()
+
+# Get the overkill mesh locations
+loc.ok <- graph.ok$mesh$VtE # or graph.ok$get_mesh_locations()
+
+# Initialize the list of graphs and the list of projection matrices
+graphs <- list()
+A <- list()
+for(i in 1:length(h_vector)){
+  graphs[[i]] <- graph$clone()
+  graphs[[i]]$build_mesh(h = h_vector[i])
+  A[[i]] <- graphs[[i]]$fem_basis(loc.ok)
+}
+
+cov.error.circle <- matrix(NA, nrow = length(h_vector), ncol = length(alpha_vector))
+
+m_values <- c()
+for (j in 1:length(alpha_vector)) {
+  alpha <- alpha_vector[j]
+  fract_alpha <- alpha - floor(alpha)
+  nu <- alpha - 0.5
+  kappa <- sqrt(8*nu)/rho
+  tau <- sqrt(gamma(nu) / (sigma^2 * kappa^(2*nu) * (4*pi)^(1/2) * gamma(nu + 1/2)))  #sigma = 1, d = 1
+
+  Sigma.true.circle <- gets_true_cov_mat(graph = graph.ok, 
+                               kappa = kappa,
+                               nu = nu,
+                               sigma = sigma,
+                               N = N.folded,
+                               boundary = boundary)
+
+  for (i in 1:length(h_vector)) {
+    h <- h_vector[i]
+    m <- min(20, 5*ceiling((min(2*alpha - 1/2,2) + 1/2)^2*log(h)^2/(4*pi^2*fract_alpha)))
+    m_values <- c(m_values, m)
+
+    Sigma <- matern.operators(alpha = alpha,  
+                             kappa = kappa,
+                             tau = tau,
+                             m = m,
+                             graph = graphs[[i]],
+                             type = type,
+                             type_rational_approximation = type_rational_approximation) |> covariance_mesh()
+
+    Sigma.approx.circle <- A[[i]]%*%Sigma%*%t(A[[i]])
+
+    cov.error.circle[i,j] <- sqrt(as.double(t(graph.ok$mesh$weights)%*%(Sigma.true.circle - Sigma.approx.circle)^2%*%graph.ok$mesh$weights))
+  }
+}
+
+
+print(m_values)
+
+slope_circle <- numeric(length(alpha_vector))
+
+for (u in 1:length(alpha_vector)) {
+  slope_circle[u] <- coef(lm(log(cov.error.circle[,u]) ~ log(h_vector)))[2]
+}
+
+
+loglog_line_equation <- function(x1, y1, slope) {
+  b <- log10(y1 / (x1 ^ slope))
+
+  function(x) {
+    (x ^ slope) * (10 ^ b)
+  }
+}
+
+guiding_lines <- matrix(NA, nrow = length(h_vector), ncol = length(alpha_vector))
+for (j in 1:length(alpha_vector)) {
+  guiding_lines_aux <- matrix(NA, nrow = length(h_vector), ncol = length(h_vector))
+  for(k in 1:length(h_vector)){
+    point_x1 <- h_vector[k]
+    point_y1 <- cov.error.circle[k, j]
+    slope <- theoretical_rate[j]
+    line <- loglog_line_equation(x1 = point_x1, y1 = point_y1, slope = slope)
+    guiding_lines_aux[,k] <- line(h_vector)
+  }
+  guiding_lines[,j] <- apply(guiding_lines_aux, 1, mean)
+}
+guiding_lines2 <- guiding_lines
+
+
+df <- as.data.frame(cbind(h_vector, cov.error.circle))
+colnames(df) <- c("h_vector", alpha_vector)
+df_melted <- melt(df, id.vars = "h_vector", variable.name = "column", value.name = "value")
+df_melted2 <- df_melted
+
+save(slope_circle, df_melted2, guiding_lines2, file = here::here("data_files/conv_rates_circle.RData"))
+```
+
+# Tadpole graph
+
+```{r, eval = FALSE}
+# Eigenfunctions for the tadpole graph
+tadpole.eig <- function(k,graph){
+  x1 <- c(0,graph$get_edge_lengths()[1]*graph$mesh$PtE[graph$mesh$PtE[,1]==1,2]) 
+  x2 <- c(0,graph$get_edge_lengths()[2]*graph$mesh$PtE[graph$mesh$PtE[,1]==2,2]) 
+  
+  if(k==0){ 
+    f.e1 <- rep(1,length(x1)) 
+    f.e2 <- rep(1,length(x2)) 
+    f1 = c(f.e1[1],f.e2[1],f.e1[-1], f.e2[-1]) 
+    f = list(phi=f1/sqrt(3)) 
+    
+  } else {
+    f.e1 <- -2*sin(pi*k*1/2)*cos(pi*k*x1/2) 
+    f.e2 <- sin(pi*k*x2/2)                  
+    
+    f1 = c(f.e1[1],f.e2[1],f.e1[-1], f.e2[-1]) 
+    
+    if((k %% 2)==1){ 
+      f = list(phi=f1/sqrt(3)) 
+    } else { 
+      f.e1 <- (-1)^{k/2}*cos(pi*k*x1/2)
+      f.e2 <- cos(pi*k*x2/2)
+      f2 = c(f.e1[1],f.e2[1],f.e1[-1],f.e2[-1]) 
+      f <- list(phi=f1,psi=f2/sqrt(3/2))
+    }
+  }
+  
+  return(f)
+}
+
+
+# Function to compute the true covariance matrix
+gets_true_cov_mat <- function(graph, kappa, tau, alpha, n.overkill){
+  Sigma.kl <- matrix(0,nrow = dim(graph$mesh$V)[1],ncol = dim(graph$mesh$V)[1])
+  for(i in 0:n.overkill){
+    phi <- tadpole.eig(i,graph)$phi
+    Sigma.kl <- Sigma.kl + (1/(kappa^2 + (i*pi/2)^2)^(alpha))*phi%*%t(phi)
+    if(i>0 && (i %% 2)==0){ 
+      psi <- tadpole.eig(i,graph)$psi
+      Sigma.kl <- Sigma.kl + (1/(kappa^2 + (i*pi/2)^2)^(alpha))*psi%*%t(psi)
+    }
+    
+  }
+  Sigma.kl <- Sigma.kl/tau^2
+  return(Sigma.kl)
+}
+
+# Define the graph
+edge1 <- rbind(c(0,0), c(1,0))
+theta <- seq(from = -pi, to = pi,length.out = 100)
+edge2 <- cbind(1+1/pi+cos(theta)/pi, sin(theta)/pi)
+edges <- list(edge1, edge2)
+graph <- metric_graph$new(edges = edges)
+
+# parameters
+h.ok <- 2^-10
+type <- "covariance"
+type_rational_approximation = "brasil"
+rho <- 0.5
+#m = 4
+sigma <- 1
+n.overkill = 1000
+
+# Mesh sizes
+h_aux <- seq(5.5, 4.5, by = -1/4)
+h_vector <- 2^-h_aux
+h_label <- paste0("2^-", h_aux, "")
+h_label_latex <- sprintf("$2^{-%f}$", h_aux)
+
+# Beta values
+alpha_aux <- c(6, 7, 8, 9, 12)
+alpha_vector <- alpha_aux/8
+alpha_label <- paste0(alpha_aux, "/8")
+theoretical_rate <- pmin(2*alpha_vector-1/2,2)
+
+graph.ok <- graph$clone()
+# Build graph with overkill mesh
+graph.ok$build_mesh(h = h.ok)
+graph.ok$compute_fem()
+
+# Get the overkill mesh locations
+loc.ok <- graph.ok$mesh$VtE # or graph.ok$get_mesh_locations()
+
+# Initialize the list of graphs and the list of projection matrices
+graphs <- list()
+A <- list()
+for(i in 1:length(h_vector)){
+  graphs[[i]] <- graph$clone()
+  graphs[[i]]$build_mesh(h = h_vector[i])
+  A[[i]] <- graphs[[i]]$fem_basis(loc.ok)
+}
+
+cov.error.tadpole <- matrix(NA, nrow = length(h_vector), ncol = length(alpha_vector))
+
+m_values <- c()
+for (j in 1:length(alpha_vector)) {
+  alpha <- alpha_vector[j]
+  fract_alpha <- alpha - floor(alpha)
+  nu <- alpha - 0.5
+  kappa <- sqrt(8*nu)/rho
+  tau <- sqrt(gamma(nu) / (sigma^2 * kappa^(2*nu) * (4*pi)^(1/2) * gamma(nu + 1/2)))  #sigma = 1, d = 1
+
+  Sigma.true.tadpole <- gets_true_cov_mat(graph = graph.ok,
+                               kappa = kappa,
+                               tau = tau,
+                               alpha = alpha,
+                               n.overkill = n.overkill)
+
+  for (i in 1:length(h_vector)) {
+    h <- h_vector[i]
+    m <- min(20, 5*ceiling((min(2*alpha - 1/2,2) + 1/2)^2*log(h)^2/(4*pi^2*fract_alpha)))
+    m_values <- c(m_values, m)
+
+    Sigma <- matern.operators(alpha = alpha,
+                             kappa = kappa,
+                             tau = tau,
+                             m = m,
+                             graph = graphs[[i]],
+                             type = type,
+                             type_rational_approximation = type_rational_approximation) |> covariance_mesh()
+
+    Sigma.approx.tadpole <- A[[i]]%*%Sigma%*%t(A[[i]])
+
+    cov.error.tadpole[i,j] <- sqrt(as.double(t(graph.ok$mesh$weights)%*%(Sigma.true.tadpole - Sigma.approx.tadpole)^2%*%graph.ok$mesh$weights))
+  }
+}
+
+print(m_values)
+
+slope_tadpole <- numeric(length(alpha_vector))
+
+for (u in 1:length(alpha_vector)) {
+  slope_tadpole[u] <- round(coef(lm(log(cov.error.tadpole[,u]) ~ log(h_vector)))[2], 7)
+}
+
+
+loglog_line_equation <- function(x1, y1, slope) {
+  b <- log10(y1 / (x1 ^ slope))
+
+  function(x) {
+    (x ^ slope) * (10 ^ b)
+  }
+}
+
+guiding_lines <- matrix(NA, nrow = length(h_vector), ncol = length(alpha_vector))
+for (j in 1:length(alpha_vector)) {
+  guiding_lines_aux <- matrix(NA, nrow = length(h_vector), ncol = length(h_vector))
+  for(k in 1:length(h_vector)){
+    point_x1 <- h_vector[k]
+    point_y1 <- cov.error.tadpole[k, j]
+    slope <- theoretical_rate[j]
+    line <- loglog_line_equation(x1 = point_x1, y1 = point_y1, slope = slope)
+    guiding_lines_aux[,k] <- line(h_vector)
+  }
+  guiding_lines[,j] <- apply(guiding_lines_aux, 1, mean)
+}
+guiding_lines3 <- guiding_lines
+
+
+
+df <- as.data.frame(cbind(h_vector, cov.error.tadpole))
+colnames(df) <- c("h_vector", alpha_vector)
+df_melted <- melt(df, id.vars = "h_vector", variable.name = "column", value.name = "value")
+df_melted3 <- df_melted
+
+save(slope_tadpole, df_melted3, guiding_lines3, file = here::here("data_files/conv_rates_tadpole.RData"))
+```
+
+
+
+# Alltogether
+
+```{r}
+load(here::here("data_files/conv_rates_interval.RData"))
+load(here::here("data_files/conv_rates_circle.RData"))
+load(here::here("data_files/conv_rates_tadpole.RData"))
+
+transposed_df <- data.frame(t(data.frame(alpha = alpha_vector, 
+                                         theoretical_rate = theoretical_rate, 
+                                         slope_interval = slope_interval,
+                                         slope_circle = slope_circle,
+                                         slope_tadpole = slope_tadpole)))
+rownames(transposed_df) <- c("alpha", "Theoretical rates", "Interval graph", "Circle graph", "Tadpole graph")
+colnames(transposed_df) <- NULL
+
+save(transposed_df, file = here::here("data_files/conv_rates_transposed_df.RData"))
+```
+
+
+```{r, eval = TRUE}
+load(here::here("data_files/conv_rates_transposed_df.RData"))
+# Display the transposed data frame
+transposed_df |> paged_table()
+```
+
+
+
+```{r}
+ff_data <- rbind(mutate(df_melted1, graph = "Intervalgraph"),
+                 mutate(df_melted2, graph = "Circlegraph"),
+                 mutate(df_melted3, graph = "Tadpolegraph"))
+
+ff_data$graph <- factor(ff_data$graph, levels = c("Intervalgraph", "Circlegraph", "Tadpolegraph"))
+
+glines <- c(as.vector(guiding_lines1), as.vector(guiding_lines2), as.vector(guiding_lines3))
+gg_data <- ff_data %>% 
+  mutate(value = glines)
+
+graph_labels <- c("Intervalgraph" = "Interval graph", 
+                  "Circlegraph" = "Circle graph", 
+                  "Tadpolegraph" = "Tadpole graph")
+
+conv_rates_p <- ggplot() + 
+  geom_line(data = ff_data, aes(h_vector, value, colour = as.factor(column)), linewidth = 1.6) +
+  geom_line(data = gg_data, aes(h_vector, value, colour = as.factor(column)), linetype = "dashed", linewidth = 0.6) +
+  geom_point(data = ff_data, aes(h_vector, value, colour = as.factor(column)), size = 2) +
+  facet_grid(~ graph, labeller = as_labeller(graph_labels)) +
+  scale_y_log10() +
+  scale_x_log10(breaks = h_vector, labels = round(h_vector, 3)) +
+  theme_bw() +
+  theme(panel.spacing = unit(0.4, "cm"), 
+        text = element_text(family = "Palatino"),
+        strip.text = element_text(size = 16),        # Panel titles
+        axis.title = element_text(size = 14),        # Axis titles
+        axis.text = element_text(size = 12),         # Axis text
+        legend.title = element_text(size = 14),      # Legend title
+        legend.text = element_text(size = 12)) +
+  labs(x = "$h$", y = "Covariance Error", color = "$\\alpha$") 
+
+myggsave(conv_rates_p, width = 12, height = 4)
+```
+
+```{r, eval = TRUE, out.width="1200px", out.height="400px", fig.cap = captioner("Observed covariance error for different values of $\\alpha$ as functions of the mesh size $h$.")}
+knitr::include_graphics(here::here("data_files/tikzpic/conv_rates_p.pdf"))
+```
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+

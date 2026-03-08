@@ -1,0 +1,745 @@
+---
+title: "Simplest graphs and more"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(1982) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+
+```
+
+```{r, eval = TRUE}
+library(MetricGraph)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(viridis)
+library(plotly)
+library(patchwork)
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+
+library(reticulate)
+py_config()
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+
+<div style="color: blue;">
+********
+**Press the Show button below to reveal the code.**
+
+********
+</div>
+
+# Part 1
+
+## Interval graph
+
+Below we plot the interval graph $\Gamma_I = (\mathcal{V}, \mathcal{E})$ with $\mathcal{V} = \{v_1, v_2\}$ and $\mathcal{E} = \{e_1\}$, where $e_1$ is the edge connecting $v_1$ and $v_2$. 
+
+```{r}
+n <- 3#333
+graph <- gets.graph.interval(n = n)
+
+notes_int <- list(annotations = list(
+             list(
+               x = 0, y = 0, z = 0,
+               text = TeX("v_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 1, z = 0,
+               text = TeX("v_2"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 0.5, z = 0,
+               text = TeX("e_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)")))
+
+layout_int <- list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+  camera = list(eye = list(x = 2.3, 
+                                       y = 2.3, 
+                                       z = 2.3),
+                            center = list(x = 0, 
+                                          y = 0, 
+                                          z = 0)))
+
+p11 <- graph$plot_function(rep(0,nrow(graph$mesh$V)), 
+                           vertex_size = gsw,
+                           type = "plotly", 
+                           line_width = gsw, 
+                           edge_width = gsw, 
+                           line_color = "black")|>
+  config(mathjax = 'cdn') |>
+  layout(font = list(family = "Palatino"),
+         scene =  c(notes_int, layout_int),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+save(p11, file = here::here("data_files/interval_graph.Rdata"))
+```
+
+## Circle graph
+
+Below we plot the circle graph $\Gamma_C = (\mathcal{V}, \mathcal{E})$ with $\mathcal{V} = \{v_1\}$ and $\mathcal{E} = \{e_1\}$, where $e_1$ is the edge connecting $v_1$ to itself.
+
+```{r}
+n <- 6#666
+graph <- gets.graph.circle(n = n)
+
+notes_cir <- list(annotations = list(
+             list(
+               x = 0, y = 1, z = 0,
+               text = TeX("v_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 1 + 2/pi, z = 0,
+               text = TeX("e_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)")))
+  
+  
+p22 <- graph$plot_function(rep(0,nrow(graph$mesh$V)), 
+                           vertex_size = gsw,
+                           type = "plotly", 
+                           line_width = gsw, 
+                           edge_width = gsw, 
+                           line_color = "black") %>% 
+  config(mathjax = 'cdn') %>% 
+  layout(font = list(family = "Palatino"),
+         scene =  c(notes_cir, layout_int),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+save(p22, file = here::here("data_files/circle_graph.Rdata"))
+```
+
+## Tadpole graph
+
+Below we plot the tadpole graph $\Gamma_T = (\mathcal{V}, \mathcal{E})$ with $\mathcal{V} = \{v_1, v_2\}$ and $\mathcal{E} = \{e_1, e_2\}$, where $e_1$ is the edge connecting $v_1$ and $v_2$, and $e_2$ is the edge connecting $v_2$ to itself.
+
+```{r}
+
+graph <- gets.graph.tadpole(h = 1/4)
+
+notes_tad_1 <- list(annotations = list(
+             list(
+               x = 0, y = 0, z = 0,
+               text = TeX("v_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 1, z = 0,
+               text = TeX("v_2"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 0.5, z = 0,
+               text = TeX("e_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 0, y = 1+2/pi, z = 0,
+               text = TeX("e_2"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)")))
+
+p33 <- graph$plot_function(rep(0,nrow(graph$mesh$V)), 
+                           vertex_size = gsw,
+                           type = "plotly", 
+                           line_width = gsw, 
+                           edge_width = gsw, 
+                           line_color = "black") |>
+  config(mathjax = 'cdn') |>
+  layout(font = list(family = "Palatino"),
+         scene =  c(notes_tad_1, layout_int),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+save(p33, file = here::here("data_files/tadpole_graph.Rdata"))
+```
+
+# Part 2
+
+## Functions on a graph and geodesic distance illustration
+
+Below we plot the function $f = \gamma\big|_\Gamma$ where $\gamma(x,y) = e^{-x^2-y^2}$, together with a path on the graph that illustrates the geodesic distance between points $s_1$ and $s_2$. 
+
+```{r}
+graph_to_get_loc <- gets.graph.tadpole(h = 1/40)
+loc <- graph_to_get_loc$get_mesh_locations()
+
+A <- as.matrix(graph$fem_basis(loc))
+A <- apply(A, 2, function(x) plotting.order(x, graph_to_get_loc))
+A <- rbind(A, rep(NA, ncol(A))) # Add a row of NAs for the plotting
+
+x_g <- graph_to_get_loc$mesh$V[, 1]
+y_g <- graph_to_get_loc$mesh$V[, 2]
+f_g <- exp(-x_g^2 - y_g^2)
+
+
+x <- c(plotting.order(x_g, graph_to_get_loc), NA)
+y <- c(plotting.order(y_g, graph_to_get_loc), NA)
+f <- c(plotting.order(f_g, graph_to_get_loc), NA)
+
+
+x_range <- range(x, na.rm = TRUE)*1.001
+y_range <- range(y, na.rm = TRUE)*1.001
+z_range <- c(0,1)
+```
+
+```{r}
+notes1 <- list(annotations = list(
+                   list(
+                     x = 0, y = 0, z = 0,
+                     text = TeX("v_1"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 1, y = 0, z = 0,
+                     text = TeX("v_2"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 0.5, y = 0, z = 0,
+                     text = TeX("e_1"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     x = 1+2/pi, y = 0, z = 0,
+                     text = TeX("e_2"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     x = 0.25, y = 0, z = 0,
+                     text = TeX("s_1"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 1+1/pi, y = 1/pi, z = 0,
+                     text = TeX("s_2"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 0.25, y = 0, z = 1,
+                     text = TeX("f=\\gamma\\big|_\\Gamma"),
+                     textangle = 0, ax = -40, ay = 0,
+                     font = list(color = "rgb(0,0,200)", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)")))
+    
+# to plot the path 
+theta <- seq(from = pi/2, to = pi, length.out = 100)
+SSTHETA <- seq(from = -pi, to = pi/2, length.out = 300)
+SS1 <- data.frame(x = c(0, 0.25), 
+                  y = c(0,0), 
+                  z = c(0,0))
+SS2 <- data.frame(x = 1+1/pi+cos(SSTHETA)/pi, 
+                  y = sin(SSTHETA)/pi, 
+                  z = rep(0, length(SSTHETA)))
+df1 <- data.frame(x = c(0.25,1), 
+                  y = c(0,0), 
+                  z = c(0,0))
+df2 <- data.frame(x = 1+1/pi+cos(theta)/pi, 
+                  y = sin(theta)/pi, 
+                  z = rep(0, length(theta)))
+
+p1 <- plot_ly() |> 
+  config(mathjax = 'cdn') |>
+  add_trace(x = 0, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(x = 1, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(x = 0.25, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "red", symbol = 104),
+            showlegend = FALSE) |> 
+  add_trace(x = 1+1/pi, y = 1/pi, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "red", symbol = 104),
+            showlegend = FALSE) |> 
+  add_trace(data = SS1, x = ~x, y = ~y, z = ~z, mode = "lines", type = "scatter3d",
+            line = list(width = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(data = SS2, x = ~x, y = ~y, z = ~z, mode = "lines", type = "scatter3d",
+            line = list(width = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(data = df1, x = ~x, y = ~y, z = ~z, mode = "lines", type = "scatter3d",
+            line = list(width = gsw, color = "red", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(data = df2, x = ~x, y = ~y, z = ~z, mode = "lines", type = "scatter3d",
+            line = list(width = gsw, color = "red", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(x = x, 
+            y = y, 
+            z = f, 
+            type = "scatter3d",
+            mode = "lines",  
+            line = list(color = "rgb(0,0,200)", width = gsw),
+            showlegend = FALSE) |>
+  add_trace(x = rep(x, each = 3), 
+            y = rep(y, each = 3), 
+            z = unlist(lapply(f, function(zj) c(0, zj, NA))),
+            type = "scatter3d", 
+            mode = "lines",
+            line = list(color = "lightgray", width = 0.5),
+            showlegend = FALSE) |>
+  layout(font = list(family = "Palatino"),
+         scene = c(tadpole.layout(x_range, y_range, z_range),notes1),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+save(p1, file = here::here("data_files/tadpole_graph_function.Rdata"))
+```
+
+## Mesh
+
+Below we plot the mesh of the tadpole graph.
+
+```{r}
+
+df3 <- data.frame(x = graph$mesh$V[, 1], 
+                  y = graph$mesh$V[, 2], 
+                  z = rep(0, length(graph$mesh$V[, 1])))
+df4 <- df3[6:nrow(df3), ]
+
+
+notes2 <- list(annotations = list(
+                   list(
+                     x = 0, y = 0, z = 0,
+                     text = TeX("v_1"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 1, y = 0, z = 0,
+                     text = TeX("v_2"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[1,1], y = df4[1,2], z = 0,
+                     text = TeX("x_1^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[2,1], y = df4[2,2], z = 0,
+                     text = TeX("x_2^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[3,1], y = df4[3,2], z = 0,
+                     text = TeX("x_3^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[4,1], y = df4[4,2], z = 0,
+                     text = TeX("x_4^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[5,1], y = df4[5,2], z = 0,
+                     text = TeX("x_5^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[6,1], y = df4[6,2], z = 0,
+                     text = TeX("x_6^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[7,1], y = df4[7,2], z = 0,
+                     text = TeX("x_7^{e_2}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 0.25, y = 0, z = 0,
+                     text = TeX("x_1^{e_1}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 0.5, y = 0, z = 0,
+                     text = TeX("x_2^{e_1}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 0.75, y = 0, z = 0,
+                     text = TeX("x_3^{e_1}"),
+                     textangle = 0, ax = 0, ay = -35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1)))
+
+p2 <- plot_ly() |> 
+  config(mathjax = 'cdn') |>
+  add_trace(x = x, 
+            y = y, 
+            z = x*0, 
+            type = "scatter3d",
+            mode = "lines",  
+            line = list(color = "black", width = gsw),
+            showlegend = FALSE) |>
+  add_trace(data = df3, x = ~x, y = ~y, z = ~z, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "gray", symbol = 104)) |>
+  add_trace(x = 0, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(x = 1, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  layout(font = list(family = "Palatino"),
+         scene = c(tadpole.layout(x_range, y_range, z_range), notes2),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+save(p2, file = here::here("data_files/tadpole_graph_mesh.Rdata"))
+```
+
+
+## Basis functions on a metric graph
+
+Let each edge $e\in\Ecal$ be subdivided into $n_{e}\geq 2$ regular segments of length $h_{e}$, and be delimited by the nodes $0 = x_0^{e},x_1^{e},\dots,x_{n_{e}-1}^{e}, x_{n_{e}}^{e} = \ell_{e}$. For each $j = 1,\dots,n_{e}-1$, we consider the following standard hat basis functions 
+\begin{equation*}
+    \varphi_j^{e}(x)=\begin{cases}
+        1-\dfrac{|x_j^{e}-x|}{h_{e}},&\text{ if }x_{j-1}^{e}\leq x\leq x_{j+1}^{e},\\
+        0,&\text{ otherwise}.
+    \end{cases}
+\end{equation*}
+For each $e\in\Ecal$, the set of hat functions $\llav{\varphi_1^{e},\dots,\varphi_{n_{e}-1}^{e}}$ is a basis for the space
+\begin{equation*}
+    V_{h_{e}} = \llav{w\in H_0^1(e)\;\Big|\;\forall j = 0,1,\dots,n_{e}-1:w|_{[x_j^{e}, x_{j+1}^{e}]}\in\mathbb{P}^1},
+\end{equation*}
+where $\mathbb{P}^1$ is the space of linear functions on $[0,\ell_{e}]$. For each vertex $v\in\Vcal$, we define
+\begin{equation*}
+    \Ncal_v = \llav{\bigcup_{e\in\llav{e\in\Ecal_v: v = x_0^e}}[v,x_1^e]}\bigcup\llav{\bigcup_{e\in\llav{e\in\Ecal_v: v = x^e_{n_e}}}[x^e_{n_e-1},v]},
+\end{equation*}
+which is a star-shaped set with center at $v$ and rays made of the segments contiguous to $v$. On $\mathcal{N}_v$, we define the hat functions as
+\begin{equation*}
+    \phi_v(x)=\begin{cases}
+        1-\dfrac{|x_v^{e}-x|}{h_{e}},&\text{ if }x\in\mathcal{N}_v\cap e \text{ and }e\in\Ecal_v,\\
+        0,&\text{ otherwise},
+    \end{cases}
+\end{equation*}
+where $x_v^e$ is either $x_0^e$ or $x_{n_e}^e$ depending on the edge direction and its parameterization. See [@Arioli2018AFinite] for more. Figure 3 below provides an illustration of the system of basis functions $\{\varphi_j^e, \phi_v\}$ together with the set $\Ncal_v$.
+
+
+```{r}
+notes3 <- list(annotations = list(
+                   list(
+                     x = 0, y = 0, z = 1,
+                     text = TeX("\\phi_{v_1}"),
+                     textangle = 0, ax = 0, ay = -15,
+                     font = list(color = "red", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     x = 0, y = 0, z = 0,
+                     text = TeX("\\mathcal{N}_{v_1}"),
+                     textangle = 0, ax = 25, ay = 5,
+                     font = list(color = "green", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     x = 1, y = 0, z = 1,
+                     text = TeX("\\phi_{v_2}"),
+                     textangle = 0, ax = 0, ay = -15,
+                     font = list(color = "red", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     x = 0, y = 0, z = 0,
+                     text = TeX("v_1"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 1, y = 0, z = 0,
+                     text = TeX("v_2"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = 1, y = 0, z = 0,
+                     text = TeX("\\mathcal{N}_{v_2}"),
+                     textangle = 0, ax = 40, ay = -10,
+                     font = list(color = "green", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     x = df4[5,1], y = df4[5,2], z = 0,
+                     text = TeX("x_5^{e_2}"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     x = df4[5,1], y = df4[5,2], z = 1,
+                     text = TeX("\\varphi_5^{e_2}"),
+                     textangle = 0, ax = 0, ay = -15,
+                     font = list(color = "rgb(0,0,200)", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)")))
+
+p3 <- plot_ly(
+  #width = 1500, height = 2000
+         ) |> 
+  config(mathjax = 'cdn') |>
+  add_trace(x = rep(x, times = graph$nV), 
+            y = rep(y, times = graph$nV), 
+            z = as.vector(A[, 1:graph$nV]), 
+            type = "scatter3d", 
+            mode = "lines",
+            line = list(color = "red", width = gsw), 
+            showlegend = FALSE) |>
+  add_trace(x = rep(x, times = ncol(A) - graph$nV), 
+            y = rep(y, times = ncol(A) - graph$nV), 
+            z = as.vector(A[, (graph$nV+1):ncol(A)]), 
+            type = "scatter3d",
+            mode = "lines", 
+            line = list(color = "darkgray", width = gsw), 
+            showlegend = FALSE) |>
+  add_trace(x = rep(x, each = 3), 
+            y = rep(y, each = 3), 
+            z = unlist(lapply(apply(A, 1, max, na.rm = TRUE), function(zj) c(0, zj, NA))),
+            type = "scatter3d", 
+            mode = "lines",
+            line = list(color = "lightgray", width = 0.5),
+            showlegend = FALSE) |>
+  add_trace(x = x, 
+            y = y, 
+            z = as.vector(A[, 10]), 
+            type = "scatter3d",
+            mode = "lines",  
+            line = list(color = "rgb(0,0,200)", width = gsw),
+            showlegend = FALSE) |>
+  add_trace(x = x, 
+            y = y, 
+            z = x*0, 
+            type = "scatter3d",
+            mode = "lines",  
+            line = list(color = "black", width = gsw),
+            showlegend = FALSE) |>
+  add_trace(x = rep(x, times = graph$nV), 
+            y = rep(y, times = graph$nV), 
+            z = c(replace(rep(NA, nrow(A)), 1:11, 0), 
+                  replace(rep(NA, nrow(A)), c(31:51, 111:121), 0)), 
+            type = "scatter3d", 
+            mode = "lines",
+            line = list(color = "green", width = gsw), 
+            showlegend = FALSE) |>
+  add_trace(x = df4[5,1], y = df4[5,2], z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "rgb(0,0,200)", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(x = 0, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  add_trace(x = 1, y = 0, z = 0, mode = "markers", type = "scatter3d", 
+            marker = list(size = gsw, color = "black", symbol = 104),
+            showlegend = FALSE) |>
+  layout(font = list(family = "Palatino"),
+         scene = c(tadpole.layout(x_range, y_range, z_range), notes3),
+         margin = list(l = 0, r = 0, b = 0, t = 0),
+  paper_bgcolor = "white",  # the overall canvas background
+  plot_bgcolor  = "white",   # the area inside axes
+         showlegend = FALSE,
+         font = list(family = "Palatino"))
+save(p3, file = here::here("data_files/tadpole_graph_basis_functions.Rdata"))
+
+# combine_plotly_grid_pdf(list(p1,p2,p3), output_pdf = here::here("data_files/plotlypic/tadpole_graph_basis_functions.pdf"), ncol = 3)
+# combine_plotly_pdf_single(p3, here::here("data_files/plotlypic/p3.pdf"))
+```
+
+
+
+# Plots part 1
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Interval graph $\\Gamma_I = (\\mathcal{V}, \\mathcal{E})$ with $\\mathcal{V} = \\{v_1, v_2\\}$ and $\\mathcal{E} = \\{e_1\\}$.")}
+load(here::here("data_files/interval_graph.Rdata"))
+p11
+```
+
+:::
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Circle graph $\\Gamma_C = (\\mathcal{V}, \\mathcal{E})$ with $\\mathcal{V} = \\{v_1\\}$ and $\\mathcal{E} = \\{e_1\\}$.")}
+load(here::here("data_files/circle_graph.Rdata"))
+p22
+```
+
+
+:::
+
+
+
+::: {}
+
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Tadpole graph $\\Gamma_T = (\\mathcal{V}, \\mathcal{E})$ with $\\mathcal{V} = \\{v_1, v_2\\}$ and $\\mathcal{E} = \\{e_1,e_2\\}$.")}
+load(here::here("data_files/tadpole_graph.Rdata"))
+p33
+```
+
+
+:::
+
+
+::::
+
+
+# Plots part 2
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("A function $f=\\gamma\\big|_\\Gamma$ on the tadpole graph, where $\\gamma(x,y) = e^{-x^2-y^2}$, together with a path that illustrates the geodesic distance between points $s_1$ and $s_2$.")}
+load(here::here("data_files/tadpole_graph_function.Rdata"))
+p1
+```
+
+:::
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Mesh nodes on the tadpole graph.")}
+load(here::here("data_files/tadpole_graph_mesh.Rdata"))
+p2
+```
+
+
+:::
+
+
+
+::: {}
+
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Basis functions on the tadpole graph.")}
+load(here::here("data_files/tadpole_graph_basis_functions.Rdata"))
+p3
+```
+
+
+:::
+
+
+::::
+
+
+# References
+
+```{r, eval =TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```

@@ -1,0 +1,770 @@
+---
+title: "PeMS 1, covariates and preprocessing"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+
+Go back to the [About page](about.html).
+
+
+::: {.custom-box}
+This vignette processes half of the PeMS dataset, shows some illustrations, and produces [**`pems_repl1_data.RData`**](https://github.com/leninrafaelrierasegura/GWMF/blob/main/data_files/pems_repl1_data.RData), which is a file that contains the graph with data and a covariate defined on the mesh. To see how the data is modeled, go to [pems_repl2.html](pems_repl2.html).
+:::
+
+
+Let us set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(1982) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+Below we load the necessary libraries.
+
+```{r, eval = TRUE}
+library(INLA)
+library(inlabru)
+library(rSPDE)
+library(MetricGraph)
+
+library(dplyr)
+library(plotly)
+library(scales)
+library(patchwork)
+
+library(ggplot2)
+library(cowplot)
+library(ggpubr) #annotate_figure()
+library(grid) #textGrob()
+library(ggmap)
+
+library(viridis)
+library(OpenStreetMap)
+
+
+library(tidyr)
+library(sf)
+
+library(here)
+library(rmarkdown)
+library(grateful) # Cite all loaded packages
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+Below we define function `gets_summary_parameters()` to extract the summary of the parameters of the model.
+
+
+
+```{r, eval = TRUE}
+gets_summary_parameters <- function(fit, model) {
+  param_spde <- summary(rspde.result(fit, "field", model, parameterization = "spde"))
+  param_matern <- summary(rspde.result(fit, "field", model, parameterization = "matern"))
+  param_fixed <- fit$summary.fixed[,1:6]
+  marginal.posterior.sigma_e = inla.tmarginal(
+    fun = function(x) exp(-x/2), 
+    marginal = fit[["internal.marginals.hyperpar"]][["Log precision for the Gaussian observations"]])
+  quant.sigma_e <- capture.output({result_tmp <- inla.zmarginal(marginal.posterior.sigma_e)}, file = "/dev/null") 
+  quant.sigma_e <- result_tmp
+  statistics.sigma_e <- unlist(quant.sigma_e)[c(1,2,3,5,7)]
+  mode.sigma_e <- inla.mmarginal(marginal.posterior.sigma_e)
+  allparams <- rbind(param_fixed, param_spde, param_matern, c(statistics.sigma_e, mode.sigma_e))
+  rownames(allparams)[nrow(allparams)] <- "sigma_e"
+  return(allparams)
+}
+```
+
+
+
+<!-- Object `pems_repl` below is available after loading `MetricGraph` library. -->
+
+<!-- ```{r} -->
+<!-- # Load the data -->
+<!-- pems_data <- pems_repl$data -->
+<!-- # Select the locations, which are common for all replicates -->
+<!-- PtE_all <- pems_data[1:319, c("edge_number", "distance_on_edge")] -->
+<!-- # Select the response variable and transform it to a matrix -->
+<!-- Y_all <- matrix(pems_data$y, nrow = 26, ncol = 319, byrow = TRUE) -->
+<!-- # Remove locations, those with the same value in the first 13 replicates -->
+<!-- all_same <- function(col) {length(unique(col[1:13])) == 1} -->
+<!-- cols_to_keep <- apply(Y_all, 2, function(col) !all_same(col)) -->
+<!-- Y_loc <- Y_all[, cols_to_keep] -->
+<!-- PtE <- PtE_all[cols_to_keep,] -->
+<!-- # Check the dimensions -->
+<!-- PtE |> dim() -->
+<!-- Y_loc |> dim() -->
+<!-- ``` -->
+
+<!-- Half of the replicates are used to compute summary statistics (`Y_logstd` and `Y_mean`) and the other half (`Y`) are used to fit the model. -->
+
+<!-- ```{r} -->
+<!-- # First half of the replicates for summary statistics -->
+<!-- Y_for_summary <- Y_loc[1:13,] -->
+<!-- # Reserve the second half for fitting replicate model -->
+<!-- Y <- Y_loc[14:26,] -->
+<!-- # Compute the log standard deviation and mean -->
+<!-- Y_logstd <- apply(Y_for_summary, 2, sd) |> as.vector() |> log() -->
+<!-- Y_mean <- apply(Y_for_summary, 2, mean) |> as.vector() -->
+<!-- # Check the dimensions -->
+<!-- Y |> dim() -->
+<!-- ``` -->
+
+
+********************************************************************************
+
+Folder `data.pems` was downloaded from this [GitHub repository](https://github.com/davidbolin/MetricGraph/tree/7f4c90171c40b9bf7ea29e9b048c93d88477c5d1/examples/data.pems).
+
+```{r}
+Lines <- read_sf(here("data_files/data.pems/lines.shp"))
+lines <- as_Spatial(Lines)
+
+EtV <- read.csv(here("data_files/data.pems/E.csv"), header = T, row.names = NULL)
+PtE <- read.csv(here("data_files/data.pems/PtE.csv"), header = T, row.names = NULL)
+PtE[,1] <- PtE[,1] + 1
+Y <- read.csv(here("data_files/data.pems/Y.csv"), header = T, row.names = NULL)
+Y <- as.matrix(Y[,-1])
+edge_length_m <- EtV[,4]
+PtE[,2] = PtE[,2]/edge_length_m[PtE[,1]]
+```
+
+Matrix `Y` has dimension $26\times325$. Each row of `Y` corresponds to a replicate ($26$ replicates in total) and each column corresponds to a location ($325$ locations in total) on the network.
+
+
+We remove columns in `Y`, those with the same value in the first 13 replicates. We also remove the corresponding rows in `PtE`.
+
+```{r}
+all_same <- function(col) {
+  length(unique(col[1:13])) == 1
+}
+cols_to_keep <- apply(Y, 2, function(col) !all_same(col))
+
+Y <- Y[, cols_to_keep]
+PtE <- PtE[cols_to_keep,]
+```
+
+
+Half of the replicates (`Y_for_summary`) are used to compute `Y_logstd` and `Y_mean`, and the other half (`Y` again ) are used to fit a replicate model in [pems_repl2.html](pems_repl2.html).
+
+```{r}
+sampled_numbers <- 1:13
+not_sampled_numbers <- 14:26
+Y_for_summary <- Y[sampled_numbers,]
+Y_logstd <- apply(Y_for_summary, 2, sd) |> as.vector() |> log()
+Y_mean <- apply(Y_for_summary, 2, mean) |> as.vector()
+Y <- Y[not_sampled_numbers,]
+save(Y_mean, file = here::here("data_files/Y_mean.RData"))
+```
+
+
+********************************************************************************
+
+
+Observe that `Y_logstd` corresponds to $\log$ of the standard deviation at each location.
+
+Below we build the graph using the list element `edges` object from `pems_repl`.
+
+```{r}
+# Build the graph
+graph <- metric_graph$new(edges = pems_repl$edges, longlat = TRUE)
+# Add the observations
+graph$add_observations(data = data.frame(y = Y_logstd, 
+                                         edge_number = PtE[,1], 
+                                         distance_on_edge = PtE[,2]),
+                       edge_number = "edge_number",
+                       distance_on_edge = "distance_on_edge",
+                       data_coords = "PtE",
+                       normalized = TRUE, 
+                       clear_obs = TRUE)
+# Build the mesh
+graph$build_mesh(h = 0.05) 
+```
+
+Below we fit $\log(\mathrm{sd}(s_i))\sim N(\beta_0+u(s_i), \sigma_e^2)$.
+
+
+
+```{r, eval = FALSE}
+# Build the model
+rspde_model_stat_logstd <- rspde.metric_graph(graph,
+                                       parameterization = "spde")
+# Prepare the data for fitting
+data_rspde_bru_stat <- graph_data_rspde(rspde_model_stat_logstd, bru = TRUE)
+# Define the component
+cmp_stat <- y ~ -1 +
+  Intercept(1) +
+  field(cbind(.edge_number, .distance_on_edge), model = rspde_model_stat_logstd)
+# Fit the model
+rspde_fit_stat_logstd <-
+  bru(cmp_stat,
+      data = data_rspde_bru_stat[["data"]],
+      family = "gaussian",
+      options = list(verbose = FALSE)
+  )
+save(rspde_fit_stat_logstd, rspde_model_stat_logstd, file = here::here("data_files/rspde_fit_stat_and_model_logstd.RData"))
+```
+
+
+```{r, eval = TRUE}
+load(here::here("data_files/rspde_fit_stat_and_model_logstd.RData"))
+# Summarize the results
+summary(rspde_fit_stat_logstd)
+gets_summary_parameters(rspde_fit_stat_logstd, rspde_model_stat_logstd)
+```
+
+
+We now compute the kriging predictor $E(u(s_i)|\log(\mathrm{sd}(s_i)))$ (denoted as `cov` below) and standardize it.
+
+```{r}
+# Prediction locations
+data_prd_list_mesh <- graph$get_mesh_locations(bru = TRUE)
+# Compute the kriging predictor
+y_pred <- predict(rspde_fit_stat_logstd, newdata = data_prd_list_mesh, ~Intercept + field)
+cov_almost <- y_pred$mean
+# Standardize the kriging predictor of the log standard deviation
+cov <- (cov_almost - mean(cov_almost))/sd(cov_almost)
+```
+
+Below we plot the results. We first generate two maps, one for zoom level 12 and the other for zoom level 13. 
+
+
+
+
+```{r}
+# Extract the Euclidean coordinates of the mesh points
+xypoints <- graph$mesh$V
+# Extract the range of the coordinates 
+x_left <- range(xypoints[,1])[1]
+x_right <- range(xypoints[,1])[2]
+y_bottom <- range(xypoints[,2])[1]
+y_top <- range(xypoints[,2])[2]
+```
+
+
+```{r, eval = FALSE}
+# Set the style of the map
+style_vector <- c(c(feature = "road", element = "geometry", visibility = "on"),
+                  c("&style=", feature = "poi", element = "labels", visibility = "off"),
+                  c("&style=", feature = "road", element = "labels", visibility = "off"),
+                  c("&style=", feature = "administrative", element = "labels", visibility = "off"), #name of places
+                  c("&style=", feature = "transit", element = "labels", visibility = "off"),
+                  c("&style=", feature = "landscape", element = "geometry", visibility = "on"),
+                  c("&style=", feature = "water", element = "geometry", visibility = "on")) 
+register_stadiamaps(Sys.getenv("GGMAP_STADIAMAPS_API_KEY"))
+# Obtain the maps
+p12 <- ggmap(get_stadiamap(bbox = c(left = x_left, bottom = y_bottom, right = x_right, top = y_top),
+              zoom = 12,
+              maptype = "stamen_toner_lite", 
+              scale =2,
+              style = style_vector,
+              color = "color")) + xlab(NULL) + ylab(NULL)
+p13 <- ggmap(get_stadiamap(bbox = c(left = x_left, bottom = y_bottom, right = x_right, top = y_top),
+              zoom = 13,
+              maptype = "stamen_toner_lite", 
+              scale =2,
+              style = style_vector,
+              color = "color")) + xlab(NULL) + ylab(NULL)
+
+save(p12, p13, file = here::here("data_files/maps_zoom12and13from_stadia.RData"))
+```
+
+
+```{r, eval = TRUE}
+load(here::here("data_files/maps_zoom12and13from_stadia.RData"))
+```
+
+
+
+Below we plot the field on top of the map. We also add the point values of the standard deviation of the log standard deviation to the graph so we can plot it on top of the map and the field.
+
+```{r}
+# Define the colors for the windows
+lower_color <- "darkred"   
+upper_color <- "darkblue"  
+# Define coordinates for small windows
+coordx_lwr1 <- -121.878
+coordx_upr1 <- -121.828
+coordy_lwr1 <- 37.315
+coordy_upr1 <- 37.365
+
+coordx_lwr2<- -122.075
+coordx_upr2 <- -122.025
+coordy_lwr2 <- 37.365
+coordy_upr2 <- 37.415
+# Plot the field on top of the map
+f12 <- graph$plot_function(X = cov, 
+                          vertex_size = 0, 
+                          p = p12,
+                          edge_width = 0.5) + 
+  theme_minimal() + 
+  theme(text = element_text(family = "Palatino"), 
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        plot.margin = unit(-0.4*c(1,0,1,1), "cm")
+        ) +
+  labs(color = "", x = "", y = "") +
+  xlim(x_left, x_right) + 
+  ylim(y_bottom, y_top)
+# Plot the field on top of the map
+f13 <- graph$plot_function(X = cov, 
+                          vertex_size = 0, 
+                          p = p13,
+                          edge_width = 0.5) + 
+  theme_minimal() + 
+  theme(text = element_text(family = "Palatino"), 
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        plot.margin = unit(-0.4*c(1,0,1,1), "cm")
+        ) +
+  labs(color = "", x = "", y = "") +
+  xlim(x_left, x_right) + 
+  ylim(y_bottom, y_top)
+
+# We add the point values of standard deviation of the log standard deviation to the graph so we can plot it
+standardized_Y_logstd <- (Y_logstd - mean(Y_logstd))/sd(Y_logstd)
+graph$add_observations(data = data.frame(y = standardized_Y_logstd, 
+                                         edge_number = PtE[,1], 
+                                         distance_on_edge = PtE[,2]), 
+                       edge_number = "edge_number",
+                       distance_on_edge = "distance_on_edge",
+                       data_coords = "PtE",
+                       normalized = TRUE, 
+                       clear_obs = TRUE)
+g12 <- graph$plot(data = "y", vertex_size = 0, p = f12, edge_width = 0, data_size = 1) + 
+  labs(color = "", x = "", y = "") + 
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_lwr1, 
+           linewidth = 0.4, color = upper_color) +  # Bottom line
+  annotate("segment", x = coordx_lwr1, y = coordy_upr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Top line
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_lwr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Left line
+  annotate("segment", x = coordx_upr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Right line
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_lwr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_upr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_lwr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_upr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color)
+g13 <- graph$plot(data = "y", vertex_size = 0, p = f13, edge_width = 0, data_size = 1) + 
+  labs(color = "", x = "", y = "") + 
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_lwr1, 
+           linewidth = 0.4, color = upper_color) +  # Bottom line
+  annotate("segment", x = coordx_lwr1, y = coordy_upr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Top line
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_lwr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Left line
+  annotate("segment", x = coordx_upr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Right line
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_lwr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_upr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_lwr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_upr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) 
+
+r1 <- g13 + xlim(coordx_lwr1, coordx_upr1) + 
+                    ylim(coordy_lwr1, coordy_upr1) + 
+  theme(legend.position = "none", 
+        plot.margin = unit(-0.2*c(1,1,1,1), "cm"))
+
+r2 <- g13 + xlim(coordx_lwr2, coordx_upr2) + 
+                    ylim(coordy_lwr2, coordy_upr2) + 
+  theme(legend.position = "none", 
+        plot.margin = unit(-0.2*c(1,1,1,1), "cm"))
+
+# Arrange p2 and p3 horizontally
+left_col <- plot_grid(r2, r1, labels = NULL, ncol = 1, nrow = 2, rel_heights = c(1,1))
+
+# Combine the top row with p1 in a grid
+combined_plot <- plot_grid(left_col, g12, labels = NULL, ncol = 2, rel_widths = c(1,2)) 
+final_plot <- annotate_figure(combined_plot, left = textGrob("Latitude", rot = 90, vjust = 1, gp = gpar(cex = 0.8)),
+                              bottom = textGrob("Longitude", vjust = -0.5, gp = gpar(cex = 0.8)))
+ggsave(here("data_files/stand_log_sigma_3.png"), width = 11.2, height = 5.43, plot = final_plot, dpi = 500)
+save(final_plot, file = here("data_files/stand_log_sigma_3.RData"))
+```
+
+```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Standardized logarithm of the standard deviation of the first part of the data. Points represent the point value at each available location, and edges represent the $\\mathrm{std.cov}(s)$ covariate.")}
+# Print the combined plot
+knitr::include_graphics(here::here("data_files/stand_log_sigma_3.png"))
+```
+
+
+We repeat the same process  but now for `Y_mean`. We first add the observations to the graph.
+
+```{r}
+graph$add_observations(data = data.frame(y = Y_mean, 
+                                         edge_number = PtE[,1], 
+                                         distance_on_edge = PtE[,2]),
+                       edge_number = "edge_number",
+                       distance_on_edge = "distance_on_edge",
+                       data_coords = "PtE",
+                       normalized = TRUE, 
+                       clear_obs = TRUE)
+```
+
+We fit the model $\mathrm{mean}(s_i)\sim N(\beta_0+u(s_i), \sigma_e^2)$.
+
+
+
+```{r, eval = FALSE}
+# Build the model
+rspde_model_stat_mean <- rspde.metric_graph(graph,
+                                       parameterization = "spde")
+# Prepare the data for fitting
+data_rspde_bru_stat <- graph_data_rspde(rspde_model_stat_mean,
+                                        bru = TRUE)
+# Define the component
+cmp_stat <- y ~ -1 +
+  Intercept(1) +
+  field(cbind(.edge_number, .distance_on_edge), model = rspde_model_stat_mean)
+# Fit the model
+rspde_fit_stat_mean <-
+  bru(cmp_stat,
+      data = data_rspde_bru_stat[["data"]],
+      family = "gaussian",
+      options = list(verbose = FALSE)
+  )
+save(rspde_fit_stat_mean, rspde_model_stat_mean, file = here::here("data_files/rspde_fit_stat_and_model_mean.RData"))
+```
+
+
+```{r, eval = TRUE}
+load(here::here("data_files/rspde_fit_stat_and_model_mean.RData"))
+# Summarize the results
+summary(rspde_fit_stat_mean)
+gets_summary_parameters(rspde_fit_stat_mean, rspde_model_stat_mean)
+```
+
+
+Below we compute the predictions for the mesh and the data location.
+
+```{r}
+mean_on_mesh_pred <- predict(rspde_fit_stat_mean, newdata = data_prd_list_mesh, ~Intercept + field)
+cov_for_mean_to_plot <- mean_on_mesh_pred$mean
+
+mean_on_loc_pred <- predict(rspde_fit_stat_mean, newdata = rename(PtE, .edge_number = E, .distance_on_edge = length), ~Intercept + field)
+cov_for_mean <- mean_on_loc_pred$mean
+save(cov_for_mean_to_plot, cov_for_mean, file = here::here("data_files/cov_for_mean_to_plot_and_cov_for_mean.RData"))
+```
+
+Below we check that the predicted mean is close to the observed mean.
+
+```{r, eval =TRUE, fig.width = 24, fig.height = 4, fig.cap = captioner("Predicted mean and observed mean.")}
+load(here::here("data_files/Y_mean.RData"))
+load(here::here("data_files/cov_for_mean_to_plot_and_cov_for_mean.RData"))
+plot(Y_mean, type = "l", col = "darkblue")
+lines(cov_for_mean, col = "darkred")
+```
+
+Below we plot the results as we did before.
+
+
+
+```{r}
+# Plot the field on top of the map
+f12 <- graph$plot_function(X = cov_for_mean_to_plot, 
+                          vertex_size = 0, 
+                          p = p12,
+                          edge_width = 0.5) + 
+  theme_minimal() + 
+  theme(text = element_text(family = "Palatino"), 
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        plot.margin = unit(-0.4*c(1,0,1,1), "cm")
+        ) +
+  labs(color = "", x = "", y = "") +
+  xlim(x_left, x_right) + 
+  ylim(y_bottom, y_top)
+# Plot the field on top of the map
+f13 <- graph$plot_function(X = cov_for_mean_to_plot, 
+                          vertex_size = 0, 
+                          p = p13,
+                          edge_width = 0.5) + 
+  theme_minimal() + 
+  theme(text = element_text(family = "Palatino"), 
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        plot.margin = unit(-0.4*c(1,0,1,1), "cm")
+        ) +
+  labs(color = "", x = "", y = "") +
+  xlim(x_left, x_right) + 
+  ylim(y_bottom, y_top)
+
+g12 <- graph$plot(data = "y", vertex_size = 0, p = f12, edge_width = 0, data_size = 1) + 
+  labs(color = "", x = "", y = "") + 
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_lwr1, 
+           linewidth = 0.4, color = upper_color) +  # Bottom line
+  annotate("segment", x = coordx_lwr1, y = coordy_upr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Top line
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_lwr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Left line
+  annotate("segment", x = coordx_upr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Right line
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_lwr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_upr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_lwr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_upr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color)
+g13 <- graph$plot(data = "y", vertex_size = 0, p = f13, edge_width = 0, data_size = 1) + 
+  labs(color = "", x = "", y = "") + 
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_lwr1, 
+           linewidth = 0.4, color = upper_color) +  # Bottom line
+  annotate("segment", x = coordx_lwr1, y = coordy_upr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Top line
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_lwr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Left line
+  annotate("segment", x = coordx_upr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Right line
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_lwr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_upr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_lwr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_upr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) 
+
+r1 <- g13 + xlim(coordx_lwr1, coordx_upr1) + 
+                    ylim(coordy_lwr1, coordy_upr1) + 
+  theme(legend.position = "none", 
+        plot.margin = unit(-0.2*c(1,1,1,1), "cm"))
+
+r2 <- g13 + xlim(coordx_lwr2, coordx_upr2) + 
+                    ylim(coordy_lwr2, coordy_upr2) + 
+  theme(legend.position = "none", 
+        plot.margin = unit(-0.2*c(1,1,1,1), "cm"))
+
+# Arrange p2 and p3 horizontally
+left_col <- plot_grid(r2, r1, labels = NULL, ncol = 1, nrow = 2, rel_heights = c(1,1))
+
+# Combine the top row with p1 in a grid
+combined_plot <- plot_grid(left_col, g12, labels = NULL, ncol = 2, rel_widths = c(1,2)) 
+final_plot <- annotate_figure(combined_plot, left = textGrob("Latitude", rot = 90, vjust = 1, gp = gpar(cex = 0.8)),
+                              bottom = textGrob("Longitude", vjust = -0.5, gp = gpar(cex = 0.8)))
+ggsave(here("data_files/mean_better_3.png"), width = 11.2, height = 5.43, plot = final_plot, dpi = 500)
+```
+
+
+```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Average speeds of the first part of the data. Points represent the point value at each available location, and edges represent the $\\mathrm{mean.cov}(s)$ covariate.")}
+knitr::include_graphics(here::here("data_files/mean_better_3.png"))
+```
+
+We finally add the remaining half of the replicates to the graph and plot one of them.
+
+```{r}
+df_rep <- lapply(1:nrow(Y), function(i){data.frame(y = Y[i,],
+                                                   mean_value = cov_for_mean,
+                                                   edge_number = PtE[,1],
+                                                   distance_on_edge = PtE[,2],
+                                                   repl = i)})
+df_rep <- do.call(rbind, df_rep)
+
+graph$add_observations(data = df_rep, 
+                       edge_number = "edge_number",
+                       distance_on_edge = "distance_on_edge",
+                       data_coords = "PtE",
+                       normalized = TRUE, 
+                       clear_obs = TRUE, 
+                       group = "repl")
+```
+
+Below we plot replicate 14.
+
+
+
+```{r}
+g12 <- graph$plot(data = "y", 
+                 p = p12,
+                 group = 1, 
+                 vertex_size = 0, 
+                 data_size = 1) + 
+  theme_minimal() + 
+  theme(text = element_text(family = "Palatino"), 
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        plot.margin = unit(-0.4*c(1,0,1,1), "cm")) +
+  labs(color = "", x = "", y = "") +
+  xlim(x_left, x_right) + 
+  ylim(y_bottom, y_top) +
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_lwr1, 
+           linewidth = 0.4, color = upper_color) +  # Bottom line
+  annotate("segment", x = coordx_lwr1, y = coordy_upr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Top line
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_lwr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Left line
+  annotate("segment", x = coordx_upr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Right line
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_lwr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_upr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_lwr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_upr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color)
+
+g13 <- graph$plot(data = "y", 
+                 p = p13,
+                 group = 1, 
+                 vertex_size = 0, 
+                 data_size = 1) + 
+  theme_minimal() + 
+  theme(text = element_text(family = "Palatino"), 
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        plot.margin = unit(-0.4*c(1,0,1,1), "cm")) +
+  labs(color = "speed", x = "", y = "") +
+  xlim(x_left, x_right) + 
+  ylim(y_bottom, y_top) +
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_lwr1, 
+           linewidth = 0.4, color = upper_color) +  # Bottom line
+  annotate("segment", x = coordx_lwr1, y = coordy_upr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Top line
+  annotate("segment", x = coordx_lwr1, y = coordy_lwr1, xend = coordx_lwr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Left line
+  annotate("segment", x = coordx_upr1, y = coordy_lwr1, xend = coordx_upr1, yend = coordy_upr1, 
+           linewidth = 0.4, color = upper_color) +  # Right line
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_lwr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_upr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_lwr2, y = coordy_lwr2, xend = coordx_lwr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color) +  
+  annotate("segment", x = coordx_upr2, y = coordy_lwr2, xend = coordx_upr2, yend = coordy_upr2, 
+           linewidth = 0.4, color = lower_color)
+
+r1 <- g13 + xlim(coordx_lwr1, coordx_upr1) + 
+                    ylim(coordy_lwr1, coordy_upr1) + 
+  theme(legend.position = "none", 
+        plot.margin = unit(-0.2*c(1,1,1,1), "cm"))
+
+r2 <- g13 + xlim(coordx_lwr2, coordx_upr2) + 
+                    ylim(coordy_lwr2, coordy_upr2) + 
+  theme(legend.position = "none", 
+        plot.margin = unit(-0.2*c(1,1,1,1), "cm"))
+
+# Arrange p2 and p3 horizontally
+left_col <- plot_grid(r2, r1, labels = NULL, ncol = 1, nrow = 2, rel_heights = c(1,1))
+
+# Combine the top row with p1 in a grid
+combined_plot <- plot_grid(left_col, g12, labels = NULL, ncol = 2, rel_widths = c(1,2)) 
+final_plot <- annotate_figure(combined_plot, left = textGrob("Latitude", rot = 90, vjust = 1, gp = gpar(cex = 0.8)),
+                              bottom = textGrob("Longitude", vjust = -0.5, gp = gpar(cex = 0.8)))
+ggsave(here("data_files/replicate14_3.png"), width = 11.2, height = 5.43, plot = final_plot, dpi = 500)
+```
+
+
+```{r, eval = TRUE, fig.width = 11.2, fig.height = 5.43, fig.cap = captioner("Speed observations (in mph) on the highway network of the city of San Jose in California, recorded on April 3, 2017. The left panels are zoomed-in areas of the panel to the right.")}
+knitr::include_graphics(here::here("data_files/replicate14_3.png"))
+```
+
+
+```{r}
+save(graph, cov, cov_for_mean_to_plot, data_prd_list_mesh, file = here("data_files/pems_repl1_data.RData"))
+```
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+
+

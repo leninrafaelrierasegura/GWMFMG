@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>M plots</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/clipboard-2.0.6/clipboard.min.js"></script>
+<link href="site_libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+<script src="site_libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+<script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa-solid fa-clipboard\" style=\"color: #00008B\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"<i class=\"fa fa-times-circle\" style=\"color: #F94144\"><\/i>"})</script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="visual.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">GWMFMG</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    PeMS
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="pems1.html">PeMS 1</a>
+    </li>
+    <li>
+      <a href="pems2.html">PeMS 2</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Model Properties
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model_prop1.html">Model Properties 1</a>
+    </li>
+    <li>
+      <a href="model_prop2.html">Model Properties 2</a>
+    </li>
+    <li>
+      <a href="model_prop3.html">Model Properties 3</a>
+    </li>
+    <li>
+      <a href="model_prop4.html">Model Properties 4</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="graphs1.html">Basis Functions</a>
+</li>
+<li>
+  <a href="approximation.html">Approximation</a>
+</li>
+<li>
+  <a href="num_error.html">Numerical Error</a>
+</li>
+<li>
+  <a href="conv_rates.html">Convergence Rates</a>
+</li>
+<li>
+  <a href="sim_study.html">Simulation study</a>
+</li>
+<li>
+  <a href="mplots.html">Additional illustrations</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://arxiv.org/abs/0000.00000">
+    <span class="fa fa-file-pdf"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/leninrafaelrierasegura/GWMFMG">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">M plots</h1>
+<h4 class="date">Last modified: 08-03-2026.</h4>
+
+</div>
+
+
+<p>Go back to the <a href="about.html">Contents</a> page.</p>
+<div style="color: #2c3e50; text-align: right;">
+<hr />
+<p><strong>Press Show to reveal the code chunks.</strong></p>
+<hr />
+</div>
+<p>Let us set some global options for all code chunks in this
+document.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Create a clipboard button</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;clipboard.R&quot;</span>)); clipboard</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1982</span>) </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># Set global options for all code chunks</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="co"># Disable messages printed by R code chunks</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">message =</span> <span class="cn">FALSE</span>,    </span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="co"># Disable warnings printed by R code chunks</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">warning =</span> <span class="cn">FALSE</span>,    </span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="co"># Show R code within code chunks in output</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="at">echo =</span> <span class="cn">TRUE</span>,        </span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="co"># Include both R code and its results in output</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="at">include =</span> <span class="cn">TRUE</span>,     </span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="co"># Evaluate R code chunks</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">eval =</span> <span class="cn">TRUE</span>,       </span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="co"># Enable caching of R code chunks for faster rendering</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">cache =</span> <span class="cn">FALSE</span>,      </span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="co"># Align figures in the center of the output</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="at">fig.align =</span> <span class="st">&quot;center&quot;</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="co"># Enable retina display for high-resolution figures</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="at">retina =</span> <span class="dv">2</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="co"># Show errors in the output instead of stopping rendering</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  <span class="at">error =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>  <span class="co"># Do not collapse code and output into a single block</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>  <span class="at">collapse =</span> <span class="cn">FALSE</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>)</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co"># Start the figure counter</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>fig_count <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co"># Define the captioner function</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>captioner <span class="ot">&lt;-</span> <span class="cf">function</span>(caption) {</span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  fig_count <span class="ot">&lt;&lt;-</span> fig_count <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">&quot;Figure &quot;</span>, fig_count, <span class="st">&quot;: &quot;</span>, caption)</span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>}</span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co"># Define the function to truncate a number to two decimal places</span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a>truncate_to_two <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a>  truncated <span class="ot">&lt;-</span> <span class="fu">floor</span>(x <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">/</span> <span class="dv">100</span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&quot;%.2f&quot;</span>, truncated)</span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">library</span>(slackr)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;keys.R&quot;</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="fu">slackr_setup</span>(<span class="at">token =</span> token) <span class="co"># token comes from keys.R</span></span></code></pre></div>
+<pre><code>## [1] &quot;Successfully connected to Slack&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">capture.output</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">purl</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;functionality1.Rmd&quot;</span>), <span class="at">output =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;functionality1.R&quot;</span>)),</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;old/purl_log.txt&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;functionality1.R&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Functions</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>m0 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">floor</span>(x<span class="sc">/</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">floor</span>(x<span class="sc">/</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">ceiling</span>(x) <span class="sc">-</span> <span class="dv">3</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co"># Range</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>x_min <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>x_max <span class="ot">&lt;-</span> <span class="fl">11.5</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>jumps <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">2.5</span>, x_max, <span class="at">by =</span> <span class="dv">1</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co"># Intervals</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>intervals_base <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="at">left  =</span> <span class="fu">c</span>(x_min, jumps),</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="at">right =</span> <span class="fu">c</span>(jumps, x_max)</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(left <span class="sc">&lt;</span> right)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co"># Intervals for ceil function</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>intervals2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">left =</span> <span class="dv">2</span><span class="sc">:</span>(<span class="fu">floor</span>(x_max)<span class="sc">-</span><span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">right =</span> left <span class="sc">+</span> <span class="dv">1</span>, <span class="at">y =</span> left <span class="sc">-</span> <span class="dv">2</span>, <span class="at">fun =</span> <span class="st">&quot;ceil&quot;</span>) </span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co"># Intervals for m0 and m1</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>intervals <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  intervals_base <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">m0</span>((left <span class="sc">+</span> right)<span class="sc">/</span><span class="dv">2</span>), <span class="at">fun =</span> <span class="st">&quot;m0&quot;</span>),</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>  intervals_base <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">m1</span>((left <span class="sc">+</span> right)<span class="sc">/</span><span class="dv">2</span>), <span class="at">fun =</span> <span class="st">&quot;m1&quot;</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>)</span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co"># Combine all intervals</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>intervals_all <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(intervals, intervals2)</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co"># Convert &#39;fun&#39; to factor to fix legend order</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>intervals_all <span class="ot">&lt;-</span> intervals_all <span class="sc">%&gt;%</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fun =</span> <span class="fu">factor</span>(fun, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;m0&quot;</span>, <span class="st">&quot;m1&quot;</span>, <span class="st">&quot;ceil&quot;</span>)))</span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co"># Endpoints for plotting points</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>endpoints_all <span class="ot">&lt;-</span> intervals_all <span class="sc">%&gt;%</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>  <span class="fu">select</span>(left, right, y, fun) <span class="sc">%&gt;%</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(left, right),</span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">&quot;endpoint&quot;</span>,</span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">&quot;x&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fun =</span> <span class="fu">factor</span>(fun, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;m0&quot;</span>, <span class="st">&quot;m1&quot;</span>, <span class="st">&quot;ceil&quot;</span>)))</span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a></span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a><span class="co"># Y-axis breaks</span></span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a>y_breaks <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(intervals_all<span class="sc">$</span>y)),</span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a>                <span class="fu">ceiling</span>(<span class="fu">max</span>(intervals_all<span class="sc">$</span>y)), <span class="dv">1</span>)</span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a></span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a><span class="co"># Plot</span></span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(intervals_all, <span class="fu">aes</span>(<span class="at">color =</span> fun, <span class="at">linetype =</span> fun)) <span class="sc">+</span></span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a>  </span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a>  <span class="co"># Horizontal segments</span></span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> left, <span class="at">xend =</span> right, <span class="at">y =</span> y, <span class="at">yend =</span> y),</span>
+<span id="cb6-51"><a href="#cb6-51" tabindex="-1"></a>               <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-52"><a href="#cb6-52" tabindex="-1"></a>  </span>
+<span id="cb6-53"><a href="#cb6-53" tabindex="-1"></a>  <span class="co"># Endpoints</span></span>
+<span id="cb6-54"><a href="#cb6-54" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> endpoints_all,</span>
+<span id="cb6-55"><a href="#cb6-55" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb6-56"><a href="#cb6-56" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">21</span>, <span class="at">fill =</span> <span class="st">&quot;white&quot;</span>, <span class="at">stroke =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb6-57"><a href="#cb6-57" tabindex="-1"></a>  </span>
+<span id="cb6-58"><a href="#cb6-58" tabindex="-1"></a>  <span class="co"># Manual colors</span></span>
+<span id="cb6-59"><a href="#cb6-59" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb6-60"><a href="#cb6-60" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;m0&quot;</span> <span class="ot">=</span> <span class="st">&quot;#FF6666&quot;</span>,   <span class="co"># a medium red/pink</span></span>
+<span id="cb6-61"><a href="#cb6-61" tabindex="-1"></a>               <span class="st">&quot;m1&quot;</span> <span class="ot">=</span> <span class="st">&quot;#6699FF&quot;</span>,   <span class="co"># a medium blue</span></span>
+<span id="cb6-62"><a href="#cb6-62" tabindex="-1"></a>               <span class="st">&quot;ceil&quot;</span> <span class="ot">=</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb6-63"><a href="#cb6-63" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;$m_0(</span><span class="sc">\\</span><span class="st">alpha) = </span><span class="sc">\\</span><span class="st">left</span><span class="sc">\\</span><span class="st">lfloor </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">alpha}{2} - </span><span class="sc">\\</span><span class="st">frac{1}{4} </span><span class="sc">\\</span><span class="st">right</span><span class="sc">\\</span><span class="st">rfloor$&quot;</span>, <span class="st">&quot;$m_1(</span><span class="sc">\\</span><span class="st">alpha) = </span><span class="sc">\\</span><span class="st">left</span><span class="sc">\\</span><span class="st">lfloor </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">alpha}{2} - </span><span class="sc">\\</span><span class="st">frac{3}{4} </span><span class="sc">\\</span><span class="st">right</span><span class="sc">\\</span><span class="st">rfloor$&quot;</span>, <span class="st">&quot;$m_2(</span><span class="sc">\\</span><span class="st">alpha) = </span><span class="sc">\\</span><span class="st">lceil </span><span class="sc">\\</span><span class="st">alpha </span><span class="sc">\\</span><span class="st">rceil - 3$&quot;</span>)</span>
+<span id="cb6-64"><a href="#cb6-64" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-65"><a href="#cb6-65" tabindex="-1"></a>  </span>
+<span id="cb6-66"><a href="#cb6-66" tabindex="-1"></a>  <span class="co"># Manual linetypes</span></span>
+<span id="cb6-67"><a href="#cb6-67" tabindex="-1"></a>  <span class="fu">scale_linetype_manual</span>(</span>
+<span id="cb6-68"><a href="#cb6-68" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;m0&quot;</span> <span class="ot">=</span> <span class="st">&quot;solid&quot;</span>, <span class="st">&quot;m1&quot;</span> <span class="ot">=</span> <span class="st">&quot;dashed&quot;</span>, <span class="st">&quot;ceil&quot;</span> <span class="ot">=</span> <span class="st">&quot;dotted&quot;</span>)</span>
+<span id="cb6-69"><a href="#cb6-69" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-70"><a href="#cb6-70" tabindex="-1"></a>  </span>
+<span id="cb6-71"><a href="#cb6-71" tabindex="-1"></a>  <span class="co"># Labels</span></span>
+<span id="cb6-72"><a href="#cb6-72" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-73"><a href="#cb6-73" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;$</span><span class="sc">\\</span><span class="st">alpha$&quot;</span>,</span>
+<span id="cb6-74"><a href="#cb6-74" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb6-75"><a href="#cb6-75" tabindex="-1"></a>    <span class="co">#y = expression(m[i](alpha)),</span></span>
+<span id="cb6-76"><a href="#cb6-76" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Function&quot;</span></span>
+<span id="cb6-77"><a href="#cb6-77" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-78"><a href="#cb6-78" tabindex="-1"></a>  </span>
+<span id="cb6-79"><a href="#cb6-79" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">2</span>, x_max, <span class="at">by =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb6-80"><a href="#cb6-80" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> y_breaks) <span class="sc">+</span></span>
+<span id="cb6-81"><a href="#cb6-81" tabindex="-1"></a>  </span>
+<span id="cb6-82"><a href="#cb6-82" tabindex="-1"></a>  <span class="co"># Legend fix</span></span>
+<span id="cb6-83"><a href="#cb6-83" tabindex="-1"></a>  <span class="fu">guides</span>(</span>
+<span id="cb6-84"><a href="#cb6-84" tabindex="-1"></a>    <span class="at">linetype =</span> <span class="st">&quot;none&quot;</span>,                 <span class="co"># hide linetype legend</span></span>
+<span id="cb6-85"><a href="#cb6-85" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">label.hjust =</span> <span class="dv">0</span>)    <span class="co"># one horizontal row</span></span>
+<span id="cb6-86"><a href="#cb6-86" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-87"><a href="#cb6-87" tabindex="-1"></a>  </span>
+<span id="cb6-88"><a href="#cb6-88" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb6-89"><a href="#cb6-89" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb6-90"><a href="#cb6-90" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>,</span>
+<span id="cb6-91"><a href="#cb6-91" tabindex="-1"></a>    <span class="at">legend.direction =</span> <span class="st">&quot;horizontal&quot;</span>,</span>
+<span id="cb6-92"><a href="#cb6-92" tabindex="-1"></a>    <span class="at">legend.spacing.x =</span> <span class="fu">unit</span>(<span class="fl">0.9</span>, <span class="st">&quot;cm&quot;</span>),   <span class="co"># increase horizontal spacing</span></span>
+<span id="cb6-93"><a href="#cb6-93" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb6-94"><a href="#cb6-94" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb6-95"><a href="#cb6-95" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb6-96"><a href="#cb6-96" tabindex="-1"></a>    <span class="at">axis.text.x  =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">13</span>, <span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb6-97"><a href="#cb6-97" tabindex="-1"></a>    <span class="at">axis.text.y  =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">13</span>)</span>
+<span id="cb6-98"><a href="#cb6-98" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Functions</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>m0 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">floor</span>(x<span class="sc">/</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">floor</span>(x<span class="sc">/</span><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">ceiling</span>(x) <span class="sc">-</span> <span class="dv">3</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co"># Range</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>x_min <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>x_max <span class="ot">&lt;-</span> <span class="fl">11.5</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>jumps <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">2.5</span>, x_max, <span class="at">by =</span> <span class="dv">1</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co"># Base intervals</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>intervals_base <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  <span class="at">left  =</span> <span class="fu">c</span>(x_min, jumps),</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  <span class="at">right =</span> <span class="fu">c</span>(jumps, x_max)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(left <span class="sc">&lt;</span> right)</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co"># m2 intervals</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>intervals2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">left =</span> <span class="dv">2</span><span class="sc">:</span>(<span class="fu">floor</span>(x_max)<span class="sc">-</span><span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">right =</span> left <span class="sc">+</span> <span class="dv">1</span>, <span class="at">y =</span> left <span class="sc">-</span> <span class="dv">2</span>, <span class="at">fun =</span> <span class="st">&quot;m2&quot;</span>) </span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co"># m0 and m1 intervals (only needed to build transforms)</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>intervals <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>  intervals_base <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">m0</span>((left <span class="sc">+</span> right)<span class="sc">/</span><span class="dv">2</span>), <span class="at">fun =</span> <span class="st">&quot;m0&quot;</span>),</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>  intervals_base <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">m1</span>((left <span class="sc">+</span> right)<span class="sc">/</span><span class="dv">2</span>), <span class="at">fun =</span> <span class="st">&quot;m1&quot;</span>)</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>)</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co"># Transformed functions</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>intervals_transformed <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>  intervals <span class="sc">%&gt;%</span> <span class="fu">filter</span>(fun <span class="sc">==</span> <span class="st">&quot;m0&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="dv">2</span><span class="sc">*</span>y <span class="sc">-</span> <span class="dv">2</span>, <span class="at">fun =</span> <span class="st">&quot;2m0-2&quot;</span>),</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>  intervals <span class="sc">%&gt;%</span> <span class="fu">filter</span>(fun <span class="sc">==</span> <span class="st">&quot;m1&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="dv">2</span><span class="sc">*</span>y <span class="sc">-</span> <span class="dv">1</span>, <span class="at">fun =</span> <span class="st">&quot;2m1-1&quot;</span>)</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>)</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co"># Combine only m2 and transformed curves</span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>intervals_all <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(intervals2, intervals_transformed)</span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co"># Remove negative values</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a>intervals_all <span class="ot">&lt;-</span> intervals_all <span class="sc">%&gt;%</span> <span class="fu">filter</span>(y <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co"># Legend order</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a>intervals_all <span class="ot">&lt;-</span> intervals_all <span class="sc">%&gt;%</span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fun =</span> <span class="fu">factor</span>(fun, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;m2&quot;</span>, <span class="st">&quot;2m0-2&quot;</span>, <span class="st">&quot;2m1-1&quot;</span>)))</span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co"># Endpoints</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a>endpoints_all <span class="ot">&lt;-</span> intervals_all <span class="sc">%&gt;%</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a>  <span class="fu">select</span>(left, right, y, fun) <span class="sc">%&gt;%</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(left, right),</span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">&quot;endpoint&quot;</span>,</span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">&quot;x&quot;</span>)</span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co"># Y-axis breaks</span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a>y_breaks <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(intervals_all<span class="sc">$</span>y)),</span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a>                <span class="fu">ceiling</span>(<span class="fu">max</span>(intervals_all<span class="sc">$</span>y)), <span class="dv">1</span>)</span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a></span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co"># Plot</span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(intervals_all, <span class="fu">aes</span>(<span class="at">color =</span> fun, <span class="at">linetype =</span> fun)) <span class="sc">+</span></span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a>  </span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> left, <span class="at">xend =</span> right, <span class="at">y =</span> y, <span class="at">yend =</span> y),</span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a>               <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a>  </span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> endpoints_all,</span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">21</span>, <span class="at">fill =</span> <span class="st">&quot;white&quot;</span>, <span class="at">stroke =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a>  </span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a>      <span class="st">&quot;m2&quot;</span>    <span class="ot">=</span> <span class="st">&quot;black&quot;</span>,</span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a>      <span class="st">&quot;2m0-2&quot;</span> <span class="ot">=</span> <span class="st">&quot;#33AA33&quot;</span>,</span>
+<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a>      <span class="st">&quot;2m1-1&quot;</span> <span class="ot">=</span> <span class="st">&quot;#AA33AA&quot;</span></span>
+<span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a>    ),</span>
+<span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;$m_2(</span><span class="sc">\\</span><span class="st">alpha) = </span><span class="sc">\\</span><span class="st">lceil </span><span class="sc">\\</span><span class="st">alpha </span><span class="sc">\\</span><span class="st">rceil - 3$&quot;</span>, <span class="st">&quot;$2m_0(</span><span class="sc">\\</span><span class="st">alpha)-2$&quot;</span>, <span class="st">&quot;$2m_1(</span><span class="sc">\\</span><span class="st">alpha)-1$&quot;</span>)</span>
+<span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a>  </span>
+<span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a>  <span class="fu">scale_linetype_manual</span>(</span>
+<span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;m2&quot;</span> <span class="ot">=</span> <span class="st">&quot;solid&quot;</span>, </span>
+<span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a>               <span class="st">&quot;2m0-2&quot;</span> <span class="ot">=</span> <span class="st">&quot;dashed&quot;</span>,</span>
+<span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a>               <span class="st">&quot;2m1-1&quot;</span> <span class="ot">=</span> <span class="st">&quot;dashed&quot;</span>)</span>
+<span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a>  </span>
+<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;$</span><span class="sc">\\</span><span class="st">alpha$&quot;</span>,</span>
+<span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a>    <span class="co">#y = expression(m[i](alpha)),</span></span>
+<span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb7-83"><a href="#cb7-83" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Function&quot;</span></span>
+<span id="cb7-84"><a href="#cb7-84" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-85"><a href="#cb7-85" tabindex="-1"></a>  </span>
+<span id="cb7-86"><a href="#cb7-86" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">2</span>, x_max, <span class="at">by =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb7-87"><a href="#cb7-87" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> y_breaks) <span class="sc">+</span></span>
+<span id="cb7-88"><a href="#cb7-88" tabindex="-1"></a>  </span>
+<span id="cb7-89"><a href="#cb7-89" tabindex="-1"></a>  <span class="co"># Legend fix</span></span>
+<span id="cb7-90"><a href="#cb7-90" tabindex="-1"></a>  <span class="fu">guides</span>(</span>
+<span id="cb7-91"><a href="#cb7-91" tabindex="-1"></a>    <span class="at">linetype =</span> <span class="st">&quot;none&quot;</span>,                 <span class="co"># hide linetype legend</span></span>
+<span id="cb7-92"><a href="#cb7-92" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">label.hjust =</span> <span class="dv">0</span>)    <span class="co"># one horizontal row</span></span>
+<span id="cb7-93"><a href="#cb7-93" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-94"><a href="#cb7-94" tabindex="-1"></a>  </span>
+<span id="cb7-95"><a href="#cb7-95" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb7-96"><a href="#cb7-96" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb7-97"><a href="#cb7-97" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>,</span>
+<span id="cb7-98"><a href="#cb7-98" tabindex="-1"></a>    <span class="at">legend.direction =</span> <span class="st">&quot;horizontal&quot;</span>,</span>
+<span id="cb7-99"><a href="#cb7-99" tabindex="-1"></a>    <span class="at">legend.spacing.x =</span> <span class="fu">unit</span>(<span class="fl">0.9</span>, <span class="st">&quot;cm&quot;</span>),   <span class="co"># increase horizontal spacing</span></span>
+<span id="cb7-100"><a href="#cb7-100" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb7-101"><a href="#cb7-101" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb7-102"><a href="#cb7-102" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb7-103"><a href="#cb7-103" tabindex="-1"></a>    <span class="at">axis.text.x  =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">13</span>, <span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb7-104"><a href="#cb7-104" tabindex="-1"></a>    <span class="at">axis.text.y  =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">13</span>)</span>
+<span id="cb7-105"><a href="#cb7-105" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>mplots_all <span class="ot">&lt;-</span> p1 <span class="sc">+</span> p2 <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co"># ggplot2::ggsave(here::here(&quot;data_files/mplots.png&quot;), width = 16, height = 5, plot = mplots_all, dpi = 300)</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">myggsave</span>(mplots_all, <span class="at">width =</span> <span class="dv">16</span>, <span class="at">height =</span> <span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co">#knitr::include_graphics(here::here(&quot;data_files/mplots.png&quot;))</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">include_graphics</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;data_files/tikzpic/mplots_all.pdf&quot;</span>))</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<embed src="data_files/tikzpic/mplots_all.pdf" title="Figure 1: Comparison of $m_0(\alpha) = \left\lfloor \frac{\alpha}{2} - \frac{1}{4} \right\rfloor$, $m_1(\alpha) = \left\lfloor \frac{\alpha}{2} - \frac{3}{4} \right\rfloor$, and $m_2(\alpha) = \lceil \alpha \rceil - 3$ (left) and comparison of $m_2(\alpha)$, $2m_0(\alpha)-2$, and $2m_1(\alpha)-1$ (right) as functions of $\alpha$." width="1600px" height="500px" type="application/pdf" />
+<p class="caption">
+Figure 1: Comparison of <span class="math inline">\(m_0(\alpha) =
+\left\lfloor \frac{\alpha}{2} - \frac{1}{4} \right\rfloor\)</span>,
+<span class="math inline">\(m_1(\alpha) = \left\lfloor \frac{\alpha}{2}
+- \frac{3}{4} \right\rfloor\)</span>, and <span
+class="math inline">\(m_2(\alpha) = \lceil \alpha \rceil - 3\)</span>
+(left) and comparison of <span
+class="math inline">\(m_2(\alpha)\)</span>, <span
+class="math inline">\(2m_0(\alpha)-2\)</span>, and <span
+class="math inline">\(2m_1(\alpha)-1\)</span> (right) as functions of
+<span class="math inline">\(\alpha\)</span>.
+</p>
+</div>
+<div id="references" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> References</h1>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>grateful<span class="sc">::</span><span class="fu">cite_packages</span>(<span class="at">output =</span> <span class="st">&quot;paragraph&quot;</span>, <span class="at">out.dir =</span> <span class="st">&quot;.&quot;</span>)</span></code></pre></div>
+<p>We used R version 4.5.2 <span class="citation">(R Core Team
+2025a)</span> and the following R packages: cowplot v. 1.2.0 <span
+class="citation">(Wilke 2025)</span>, ggmap v. 4.0.2 <span
+class="citation">(Kahle and Wickham 2013)</span>, ggpubr v. 0.6.3 <span
+class="citation">(Kassambara 2026)</span>, ggtext v. 0.1.2 <span
+class="citation">(Wilke and Wiernik 2022)</span>, glue v. 1.8.0 <span
+class="citation">(Hester and Bryan 2024)</span>, grid v. 4.5.2 <span
+class="citation">(R Core Team 2025b)</span>, here v. 1.0.1 <span
+class="citation">(Müller 2020)</span>, htmltools v. 0.5.8.1 <span
+class="citation">(Cheng et al. 2024)</span>, INLA v. 25.11.22 <span
+class="citation">(Rue, Martino, and Chopin 2009; Lindgren, Rue, and
+Lindström 2011; Martins et al. 2013; Lindgren and Rue 2015; De Coninck
+et al. 2016; Rue et al. 2017; Verbosio et al. 2017; Bakka et al. 2018;
+Kourounis, Fuchs, and Schenk 2018)</span>, inlabru v. 2.13.0 <span
+class="citation">(Yuan et al. 2017; Bachl et al. 2019)</span>, knitr v.
+1.50 <span class="citation">(Xie 2014, 2015, 2025)</span>, latex2exp v.
+0.9.8 <span class="citation">(Meschiari 2026)</span>, Matrix v. 1.7.3
+<span class="citation">(Bates, Maechler, and Jagan 2025)</span>,
+MetricGraph v. 1.5.0.9000 <span class="citation">(Bolin, Simas, and
+Wallin 2023a, 2023b, 2024, 2025; Bolin et al. 2024)</span>,
+OpenStreetMap v. 0.4.1 <span class="citation">(Fellows and Stotz
+2025)</span>, patchwork v. 1.3.1 <span class="citation">(Pedersen
+2025)</span>, plotly v. 4.11.0 <span class="citation">(Sievert
+2020)</span>, plotrix v. 3.8.14 <span class="citation">(J 2006)</span>,
+renv v. 1.1.7 <span class="citation">(Ushey and Wickham 2026)</span>,
+reshape2 v. 1.4.4 <span class="citation">(Wickham 2007)</span>,
+reticulate v. 1.44.1 <span class="citation">(Ushey, Allaire, and Tang
+2025)</span>, rmarkdown v. 2.30 <span class="citation">(Xie, Allaire,
+and Grolemund 2018; Xie, Dervieux, and Riederer 2020; Allaire et al.
+2025)</span>, rSPDE v. 2.5.2.9000 <span class="citation">(Bolin and
+Kirchner 2020; Bolin and Simas 2023; Bolin, Simas, and Xiong
+2024)</span>, scales v. 1.4.0 <span class="citation">(Wickham, Pedersen,
+and Seidel 2025)</span>, sf v. 1.1.0 <span class="citation">(E. Pebesma
+2018; E. Pebesma and Bivand 2023)</span>, slackr v. 3.4.0 <span
+class="citation">(Kaye et al. 2025)</span>, sp v. 2.2.1 <span
+class="citation">(E. J. Pebesma and Bivand 2005; Bivand, Pebesma, and
+Gomez-Rubio 2013)</span>, tidyverse v. 2.0.0 <span
+class="citation">(Wickham et al. 2019)</span>, tikzDevice v. 0.12.6
+<span class="citation">(Sharpsteen and Bracken 2023)</span>, viridis v.
+0.6.5 <span class="citation">(Garnier et al. 2024)</span>, xaringanExtra
+v. 0.8.0 <span class="citation">(Aden-Buie and Warkentin
+2024)</span>.</p>
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+<div id="ref-xaringanExtra" class="csl-entry">
+Aden-Buie, Garrick, and Matthew T. Warkentin. 2024. <em><span
+class="nocase">xaringanExtra</span>: Extras and Extensions for
+<span>“<span class="nocase">xaringan</span>”</span> Slides</em>. <a
+href="https://doi.org/10.32614/CRAN.package.xaringanExtra">https://doi.org/10.32614/CRAN.package.xaringanExtra</a>.
+</div>
+<div id="ref-rmarkdown2025" class="csl-entry">
+Allaire, JJ, Yihui Xie, Christophe Dervieux, Jonathan McPherson, Javier
+Luraschi, Kevin Ushey, Aron Atkins, et al. 2025. <em><span
+class="nocase">rmarkdown</span>: Dynamic Documents for r</em>. <a
+href="https://github.com/rstudio/rmarkdown">https://github.com/rstudio/rmarkdown</a>.
+</div>
+<div id="ref-inlabru2019" class="csl-entry">
+Bachl, Fabian E., Finn Lindgren, David L. Borchers, and Janine B.
+Illian. 2019. <span>“<span class="nocase">inlabru</span>: An
+<span>R</span> Package for <span>Bayesian</span> Spatial Modelling from
+Ecological Survey Data.”</span> <em>Methods in Ecology and
+Evolution</em> 10: 760–66. <a
+href="https://doi.org/10.1111/2041-210X.13168">https://doi.org/10.1111/2041-210X.13168</a>.
+</div>
+<div id="ref-INLA2018f" class="csl-entry">
+Bakka, Haakon, Håvard Rue, Geir-Arne Fuglstad, Andrea I. Riebler, David
+Bolin, Janine Illian, Elias Krainski, Daniel P. Simpson, and Finn K.
+Lindgren. 2018. <span>“Spatial Modelling with <span>INLA</span>:
+<span>A</span> Review.”</span> <em>WIRES (Invited Extended Review)</em>
+xx (Feb): xx–. <a
+href="http://arxiv.org/abs/1802.06350">http://arxiv.org/abs/1802.06350</a>.
+</div>
+<div id="ref-Matrix" class="csl-entry">
+Bates, Douglas, Martin Maechler, and Mikael Jagan. 2025.
+<em><span>Matrix</span>: Sparse and Dense Matrix Classes and
+Methods</em>. <a
+href="https://doi.org/10.32614/CRAN.package.Matrix">https://doi.org/10.32614/CRAN.package.Matrix</a>.
+</div>
+<div id="ref-sp2013" class="csl-entry">
+Bivand, Roger S., Edzer Pebesma, and Virgilio Gomez-Rubio. 2013.
+<em>Applied Spatial Data Analysis with <span>R</span>, Second
+Edition</em>. Springer, NY. <a
+href="https://asdar-book.org/">https://asdar-book.org/</a>.
+</div>
+<div id="ref-rSPDE2020" class="csl-entry">
+Bolin, David, and Kristin Kirchner. 2020. <span>“The Rational
+<span>SPDE</span> Approach for <span>Gaussian</span> Random Fields with
+General Smoothness.”</span> <em>Journal of Computational and Graphical
+Statistics</em> 29 (2): 274–85. <a
+href="https://doi.org/10.1080/10618600.2019.1665537">https://doi.org/10.1080/10618600.2019.1665537</a>.
+</div>
+<div id="ref-MetricGraph2024c" class="csl-entry">
+Bolin, David, Mihály Kovács, Vivek Kumar, and Alexandre B. Simas. 2024.
+<span>“Regularity and Numerical Approximation of Fractional Elliptic
+Differential Equations on Compact Metric Graphs.”</span> <em>Mathematics
+of Computation</em> 93 (349): 2439–72. <a
+href="https://doi.org/10.1090/mcom/3929">https://doi.org/10.1090/mcom/3929</a>.
+</div>
+<div id="ref-rSPDE2023" class="csl-entry">
+Bolin, David, and Alexandre B. Simas. 2023. <em><span
+class="nocase">rSPDE</span>: Rational Approximations of Fractional
+Stochastic Partial Differential Equations</em>. <a
+href="https://CRAN.R-project.org/package=rSPDE">https://CRAN.R-project.org/package=rSPDE</a>.
+</div>
+<div id="ref-MetricGraph2023a" class="csl-entry">
+Bolin, David, Alexandre B. Simas, and Jonas Wallin. 2023a.
+<em><span>MetricGraph</span>: Random Fields on Metric Graphs</em>. <a
+href="https://CRAN.R-project.org/package=MetricGraph">https://CRAN.R-project.org/package=MetricGraph</a>.
+</div>
+<div id="ref-MetricGraph2023e" class="csl-entry">
+———. 2023b. <span>“Statistical Inference for Gaussian Whittle-Matérn
+Fields on Metric Graphs.”</span> <em>arXiv Preprint
+arXiv:2304.10372</em>. <a
+href="https://doi.org/10.48550/arXiv.2304.10372">https://doi.org/10.48550/arXiv.2304.10372</a>.
+</div>
+<div id="ref-MetricGraph2024b" class="csl-entry">
+———. 2024. <span>“Gaussian Whittle-Matérn Fields on Metric
+Graphs.”</span> <em>Bernoulli</em> 30 (2): 1611–39. <a
+href="https://doi.org/10.3150/23-BEJ1647">https://doi.org/10.3150/23-BEJ1647</a>.
+</div>
+<div id="ref-MetricGraph2025d" class="csl-entry">
+———. 2025. <span>“Markov Properties of Gaussian Random Fields on Compact
+Metric Graphs.”</span> <em>Bernoulli</em>. <a
+href="https://doi.org/10.48550/arXiv.2304.03190">https://doi.org/10.48550/arXiv.2304.03190</a>.
+</div>
+<div id="ref-rSPDE2024" class="csl-entry">
+Bolin, David, Alexandre B. Simas, and Zhen Xiong. 2024.
+<span>“Covariance-Based Rational Approximations of Fractional SPDEs for
+Computationally Efficient Bayesian Inference.”</span> <em>Journal of
+Computational and Graphical Statistics</em> 33 (1): 64–74. <a
+href="https://doi.org/10.1080/10618600.2023.2231051">https://doi.org/10.1080/10618600.2023.2231051</a>.
+</div>
+<div id="ref-htmltools" class="csl-entry">
+Cheng, Joe, Carson Sievert, Barret Schloerke, Winston Chang, Yihui Xie,
+and Jeff Allen. 2024. <em><span class="nocase">htmltools</span>: Tools
+for HTML</em>. <a
+href="https://github.com/rstudio/htmltools">https://github.com/rstudio/htmltools</a>.
+</div>
+<div id="ref-INLA2016g" class="csl-entry">
+De Coninck, Arne, Bernard De Baets, Drosos Kourounis, Fabio Verbosio,
+Olaf Schenk, Steven Maenhout, and Jan Fostier. 2016.
+<span>“<span>Needles</span>: Toward Large-Scale Genomic Prediction with
+Marker-by-Environment Interaction.”</span> <em>Genetics</em> 203 (1):
+543–55. <a
+href="https://doi.org/10.1534/genetics.115.179887">https://doi.org/10.1534/genetics.115.179887</a>.
+</div>
+<div id="ref-OpenStreetMap" class="csl-entry">
+Fellows, Ian, and Jan-Peter Stotz. 2025. <em><span>OpenStreetMap</span>:
+Access to Open Street Map Raster Images</em>. <a
+href="https://doi.org/10.32614/CRAN.package.OpenStreetMap">https://doi.org/10.32614/CRAN.package.OpenStreetMap</a>.
+</div>
+<div id="ref-viridis" class="csl-entry">
+Garnier, Simon, Ross, Noam, Rudis, Robert, Camargo, et al. 2024.
+<em><span class="nocase">viridis(Lite)</span> - Colorblind-Friendly
+Color Maps for r</em>. <a
+href="https://doi.org/10.5281/zenodo.4679423">https://doi.org/10.5281/zenodo.4679423</a>.
+</div>
+<div id="ref-glue" class="csl-entry">
+Hester, Jim, and Jennifer Bryan. 2024. <em><span
+class="nocase">glue</span>: Interpreted String Literals</em>. <a
+href="https://glue.tidyverse.org/">https://glue.tidyverse.org/</a>.
+</div>
+<div id="ref-plotrix" class="csl-entry">
+J, Lemon. 2006. <span>“<span>Plotrix</span>: A Package in the Red Light
+District of r.”</span> <em>R-News</em> 6 (4): 8–12.
+</div>
+<div id="ref-ggmap" class="csl-entry">
+Kahle, David, and Hadley Wickham. 2013. <span>“<span
+class="nocase">ggmap</span>: Spatial Visualization with Ggplot2.”</span>
+<em>The R Journal</em> 5 (1): 144–61. <a
+href="https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf">https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf</a>.
+</div>
+<div id="ref-ggpubr" class="csl-entry">
+Kassambara, Alboukadel. 2026. <em><span class="nocase">ggpubr</span>:
+<span>“<span class="nocase">ggplot2</span>”</span> Based Publication
+Ready Plots</em>. <a
+href="https://doi.org/10.32614/CRAN.package.ggpubr">https://doi.org/10.32614/CRAN.package.ggpubr</a>.
+</div>
+<div id="ref-slackr" class="csl-entry">
+Kaye, Matt, Bob Rudis, Andrie de Vries, and Jonathan Sidi. 2025.
+<em><span class="nocase">slackr</span>: Send Messages, Images, r Objects
+and Files to <span>“<span>Slack</span>”</span> Channels/Users</em>. <a
+href="https://github.com/mrkaye97/slackr">https://github.com/mrkaye97/slackr</a>.
+</div>
+<div id="ref-INLA2018i" class="csl-entry">
+Kourounis, D., A. Fuchs, and O. Schenk. 2018. <span>“Towards the Next
+Generation of Multiperiod Optimal Power Flow Solvers.”</span> <em>IEEE
+Transactions on Power Systems</em> PP (99): 1–10. <a
+href="https://doi.org/10.1109/TPWRS.2017.2789187">https://doi.org/10.1109/TPWRS.2017.2789187</a>.
+</div>
+<div id="ref-INLA2015d" class="csl-entry">
+Lindgren, Finn, and Håvard Rue. 2015. <span>“Bayesian Spatial Modelling
+with <span>R</span>-<span>INLA</span>.”</span> <em>Journal of
+Statistical Software</em> 63 (19): 1–25. <a
+href="http://www.jstatsoft.org/v63/i19/">http://www.jstatsoft.org/v63/i19/</a>.
+</div>
+<div id="ref-INLA2011c" class="csl-entry">
+Lindgren, Finn, Håvard Rue, and Johan Lindström. 2011. <span>“An
+Explicit Link Between <span>Gaussian</span> Fields and
+<span>Gaussian</span> <span>Markov</span> Random Fields: The Stochastic
+Partial Differential Equation Approach (with Discussion).”</span>
+<em>Journal of the Royal Statistical Society B</em> 73 (4): 423–98.
+</div>
+<div id="ref-INLA2013b" class="csl-entry">
+Martins, Thiago G., Daniel Simpson, Finn Lindgren, and Håvard Rue. 2013.
+<span>“Bayesian Computing with <span>INLA</span>: <span>N</span>ew
+Features.”</span> <em>Computational Statistics and Data Analysis</em>
+67: 68–83.
+</div>
+<div id="ref-latex2exp" class="csl-entry">
+Meschiari, Stefano. 2026. <em>Latex2exp: Use LaTeX Expressions in
+Plots</em>. <a
+href="https://doi.org/10.32614/CRAN.package.latex2exp">https://doi.org/10.32614/CRAN.package.latex2exp</a>.
+</div>
+<div id="ref-here" class="csl-entry">
+Müller, Kirill. 2020. <em><span class="nocase">here</span>: A Simpler
+Way to Find Your Files</em>. <a
+href="https://doi.org/10.32614/CRAN.package.here">https://doi.org/10.32614/CRAN.package.here</a>.
+</div>
+<div id="ref-sf2018" class="csl-entry">
+Pebesma, Edzer. 2018. <span>“<span class="nocase">Simple Features for R:
+Standardized Support for Spatial Vector Data</span>.”</span>
+<em><span>The R Journal</span></em> 10 (1): 439–46. <a
+href="https://doi.org/10.32614/RJ-2018-009">https://doi.org/10.32614/RJ-2018-009</a>.
+</div>
+<div id="ref-sp2005" class="csl-entry">
+Pebesma, Edzer J., and Roger Bivand. 2005. <span>“Classes and Methods
+for Spatial Data in <span>R</span>.”</span> <em>R News</em> 5 (2): 9–13.
+<a
+href="https://CRAN.R-project.org/doc/Rnews/">https://CRAN.R-project.org/doc/Rnews/</a>.
+</div>
+<div id="ref-sf2023" class="csl-entry">
+Pebesma, Edzer, and Roger Bivand. 2023. <em><span class="nocase">Spatial
+Data Science: With applications in R</span></em>. <span>Chapman and
+Hall/CRC</span>. <a
+href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
+</div>
+<div id="ref-patchwork" class="csl-entry">
+Pedersen, Thomas Lin. 2025. <em><span class="nocase">patchwork</span>:
+The Composer of Plots</em>. <a
+href="https://doi.org/10.32614/CRAN.package.patchwork">https://doi.org/10.32614/CRAN.package.patchwork</a>.
+</div>
+<div id="ref-base" class="csl-entry">
+R Core Team. 2025a. <em><span>R</span>: A Language and Environment for
+Statistical Computing</em>. Vienna, Austria: R Foundation for
+Statistical Computing. <a
+href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-grid" class="csl-entry">
+———. 2025b. <em><span>R</span>: A Language and Environment for
+Statistical Computing</em>. Vienna, Austria: R Foundation for
+Statistical Computing. <a
+href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-INLA2009a" class="csl-entry">
+Rue, Håvard, Sara Martino, and Nicholas Chopin. 2009. <span>“Approximate
+<span>Bayesian</span> Inference for Latent <span>Gaussian</span> Models
+Using Integrated Nested <span>Laplace</span> Approximations (with
+Discussion).”</span> <em>Journal of the Royal Statistical Society B</em>
+71: 319–92.
+</div>
+<div id="ref-INLA2017e" class="csl-entry">
+Rue, Håvard, Andrea I. Riebler, Sigrunn H. Sørbye, Janine B. Illian,
+Daniel P. Simpson, and Finn K. Lindgren. 2017. <span>“Bayesian Computing
+with <span>INLA</span>: <span>A</span> Review.”</span> <em>Annual
+Reviews of Statistics and Its Applications</em> 4 (March): 395–421. <a
+href="http://arxiv.org/abs/1604.00860">http://arxiv.org/abs/1604.00860</a>.
+</div>
+<div id="ref-tikzDevice" class="csl-entry">
+Sharpsteen, Charlie, and Cameron Bracken. 2023. <em><span
+class="nocase">tikzDevice</span>: R Graphics Output in LaTeX
+Format</em>. <a
+href="https://doi.org/10.32614/CRAN.package.tikzDevice">https://doi.org/10.32614/CRAN.package.tikzDevice</a>.
+</div>
+<div id="ref-plotly" class="csl-entry">
+Sievert, Carson. 2020. <em>Interactive Web-Based Data Visualization with
+r, Plotly, and Shiny</em>. Chapman; Hall/CRC. <a
+href="https://plotly-r.com">https://plotly-r.com</a>.
+</div>
+<div id="ref-reticulate" class="csl-entry">
+Ushey, Kevin, JJ Allaire, and Yuan Tang. 2025. <em><span
+class="nocase">reticulate</span>: Interface to
+<span>“<span>Python</span>”</span></em>. <a
+href="https://doi.org/10.32614/CRAN.package.reticulate">https://doi.org/10.32614/CRAN.package.reticulate</a>.
+</div>
+<div id="ref-renv" class="csl-entry">
+Ushey, Kevin, and Hadley Wickham. 2026. <em><span
+class="nocase">renv</span>: Project Environments</em>. <a
+href="https://doi.org/10.32614/CRAN.package.renv">https://doi.org/10.32614/CRAN.package.renv</a>.
+</div>
+<div id="ref-INLA2017h" class="csl-entry">
+Verbosio, Fabio, Arne De Coninck, Drosos Kourounis, and Olaf Schenk.
+2017. <span>“Enhancing the Scalability of Selected Inversion
+Factorization Algorithms in Genomic Prediction.”</span> <em>Journal of
+Computational Science</em> 22 (Supplement C): 99–108. <a
+href="https://doi.org/10.1016/j.jocs.2017.08.013">https://doi.org/10.1016/j.jocs.2017.08.013</a>.
+</div>
+<div id="ref-reshape2" class="csl-entry">
+Wickham, Hadley. 2007. <span>“Reshaping Data with the <span
+class="nocase">reshape</span> Package.”</span> <em>Journal of
+Statistical Software</em> 21 (12): 1–20. <a
+href="http://www.jstatsoft.org/v21/i12/">http://www.jstatsoft.org/v21/i12/</a>.
+</div>
+<div id="ref-tidyverse" class="csl-entry">
+Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy
+D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019.
+<span>“Welcome to the <span class="nocase">tidyverse</span>.”</span>
+<em>Journal of Open Source Software</em> 4 (43): 1686. <a
+href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
+</div>
+<div id="ref-scales" class="csl-entry">
+Wickham, Hadley, Thomas Lin Pedersen, and Dana Seidel. 2025. <em><span
+class="nocase">scales</span>: Scale Functions for Visualization</em>. <a
+href="https://scales.r-lib.org">https://scales.r-lib.org</a>.
+</div>
+<div id="ref-cowplot" class="csl-entry">
+Wilke, Claus O. 2025. <em><span class="nocase">cowplot</span>:
+Streamlined Plot Theme and Plot Annotations for <span>“<span
+class="nocase">ggplot2</span>”</span></em>. <a
+href="https://doi.org/10.32614/CRAN.package.cowplot">https://doi.org/10.32614/CRAN.package.cowplot</a>.
+</div>
+<div id="ref-ggtext" class="csl-entry">
+Wilke, Claus O., and Brenton M. Wiernik. 2022. <em><span
+class="nocase">ggtext</span>: Improved Text Rendering Support for
+<span>“<span class="nocase">ggplot2</span>”</span></em>. <a
+href="https://doi.org/10.32614/CRAN.package.ggtext">https://doi.org/10.32614/CRAN.package.ggtext</a>.
+</div>
+<div id="ref-knitr2014" class="csl-entry">
+Xie, Yihui. 2014. <span>“<span class="nocase">knitr</span>: A
+Comprehensive Tool for Reproducible Research in <span>R</span>.”</span>
+In <em>Implementing Reproducible Computational Research</em>, edited by
+Victoria Stodden, Friedrich Leisch, and Roger D. Peng. Chapman;
+Hall/CRC.
+</div>
+<div id="ref-knitr2015" class="csl-entry">
+———. 2015. <em>Dynamic Documents with <span>R</span> and Knitr</em>. 2nd
+ed. Boca Raton, Florida: Chapman; Hall/CRC. <a
+href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div id="ref-knitr2025" class="csl-entry">
+———. 2025. <em><span class="nocase">knitr</span>: A General-Purpose
+Package for Dynamic Report Generation in <span>R</span></em>. <a
+href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div id="ref-rmarkdown2018" class="csl-entry">
+Xie, Yihui, J. J. Allaire, and Garrett Grolemund. 2018. <em>R Markdown:
+The Definitive Guide</em>. Boca Raton, Florida: Chapman; Hall/CRC. <a
+href="https://bookdown.org/yihui/rmarkdown">https://bookdown.org/yihui/rmarkdown</a>.
+</div>
+<div id="ref-rmarkdown2020" class="csl-entry">
+Xie, Yihui, Christophe Dervieux, and Emily Riederer. 2020. <em>R
+Markdown Cookbook</em>. Boca Raton, Florida: Chapman; Hall/CRC. <a
+href="https://bookdown.org/yihui/rmarkdown-cookbook">https://bookdown.org/yihui/rmarkdown-cookbook</a>.
+</div>
+<div id="ref-inlabru2017" class="csl-entry">
+Yuan, Yuan, Bachl, Fabian E., Lindgren, Finn, Borchers, et al. 2017.
+<span>“Point Process Models for Spatio-Temporal Distance Sampling Data
+from a Large-Scale Survey of Blue Whales.”</span> <em>Ann. Appl.
+Stat.</em> 11 (4): 2270–97. <a
+href="https://doi.org/10.1214/17-AOAS1078">https://doi.org/10.1214/17-AOAS1078</a>.
+</div>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiTSBwbG90cyIKZGF0ZTogIkxhc3QgbW9kaWZpZWQ6IGByIGZvcm1hdChTeXMudGltZSgpLCAnJWQtJW0tJVkuJylgIgpvdXRwdXQ6CiAgaHRtbF9kb2N1bWVudDoKICAgIG1hdGhqYXg6ICJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL21hdGhqYXhAMy9lczUvdGV4LW1tbC1jaHRtbC5qcyIKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBmbGF0bHkKICAgIGNvZGVfZm9sZGluZzogaGlkZSAjIGNsYXNzLnNvdXJjZSA9ICJmb2xkLWhpZGUiIHRvIGhpZGUgY29kZSBhbmQgYWRkIGEgYnV0dG9uIHRvIHNob3cgaXQKICAgIGRmX3ByaW50OiBwYWdlZAogICAgdG9jOiB0cnVlCiAgICB0b2NfZmxvYXQ6CiAgICAgIGNvbGxhcHNlZDogdHJ1ZQogICAgICBzbW9vdGhfc2Nyb2xsOiB0cnVlCiAgICBudW1iZXJfc2VjdGlvbnM6IHRydWUKICAgIGZpZ19jYXB0aW9uOiB0cnVlCiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCiAgICBjc3M6IHZpc3VhbC5jc3MKYWx3YXlzX2FsbG93X2h0bWw6IHRydWUKYmlibGlvZ3JhcGh5OiAKICAtIHJlZmVyZW5jZXMuYmliCiAgLSBncmF0ZWZ1bC1yZWZzLmJpYgpoZWFkZXItaW5jbHVkZXM6CiAgLSBcbmV3Y29tbWFuZHtcYXJ9e1xtYXRoYmJ7Un19CiAgLSBcbmV3Y29tbWFuZHtcbGxhdn1bMV17XGxlZnRceyMxXHJpZ2h0XH19CiAgLSBcbmV3Y29tbWFuZHtccGFyZX1bMV17XGxlZnQoIzFccmlnaHQpfQogIC0gXG5ld2NvbW1hbmR7XE5jYWx9e1xtYXRoY2Fse059fQogIC0gXG5ld2NvbW1hbmR7XFZjYWx9e1xtYXRoY2Fse1Z9fQogIC0gXG5ld2NvbW1hbmR7XEVjYWx9e1xtYXRoY2Fse0V9fQogIC0gXG5ld2NvbW1hbmR7XFdjYWx9e1xtYXRoY2Fse1d9fQotLS0KCkdvIGJhY2sgdG8gdGhlIFtDb250ZW50c10oYWJvdXQuaHRtbCkgcGFnZS4KCjxkaXYgc3R5bGU9ImNvbG9yOiAjMmMzZTUwOyB0ZXh0LWFsaWduOiByaWdodDsiPgoqKioqKioqKiAgCjxzdHJvbmc+UHJlc3MgU2hvdyB0byByZXZlYWwgdGhlIGNvZGUgY2h1bmtzLjwvc3Ryb25nPiAgCgoqKioqKioqKgo8L2Rpdj4KCgpMZXQgdXMgc2V0IHNvbWUgZ2xvYmFsIG9wdGlvbnMgZm9yIGFsbCBjb2RlIGNodW5rcyBpbiB0aGlzIGRvY3VtZW50LgoKCmBgYHtyfQojIENyZWF0ZSBhIGNsaXBib2FyZCBidXR0b24Kc291cmNlKGhlcmU6OmhlcmUoImNsaXBib2FyZC5SIikpOyBjbGlwYm9hcmQKIyBTZXQgc2VlZCBmb3IgcmVwcm9kdWNpYmlsaXR5CnNldC5zZWVkKDE5ODIpIAojIFNldCBnbG9iYWwgb3B0aW9ucyBmb3IgYWxsIGNvZGUgY2h1bmtzCmtuaXRyOjpvcHRzX2NodW5rJHNldCgKICAjIERpc2FibGUgbWVzc2FnZXMgcHJpbnRlZCBieSBSIGNvZGUgY2h1bmtzCiAgbWVzc2FnZSA9IEZBTFNFLCAgICAKICAjIERpc2FibGUgd2FybmluZ3MgcHJpbnRlZCBieSBSIGNvZGUgY2h1bmtzCiAgd2FybmluZyA9IEZBTFNFLCAgICAKICAjIFNob3cgUiBjb2RlIHdpdGhpbiBjb2RlIGNodW5rcyBpbiBvdXRwdXQKICBlY2hvID0gVFJVRSwgICAgICAgIAogICMgSW5jbHVkZSBib3RoIFIgY29kZSBhbmQgaXRzIHJlc3VsdHMgaW4gb3V0cHV0CiAgaW5jbHVkZSA9IFRSVUUsICAgICAKICAjIEV2YWx1YXRlIFIgY29kZSBjaHVua3MKICBldmFsID0gVFJVRSwgICAgICAgCiAgIyBFbmFibGUgY2FjaGluZyBvZiBSIGNvZGUgY2h1bmtzIGZvciBmYXN0ZXIgcmVuZGVyaW5nCiAgY2FjaGUgPSBGQUxTRSwgICAgICAKICAjIEFsaWduIGZpZ3VyZXMgaW4gdGhlIGNlbnRlciBvZiB0aGUgb3V0cHV0CiAgZmlnLmFsaWduID0gImNlbnRlciIsCiAgIyBFbmFibGUgcmV0aW5hIGRpc3BsYXkgZm9yIGhpZ2gtcmVzb2x1dGlvbiBmaWd1cmVzCiAgcmV0aW5hID0gMiwKICAjIFNob3cgZXJyb3JzIGluIHRoZSBvdXRwdXQgaW5zdGVhZCBvZiBzdG9wcGluZyByZW5kZXJpbmcKICBlcnJvciA9IFRSVUUsCiAgIyBEbyBub3QgY29sbGFwc2UgY29kZSBhbmQgb3V0cHV0IGludG8gYSBzaW5nbGUgYmxvY2sKICBjb2xsYXBzZSA9IEZBTFNFCikKIyBTdGFydCB0aGUgZmlndXJlIGNvdW50ZXIKZmlnX2NvdW50IDwtIDAKIyBEZWZpbmUgdGhlIGNhcHRpb25lciBmdW5jdGlvbgpjYXB0aW9uZXIgPC0gZnVuY3Rpb24oY2FwdGlvbikgewogIGZpZ19jb3VudCA8PC0gZmlnX2NvdW50ICsgMQogIHBhc3RlMCgiRmlndXJlICIsIGZpZ19jb3VudCwgIjogIiwgY2FwdGlvbikKfQojIERlZmluZSB0aGUgZnVuY3Rpb24gdG8gdHJ1bmNhdGUgYSBudW1iZXIgdG8gdHdvIGRlY2ltYWwgcGxhY2VzCnRydW5jYXRlX3RvX3R3byA8LSBmdW5jdGlvbih4KSB7CiAgdHJ1bmNhdGVkIDwtIGZsb29yKHggKiAxMDApIC8gMTAwCiAgc3ByaW50ZigiJS4yZiIsIHRydW5jYXRlZCkKfQpgYGAKCgoKYGBge3IsIGV2YWwgPSBUUlVFfQpsaWJyYXJ5KGRwbHlyKQpsaWJyYXJ5KHRpZHlyKQpsaWJyYXJ5KGdncGxvdDIpCmxpYnJhcnkoaGVyZSkKCmxpYnJhcnkoc2xhY2tyKQpzb3VyY2UoImtleXMuUiIpCnNsYWNrcl9zZXR1cCh0b2tlbiA9IHRva2VuKSAjIHRva2VuIGNvbWVzIGZyb20ga2V5cy5SCmBgYAoKCmBgYHtyfQpjYXB0dXJlLm91dHB1dCgKICBrbml0cjo6cHVybChoZXJlOjpoZXJlKCJmdW5jdGlvbmFsaXR5MS5SbWQiKSwgb3V0cHV0ID0gaGVyZTo6aGVyZSgiZnVuY3Rpb25hbGl0eTEuUiIpKSwKICBmaWxlID0gaGVyZTo6aGVyZSgib2xkL3B1cmxfbG9nLnR4dCIpCikKc291cmNlKGhlcmU6OmhlcmUoImZ1bmN0aW9uYWxpdHkxLlIiKSkKYGBgCgoKYGBge3IsIGV2YWwgPSBGQUxTRX0KCiMgRnVuY3Rpb25zCm0wIDwtIGZ1bmN0aW9uKHgpIGZsb29yKHgvMiAtIDEvNCkKbTEgPC0gZnVuY3Rpb24oeCkgZmxvb3IoeC8yIC0gMy80KQptMiA8LSBmdW5jdGlvbih4KSBjZWlsaW5nKHgpIC0gMwoKIyBSYW5nZQp4X21pbiA8LSAyCnhfbWF4IDwtIDExLjUKanVtcHMgPC0gc2VxKDIuNSwgeF9tYXgsIGJ5ID0gMSkKCiMgSW50ZXJ2YWxzCmludGVydmFsc19iYXNlIDwtIGRhdGEuZnJhbWUoCiAgbGVmdCAgPSBjKHhfbWluLCBqdW1wcyksCiAgcmlnaHQgPSBjKGp1bXBzLCB4X21heCkKKSAlPiUgZmlsdGVyKGxlZnQgPCByaWdodCkKCiMgSW50ZXJ2YWxzIGZvciBjZWlsIGZ1bmN0aW9uCmludGVydmFsczIgPC0gZGF0YS5mcmFtZShsZWZ0ID0gMjooZmxvb3IoeF9tYXgpLTEpKSAlPiUKICBtdXRhdGUocmlnaHQgPSBsZWZ0ICsgMSwgeSA9IGxlZnQgLSAyLCBmdW4gPSAiY2VpbCIpIAoKIyBJbnRlcnZhbHMgZm9yIG0wIGFuZCBtMQppbnRlcnZhbHMgPC0gYmluZF9yb3dzKAogIGludGVydmFsc19iYXNlICU+JSBtdXRhdGUoeSA9IG0wKChsZWZ0ICsgcmlnaHQpLzIpLCBmdW4gPSAibTAiKSwKICBpbnRlcnZhbHNfYmFzZSAlPiUgbXV0YXRlKHkgPSBtMSgobGVmdCArIHJpZ2h0KS8yKSwgZnVuID0gIm0xIikKKQoKIyBDb21iaW5lIGFsbCBpbnRlcnZhbHMKaW50ZXJ2YWxzX2FsbCA8LSBiaW5kX3Jvd3MoaW50ZXJ2YWxzLCBpbnRlcnZhbHMyKQoKIyBDb252ZXJ0ICdmdW4nIHRvIGZhY3RvciB0byBmaXggbGVnZW5kIG9yZGVyCmludGVydmFsc19hbGwgPC0gaW50ZXJ2YWxzX2FsbCAlPiUKICBtdXRhdGUoZnVuID0gZmFjdG9yKGZ1biwgbGV2ZWxzID0gYygibTAiLCAibTEiLCAiY2VpbCIpKSkKCiMgRW5kcG9pbnRzIGZvciBwbG90dGluZyBwb2ludHMKZW5kcG9pbnRzX2FsbCA8LSBpbnRlcnZhbHNfYWxsICU+JQogIHNlbGVjdChsZWZ0LCByaWdodCwgeSwgZnVuKSAlPiUKICBwaXZvdF9sb25nZXIoY29scyA9IGMobGVmdCwgcmlnaHQpLAogICAgICAgICAgICAgICBuYW1lc190byA9ICJlbmRwb2ludCIsCiAgICAgICAgICAgICAgIHZhbHVlc190byA9ICJ4IikgJT4lCiAgbXV0YXRlKGZ1biA9IGZhY3RvcihmdW4sIGxldmVscyA9IGMoIm0wIiwgIm0xIiwgImNlaWwiKSkpCgojIFktYXhpcyBicmVha3MKeV9icmVha3MgPC0gc2VxKGZsb29yKG1pbihpbnRlcnZhbHNfYWxsJHkpKSwKICAgICAgICAgICAgICAgIGNlaWxpbmcobWF4KGludGVydmFsc19hbGwkeSkpLCAxKQoKIyBQbG90CnAxIDwtIGdncGxvdChpbnRlcnZhbHNfYWxsLCBhZXMoY29sb3IgPSBmdW4sIGxpbmV0eXBlID0gZnVuKSkgKwogIAogICMgSG9yaXpvbnRhbCBzZWdtZW50cwogIGdlb21fc2VnbWVudChhZXMoeCA9IGxlZnQsIHhlbmQgPSByaWdodCwgeSA9IHksIHllbmQgPSB5KSwKICAgICAgICAgICAgICAgbGluZXdpZHRoID0gMikgKwogIAogICMgRW5kcG9pbnRzCiAgZ2VvbV9wb2ludChkYXRhID0gZW5kcG9pbnRzX2FsbCwKICAgICAgICAgICAgIGFlcyh4ID0geCwgeSA9IHkpLAogICAgICAgICAgICAgc2hhcGUgPSAyMSwgZmlsbCA9ICJ3aGl0ZSIsIHN0cm9rZSA9IDEsIHNpemUgPSAxLjUpICsKICAKICAjIE1hbnVhbCBjb2xvcnMKICBzY2FsZV9jb2xvcl9tYW51YWwoCiAgICB2YWx1ZXMgPSBjKCJtMCIgPSAiI0ZGNjY2NiIsICAgIyBhIG1lZGl1bSByZWQvcGluawogICAgICAgICAgICAgICAibTEiID0gIiM2Njk5RkYiLCAgICMgYSBtZWRpdW0gYmx1ZQogICAgICAgICAgICAgICAiY2VpbCIgPSAiYmxhY2siKSwKICAgIGxhYmVscyA9IGMoIiRtXzAoXFxhbHBoYSkgPSBcXGxlZnRcXGxmbG9vciBcXGZyYWN7XFxhbHBoYX17Mn0gLSBcXGZyYWN7MX17NH0gXFxyaWdodFxccmZsb29yJCIsICIkbV8xKFxcYWxwaGEpID0gXFxsZWZ0XFxsZmxvb3IgXFxmcmFje1xcYWxwaGF9ezJ9IC0gXFxmcmFjezN9ezR9IFxccmlnaHRcXHJmbG9vciQiLCAiJG1fMihcXGFscGhhKSA9IFxcbGNlaWwgXFxhbHBoYSBcXHJjZWlsIC0gMyQiKQogICkgKwogIAogICMgTWFudWFsIGxpbmV0eXBlcwogIHNjYWxlX2xpbmV0eXBlX21hbnVhbCgKICAgIHZhbHVlcyA9IGMoIm0wIiA9ICJzb2xpZCIsICJtMSIgPSAiZGFzaGVkIiwgImNlaWwiID0gImRvdHRlZCIpCiAgKSArCiAgCiAgIyBMYWJlbHMKICBsYWJzKAogICAgeCA9ICIkXFxhbHBoYSQiLAogICAgeSA9ICIiLAogICAgI3kgPSBleHByZXNzaW9uKG1baV0oYWxwaGEpKSwKICAgIGNvbG9yID0gIkZ1bmN0aW9uIgogICkgKwogIAogIHNjYWxlX3hfY29udGludW91cyhicmVha3MgPSBzZXEoMiwgeF9tYXgsIGJ5ID0gMC41KSkgKwogIHNjYWxlX3lfY29udGludW91cyhicmVha3MgPSB5X2JyZWFrcykgKwogIAogICMgTGVnZW5kIGZpeAogIGd1aWRlcygKICAgIGxpbmV0eXBlID0gIm5vbmUiLCAgICAgICAgICAgICAgICAgIyBoaWRlIGxpbmV0eXBlIGxlZ2VuZAogICAgY29sb3IgPSBndWlkZV9sZWdlbmQobnJvdyA9IDEsIGJ5cm93ID0gVFJVRSwgbGFiZWwuaGp1c3QgPSAwKSAgICAjIG9uZSBob3Jpem9udGFsIHJvdwogICkgKwogIAogIHRoZW1lX21pbmltYWwoKSArCiAgdGhlbWUoCiAgICBsZWdlbmQucG9zaXRpb24gPSAiYm90dG9tIiwKICAgIGxlZ2VuZC5kaXJlY3Rpb24gPSAiaG9yaXpvbnRhbCIsCiAgICBsZWdlbmQuc3BhY2luZy54ID0gdW5pdCgwLjksICJjbSIpLCAgICMgaW5jcmVhc2UgaG9yaXpvbnRhbCBzcGFjaW5nCiAgICBsZWdlbmQudGV4dCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTIpLAogICAgYXhpcy50aXRsZS54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxNiksCiAgICBheGlzLnRpdGxlLnkgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDE2KSwKICAgIGF4aXMudGV4dC54ICA9IGVsZW1lbnRfdGV4dChzaXplID0gMTMsIGFuZ2xlID0gOTAsIHZqdXN0ID0gMC41KSwKICAgIGF4aXMudGV4dC55ICA9IGVsZW1lbnRfdGV4dChzaXplID0gMTMpCiAgKQpgYGAKCgpgYGB7ciwgZXZhbCA9IEZBTFNFfQoKIyBGdW5jdGlvbnMKbTAgPC0gZnVuY3Rpb24oeCkgZmxvb3IoeC8yIC0gMS80KQptMSA8LSBmdW5jdGlvbih4KSBmbG9vcih4LzIgLSAzLzQpCm0yIDwtIGZ1bmN0aW9uKHgpIGNlaWxpbmcoeCkgLSAzCgojIFJhbmdlCnhfbWluIDwtIDIKeF9tYXggPC0gMTEuNQpqdW1wcyA8LSBzZXEoMi41LCB4X21heCwgYnkgPSAxKQoKIyBCYXNlIGludGVydmFscwppbnRlcnZhbHNfYmFzZSA8LSBkYXRhLmZyYW1lKAogIGxlZnQgID0gYyh4X21pbiwganVtcHMpLAogIHJpZ2h0ID0gYyhqdW1wcywgeF9tYXgpCikgJT4lIGZpbHRlcihsZWZ0IDwgcmlnaHQpCgojIG0yIGludGVydmFscwppbnRlcnZhbHMyIDwtIGRhdGEuZnJhbWUobGVmdCA9IDI6KGZsb29yKHhfbWF4KS0xKSkgJT4lCiAgbXV0YXRlKHJpZ2h0ID0gbGVmdCArIDEsIHkgPSBsZWZ0IC0gMiwgZnVuID0gIm0yIikgCgojIG0wIGFuZCBtMSBpbnRlcnZhbHMgKG9ubHkgbmVlZGVkIHRvIGJ1aWxkIHRyYW5zZm9ybXMpCmludGVydmFscyA8LSBiaW5kX3Jvd3MoCiAgaW50ZXJ2YWxzX2Jhc2UgJT4lIG11dGF0ZSh5ID0gbTAoKGxlZnQgKyByaWdodCkvMiksIGZ1biA9ICJtMCIpLAogIGludGVydmFsc19iYXNlICU+JSBtdXRhdGUoeSA9IG0xKChsZWZ0ICsgcmlnaHQpLzIpLCBmdW4gPSAibTEiKQopCgojIFRyYW5zZm9ybWVkIGZ1bmN0aW9ucwppbnRlcnZhbHNfdHJhbnNmb3JtZWQgPC0gYmluZF9yb3dzKAogIGludGVydmFscyAlPiUgZmlsdGVyKGZ1biA9PSAibTAiKSAlPiUgbXV0YXRlKHkgPSAyKnkgLSAyLCBmdW4gPSAiMm0wLTIiKSwKICBpbnRlcnZhbHMgJT4lIGZpbHRlcihmdW4gPT0gIm0xIikgJT4lIG11dGF0ZSh5ID0gMip5IC0gMSwgZnVuID0gIjJtMS0xIikKKQoKIyBDb21iaW5lIG9ubHkgbTIgYW5kIHRyYW5zZm9ybWVkIGN1cnZlcwppbnRlcnZhbHNfYWxsIDwtIGJpbmRfcm93cyhpbnRlcnZhbHMyLCBpbnRlcnZhbHNfdHJhbnNmb3JtZWQpCgojIFJlbW92ZSBuZWdhdGl2ZSB2YWx1ZXMKaW50ZXJ2YWxzX2FsbCA8LSBpbnRlcnZhbHNfYWxsICU+JSBmaWx0ZXIoeSA+PSAwKQoKIyBMZWdlbmQgb3JkZXIKaW50ZXJ2YWxzX2FsbCA8LSBpbnRlcnZhbHNfYWxsICU+JQogIG11dGF0ZShmdW4gPSBmYWN0b3IoZnVuLCBsZXZlbHMgPSBjKCJtMiIsICIybTAtMiIsICIybTEtMSIpKSkKCiMgRW5kcG9pbnRzCmVuZHBvaW50c19hbGwgPC0gaW50ZXJ2YWxzX2FsbCAlPiUKICBzZWxlY3QobGVmdCwgcmlnaHQsIHksIGZ1bikgJT4lCiAgcGl2b3RfbG9uZ2VyKGNvbHMgPSBjKGxlZnQsIHJpZ2h0KSwKICAgICAgICAgICAgICAgbmFtZXNfdG8gPSAiZW5kcG9pbnQiLAogICAgICAgICAgICAgICB2YWx1ZXNfdG8gPSAieCIpCgojIFktYXhpcyBicmVha3MKeV9icmVha3MgPC0gc2VxKGZsb29yKG1pbihpbnRlcnZhbHNfYWxsJHkpKSwKICAgICAgICAgICAgICAgIGNlaWxpbmcobWF4KGludGVydmFsc19hbGwkeSkpLCAxKQoKIyBQbG90CnAyIDwtIGdncGxvdChpbnRlcnZhbHNfYWxsLCBhZXMoY29sb3IgPSBmdW4sIGxpbmV0eXBlID0gZnVuKSkgKwogIAogIGdlb21fc2VnbWVudChhZXMoeCA9IGxlZnQsIHhlbmQgPSByaWdodCwgeSA9IHksIHllbmQgPSB5KSwKICAgICAgICAgICAgICAgbGluZXdpZHRoID0gMikgKwogIAogIGdlb21fcG9pbnQoZGF0YSA9IGVuZHBvaW50c19hbGwsCiAgICAgICAgICAgICBhZXMoeCA9IHgsIHkgPSB5KSwKICAgICAgICAgICAgIHNoYXBlID0gMjEsIGZpbGwgPSAid2hpdGUiLCBzdHJva2UgPSAxLCBzaXplID0gMS41KSArCiAgCiAgc2NhbGVfY29sb3JfbWFudWFsKAogICAgdmFsdWVzID0gYygKICAgICAgIm0yIiAgICA9ICJibGFjayIsCiAgICAgICIybTAtMiIgPSAiIzMzQUEzMyIsCiAgICAgICIybTEtMSIgPSAiI0FBMzNBQSIKICAgICksCiAgICBsYWJlbHMgPSBjKCIkbV8yKFxcYWxwaGEpID0gXFxsY2VpbCBcXGFscGhhIFxccmNlaWwgLSAzJCIsICIkMm1fMChcXGFscGhhKS0yJCIsICIkMm1fMShcXGFscGhhKS0xJCIpCiAgKSArCiAgCiAgc2NhbGVfbGluZXR5cGVfbWFudWFsKAogICAgdmFsdWVzID0gYygibTIiID0gInNvbGlkIiwgCiAgICAgICAgICAgICAgICIybTAtMiIgPSAiZGFzaGVkIiwKICAgICAgICAgICAgICAgIjJtMS0xIiA9ICJkYXNoZWQiKQogICkgKwogIAogIGxhYnMoCiAgICB4ID0gIiRcXGFscGhhJCIsCiAgICAjeSA9IGV4cHJlc3Npb24obVtpXShhbHBoYSkpLAogICAgeSA9ICIiLAogICAgY29sb3IgPSAiRnVuY3Rpb24iCiAgKSArCiAgCiAgc2NhbGVfeF9jb250aW51b3VzKGJyZWFrcyA9IHNlcSgyLCB4X21heCwgYnkgPSAwLjUpKSArCiAgc2NhbGVfeV9jb250aW51b3VzKGJyZWFrcyA9IHlfYnJlYWtzKSArCiAgCiAgIyBMZWdlbmQgZml4CiAgZ3VpZGVzKAogICAgbGluZXR5cGUgPSAibm9uZSIsICAgICAgICAgICAgICAgICAjIGhpZGUgbGluZXR5cGUgbGVnZW5kCiAgICBjb2xvciA9IGd1aWRlX2xlZ2VuZChucm93ID0gMSwgYnlyb3cgPSBUUlVFLCBsYWJlbC5oanVzdCA9IDApICAgICMgb25lIGhvcml6b250YWwgcm93CiAgKSArCiAgCiAgdGhlbWVfbWluaW1hbCgpICsKICB0aGVtZSgKICAgIGxlZ2VuZC5wb3NpdGlvbiA9ICJib3R0b20iLAogICAgbGVnZW5kLmRpcmVjdGlvbiA9ICJob3Jpem9udGFsIiwKICAgIGxlZ2VuZC5zcGFjaW5nLnggPSB1bml0KDAuOSwgImNtIiksICAgIyBpbmNyZWFzZSBob3Jpem9udGFsIHNwYWNpbmcKICAgIGxlZ2VuZC50ZXh0ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMiksCiAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X3RleHQoc2l6ZSA9IDE2KSwKICAgIGF4aXMudGl0bGUueSA9IGVsZW1lbnRfdGV4dChzaXplID0gMTYpLAogICAgYXhpcy50ZXh0LnggID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMywgYW5nbGUgPSA5MCwgdmp1c3QgPSAwLjUpLAogICAgYXhpcy50ZXh0LnkgID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMykKICApCgpgYGAKCgpgYGB7ciwgZXZhbCA9IEZBTFNFfQpsaWJyYXJ5KHBhdGNod29yaykKbXBsb3RzX2FsbCA8LSBwMSArIHAyICsgcGxvdF9sYXlvdXQobmNvbCA9IDIpCiMgZ2dwbG90Mjo6Z2dzYXZlKGhlcmU6OmhlcmUoImRhdGFfZmlsZXMvbXBsb3RzLnBuZyIpLCB3aWR0aCA9IDE2LCBoZWlnaHQgPSA1LCBwbG90ID0gbXBsb3RzX2FsbCwgZHBpID0gMzAwKQpteWdnc2F2ZShtcGxvdHNfYWxsLCB3aWR0aCA9IDE2LCBoZWlnaHQgPSA1KQpgYGAKCgpgYGB7ciwgZXZhbCA9IFRSVUUsIG91dC53aWR0aD0iMTYwMHB4Iiwgb3V0LmhlaWdodD0iNTAwcHgiLCBmaWcuY2FwID0gY2FwdGlvbmVyKCJDb21wYXJpc29uIG9mICRtXzAoXFxhbHBoYSkgPSBcXGxlZnRcXGxmbG9vciBcXGZyYWN7XFxhbHBoYX17Mn0gLSBcXGZyYWN7MX17NH0gXFxyaWdodFxccmZsb29yJCwgJG1fMShcXGFscGhhKSA9IFxcbGVmdFxcbGZsb29yIFxcZnJhY3tcXGFscGhhfXsyfSAtIFxcZnJhY3szfXs0fSBcXHJpZ2h0XFxyZmxvb3IkLCBhbmQgJG1fMihcXGFscGhhKSA9IFxcbGNlaWwgXFxhbHBoYSBcXHJjZWlsIC0gMyQgKGxlZnQpIGFuZCBjb21wYXJpc29uIG9mICRtXzIoXFxhbHBoYSkkLCAkMm1fMChcXGFscGhhKS0yJCwgYW5kICQybV8xKFxcYWxwaGEpLTEkIChyaWdodCkgYXMgZnVuY3Rpb25zIG9mICRcXGFscGhhJC4iKX0KI2tuaXRyOjppbmNsdWRlX2dyYXBoaWNzKGhlcmU6OmhlcmUoImRhdGFfZmlsZXMvbXBsb3RzLnBuZyIpKQprbml0cjo6aW5jbHVkZV9ncmFwaGljcyhoZXJlOjpoZXJlKCJkYXRhX2ZpbGVzL3Rpa3pwaWMvbXBsb3RzX2FsbC5wZGYiKSkKYGBgCgoKIyBSZWZlcmVuY2VzCgoKYGBge3IsIGV2YWwgPSBUUlVFfQpncmF0ZWZ1bDo6Y2l0ZV9wYWNrYWdlcyhvdXRwdXQgPSAicGFyYWdyYXBoIiwgb3V0LmRpciA9ICIuIikKYGBgCgo=</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("mplots.Rmd");
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

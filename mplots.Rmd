@@ -1,0 +1,345 @@
+---
+title: "M plots"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+Let us set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(1982) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = TRUE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+
+```{r, eval = TRUE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(here)
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+```{r, eval = FALSE}
+
+# Functions
+m0 <- function(x) floor(x/2 - 1/4)
+m1 <- function(x) floor(x/2 - 3/4)
+m2 <- function(x) ceiling(x) - 3
+
+# Range
+x_min <- 2
+x_max <- 11.5
+jumps <- seq(2.5, x_max, by = 1)
+
+# Intervals
+intervals_base <- data.frame(
+  left  = c(x_min, jumps),
+  right = c(jumps, x_max)
+) %>% filter(left < right)
+
+# Intervals for ceil function
+intervals2 <- data.frame(left = 2:(floor(x_max)-1)) %>%
+  mutate(right = left + 1, y = left - 2, fun = "ceil") 
+
+# Intervals for m0 and m1
+intervals <- bind_rows(
+  intervals_base %>% mutate(y = m0((left + right)/2), fun = "m0"),
+  intervals_base %>% mutate(y = m1((left + right)/2), fun = "m1")
+)
+
+# Combine all intervals
+intervals_all <- bind_rows(intervals, intervals2)
+
+# Convert 'fun' to factor to fix legend order
+intervals_all <- intervals_all %>%
+  mutate(fun = factor(fun, levels = c("m0", "m1", "ceil")))
+
+# Endpoints for plotting points
+endpoints_all <- intervals_all %>%
+  select(left, right, y, fun) %>%
+  pivot_longer(cols = c(left, right),
+               names_to = "endpoint",
+               values_to = "x") %>%
+  mutate(fun = factor(fun, levels = c("m0", "m1", "ceil")))
+
+# Y-axis breaks
+y_breaks <- seq(floor(min(intervals_all$y)),
+                ceiling(max(intervals_all$y)), 1)
+
+# Plot
+p1 <- ggplot(intervals_all, aes(color = fun, linetype = fun)) +
+  
+  # Horizontal segments
+  geom_segment(aes(x = left, xend = right, y = y, yend = y),
+               linewidth = 2) +
+  
+  # Endpoints
+  geom_point(data = endpoints_all,
+             aes(x = x, y = y),
+             shape = 21, fill = "white", stroke = 1, size = 1.5) +
+  
+  # Manual colors
+  scale_color_manual(
+    values = c("m0" = "#FF6666",   # a medium red/pink
+               "m1" = "#6699FF",   # a medium blue
+               "ceil" = "black"),
+    labels = c("$m_0(\\alpha) = \\left\\lfloor \\frac{\\alpha}{2} - \\frac{1}{4} \\right\\rfloor$", "$m_1(\\alpha) = \\left\\lfloor \\frac{\\alpha}{2} - \\frac{3}{4} \\right\\rfloor$", "$m_2(\\alpha) = \\lceil \\alpha \\rceil - 3$")
+  ) +
+  
+  # Manual linetypes
+  scale_linetype_manual(
+    values = c("m0" = "solid", "m1" = "dashed", "ceil" = "dotted")
+  ) +
+  
+  # Labels
+  labs(
+    x = "$\\alpha$",
+    y = "",
+    #y = expression(m[i](alpha)),
+    color = "Function"
+  ) +
+  
+  scale_x_continuous(breaks = seq(2, x_max, by = 0.5)) +
+  scale_y_continuous(breaks = y_breaks) +
+  
+  # Legend fix
+  guides(
+    linetype = "none",                 # hide linetype legend
+    color = guide_legend(nrow = 1, byrow = TRUE, label.hjust = 0)    # one horizontal row
+  ) +
+  
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.spacing.x = unit(0.9, "cm"),   # increase horizontal spacing
+    legend.text = element_text(size = 12),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
+    axis.text.x  = element_text(size = 13, angle = 90, vjust = 0.5),
+    axis.text.y  = element_text(size = 13)
+  )
+```
+
+
+```{r, eval = FALSE}
+
+# Functions
+m0 <- function(x) floor(x/2 - 1/4)
+m1 <- function(x) floor(x/2 - 3/4)
+m2 <- function(x) ceiling(x) - 3
+
+# Range
+x_min <- 2
+x_max <- 11.5
+jumps <- seq(2.5, x_max, by = 1)
+
+# Base intervals
+intervals_base <- data.frame(
+  left  = c(x_min, jumps),
+  right = c(jumps, x_max)
+) %>% filter(left < right)
+
+# m2 intervals
+intervals2 <- data.frame(left = 2:(floor(x_max)-1)) %>%
+  mutate(right = left + 1, y = left - 2, fun = "m2") 
+
+# m0 and m1 intervals (only needed to build transforms)
+intervals <- bind_rows(
+  intervals_base %>% mutate(y = m0((left + right)/2), fun = "m0"),
+  intervals_base %>% mutate(y = m1((left + right)/2), fun = "m1")
+)
+
+# Transformed functions
+intervals_transformed <- bind_rows(
+  intervals %>% filter(fun == "m0") %>% mutate(y = 2*y - 2, fun = "2m0-2"),
+  intervals %>% filter(fun == "m1") %>% mutate(y = 2*y - 1, fun = "2m1-1")
+)
+
+# Combine only m2 and transformed curves
+intervals_all <- bind_rows(intervals2, intervals_transformed)
+
+# Remove negative values
+intervals_all <- intervals_all %>% filter(y >= 0)
+
+# Legend order
+intervals_all <- intervals_all %>%
+  mutate(fun = factor(fun, levels = c("m2", "2m0-2", "2m1-1")))
+
+# Endpoints
+endpoints_all <- intervals_all %>%
+  select(left, right, y, fun) %>%
+  pivot_longer(cols = c(left, right),
+               names_to = "endpoint",
+               values_to = "x")
+
+# Y-axis breaks
+y_breaks <- seq(floor(min(intervals_all$y)),
+                ceiling(max(intervals_all$y)), 1)
+
+# Plot
+p2 <- ggplot(intervals_all, aes(color = fun, linetype = fun)) +
+  
+  geom_segment(aes(x = left, xend = right, y = y, yend = y),
+               linewidth = 2) +
+  
+  geom_point(data = endpoints_all,
+             aes(x = x, y = y),
+             shape = 21, fill = "white", stroke = 1, size = 1.5) +
+  
+  scale_color_manual(
+    values = c(
+      "m2"    = "black",
+      "2m0-2" = "#33AA33",
+      "2m1-1" = "#AA33AA"
+    ),
+    labels = c("$m_2(\\alpha) = \\lceil \\alpha \\rceil - 3$", "$2m_0(\\alpha)-2$", "$2m_1(\\alpha)-1$")
+  ) +
+  
+  scale_linetype_manual(
+    values = c("m2" = "solid", 
+               "2m0-2" = "dashed",
+               "2m1-1" = "dashed")
+  ) +
+  
+  labs(
+    x = "$\\alpha$",
+    #y = expression(m[i](alpha)),
+    y = "",
+    color = "Function"
+  ) +
+  
+  scale_x_continuous(breaks = seq(2, x_max, by = 0.5)) +
+  scale_y_continuous(breaks = y_breaks) +
+  
+  # Legend fix
+  guides(
+    linetype = "none",                 # hide linetype legend
+    color = guide_legend(nrow = 1, byrow = TRUE, label.hjust = 0)    # one horizontal row
+  ) +
+  
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.spacing.x = unit(0.9, "cm"),   # increase horizontal spacing
+    legend.text = element_text(size = 12),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
+    axis.text.x  = element_text(size = 13, angle = 90, vjust = 0.5),
+    axis.text.y  = element_text(size = 13)
+  )
+
+```
+
+
+```{r, eval = FALSE}
+library(patchwork)
+mplots_all <- p1 + p2 + plot_layout(ncol = 2)
+# ggplot2::ggsave(here::here("data_files/mplots.png"), width = 16, height = 5, plot = mplots_all, dpi = 300)
+myggsave(mplots_all, width = 16, height = 5)
+```
+
+
+```{r, eval = TRUE, out.width="1600px", out.height="500px", fig.cap = captioner("Comparison of $m_0(\\alpha) = \\left\\lfloor \\frac{\\alpha}{2} - \\frac{1}{4} \\right\\rfloor$, $m_1(\\alpha) = \\left\\lfloor \\frac{\\alpha}{2} - \\frac{3}{4} \\right\\rfloor$, and $m_2(\\alpha) = \\lceil \\alpha \\rceil - 3$ (left) and comparison of $m_2(\\alpha)$, $2m_0(\\alpha)-2$, and $2m_1(\\alpha)-1$ (right) as functions of $\\alpha$.")}
+#knitr::include_graphics(here::here("data_files/mplots.png"))
+knitr::include_graphics(here::here("data_files/tikzpic/mplots_all.pdf"))
+```
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+

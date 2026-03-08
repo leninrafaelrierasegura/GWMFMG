@@ -1,0 +1,48 @@
+name: "GWMFMG"
+output_dir: "docs"
+navbar:
+  title: "GWMFMG"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+    - text: "PeMS"
+      menu:
+        - text: "PeMS 1"
+          href: pems1.html
+        - text: "PeMS 2"
+          href: pems2.html
+    - text: "Model Properties"
+      menu:
+        - text: "Model Properties 1"
+          href: model_prop1.html
+        - text: "Model Properties 2"
+          href: model_prop2.html
+        - text: "Model Properties 3"
+          href: model_prop3.html
+        - text: "Model Properties 4"
+          href: model_prop4.html
+    - text: "Basis Functions"
+      href: graphs1.html
+    - text: "Approximation"
+      href: approximation.html
+    - text: "Numerical Error"
+      href: num_error.html
+    - text: "Convergence Rates"
+      href: conv_rates.html
+    - text: "Simulation study"
+      href: sim_study.html
+    - text: "Additional illustrations"
+      href: mplots.html
+  right:
+    - icon: fa-file-pdf
+      href: https://arxiv.org/abs/0000.00000
+    - icon: fa-github
+      href: https://github.com/leninrafaelrierasegura/GWMFMG
+output:
+  html_document:
+    highlight: textmate
+    theme: flatly
+    css: style.css
+    

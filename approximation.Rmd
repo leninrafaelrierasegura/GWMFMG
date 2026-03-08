@@ -1,0 +1,694 @@
+---
+title: "Interval, Circle, and Tadpole graphs"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+Below we set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(593) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+
+# Import libraries
+
+```{r, eval = TRUE}
+# to update
+# remotes::install_github("davidbolin/rspde", ref = "devel")
+# remotes::install_github("davidbolin/metricgraph", ref = "devel")
+library(MetricGraph)
+library(Matrix)
+library(rSPDE)
+
+library(dplyr)
+library(tidyverse)
+library(plotly)
+
+library(grateful) # Cite all loaded packages
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+
+```{r}
+asppp <- 0.7
+```
+
+# Interval graph
+
+
+```{r}
+# Function to build an interval graph and create a mesh
+gets_graph_interval <- function(n){
+  edge <- rbind(c(0,0),c(1,0))
+  edges = list(edge)
+  graph <- metric_graph$new(edges = edges)
+  graph$build_mesh(n = n)
+  return(graph)
+}
+```
+
+
+
+
+```{r}
+# Matern covariance function ff
+matern.covariance <- function(h, kappa, nu, sigma) {
+  if (nu == 1 / 2) {
+    C <- sigma^2 * exp(-kappa * abs(h))
+  } else {
+    C <- (sigma^2 / (2^(nu - 1) * gamma(nu))) *
+      ((kappa * abs(h))^nu) * besselK(kappa * abs(h), nu)
+  }
+  C[h == 0] <- sigma^2
+  return(as.matrix(C))
+}
+
+# Folded.matern.covariance.1d
+folded.matern.covariance.1d.local <- function(x, kappa, nu, sigma,
+                                              L = 1, N = 10,
+                                              boundary = c("neumann",
+                                                           "dirichlet", "periodic")) {
+  boundary <- tolower(boundary[1])
+  if (!(boundary %in% c("neumann", "dirichlet", "periodic"))) {
+    stop("The possible boundary conditions are 'neumann',
+    'dirichlet' or 'periodic'!")
+  }
+  addi = t(outer(x, x, "+"))
+  diff = t(outer(x, x, "-"))
+  s1 <- sapply(-N:N, function(j) { 
+    diff + 2 * j * L
+  })
+  s2 <- sapply(-N:N, function(j) {
+    addi + 2 * j * L
+  })
+  if (boundary == "neumann") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) +
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else if (boundary == "dirichlet") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) -
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else {
+    C <- rowSums(matern.covariance(h = s1,
+                                   kappa = kappa, nu = nu, sigma = sigma))
+  }
+  return(matrix(C, nrow = length(x)))
+}
+
+# Function to get the true covariance matrix
+gets_true_cov_mat = function(graph, kappa, nu, sigma, N, boundary){
+  #h = c(graph$mesh$V[-2,1], graph$mesh$V[2,1])
+  h = graph$mesh$V[,1]
+  true_cov_mat = folded.matern.covariance.1d.local(x = h, kappa = kappa, nu = nu, sigma = sigma, N = N, boundary = boundary)
+  return(true_cov_mat)
+}
+
+
+# Parameters of the approximation
+n = 333
+type = "covariance"
+type_rational_approximation = "chebfun"
+rho = 1
+m = 4
+nu = 0.6
+sigma = 1
+N.folded = 10
+boundary = "neumann"
+
+# Get the graph and build the mesh
+graph = gets_graph_interval(n = n)
+
+kappa = sqrt(8*nu)/rho
+tau = sqrt(gamma(nu) / (sigma^2 * kappa^(2*nu) * (4*pi)^(1/2) * gamma(nu + 1/2)))  #sigma = 1, d = 1
+alpha = nu + 1/2
+
+# Get the true covariance
+true_cov_mat = gets_true_cov_mat(graph = graph,
+                                 kappa = kappa,
+                                 nu = nu,
+                                 sigma = sigma,
+                                 N = N.folded,
+                                 boundary = boundary)
+
+# Get the approximate covariance matrix
+op = matern.operators(alpha = alpha, 
+                      kappa = kappa, 
+                      tau = tau,
+                      m = m, 
+                      graph = graph,
+                      type = type,
+                      type_rational_approximation = type_rational_approximation)
+
+appr_cov_mat = covariance_mesh(op)
+
+# Plot the true covariance and the approximation
+point  <- c(1,0.5)
+c_cov <- cov_function_mesh(op, matrix(point,1,2))
+loc <- graph$coordinates(PtE = point)
+m1 <- which.min((graph$mesh$V[,1]-loc[1])^2 + (graph$mesh$V[,2]-loc[2])^2)
+p = graph$plot_function(true_cov_mat[m1,], type = "plotly", line_width = 7, edge_width = 7, vertex_size =7) # blue is the true one
+p_int <- graph$plot_function(c_cov, p = p, line_color = "red", type = "plotly", line_width = 7, edge_width = 7, vertex_size =7)  %>% 
+  config(mathjax = 'cdn') %>% 
+  layout(font = list(family = "Palatino"),
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              camera = list(eye = list(x = 2.3*asppp, 
+                                       y = 2.3*asppp, 
+                                       z = 2.3*asppp),
+                            center = list(x = 0, 
+                                          y = 0, 
+                                          z = 0)),
+           annotations = list(
+             list(
+               x = 0, y = 0, z = 0,
+               text = TeX("v_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 1, z = 0,
+               text = TeX("v_2"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 0.5, z = 0,
+               text = TeX("e_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 0, y = 0.6, z = 1.25,
+               text = TeX("\\bullet\\mbox{ exact}"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = 0, y = 0.745, z = 1.20,
+               text = TeX("\\bullet\\mbox{ approximated}"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"))))
+
+save(p_int, file = here::here("data_files/p_int.Rdata"))
+```
+
+
+
+```{r, collapse = TRUE}
+# Compute the errors
+L_inf_error = max(abs(true_cov_mat - appr_cov_mat))
+L_2_error = sqrt(as.double(t(graph$mesh$weights)%*%(true_cov_mat - appr_cov_mat)^2%*%graph$mesh$weights))
+print(L_inf_error)
+print(L_2_error)
+```
+
+
+# Circle graph
+
+
+```{r}
+# Function to build a circle graph and create a mesh
+gets_graph_circle <- function(n){
+  r = 1/(pi)
+  theta <- seq(from=-pi,to=pi,length.out = 100)
+  edge <- cbind(1+r+r*cos(theta),r*sin(theta))
+  edges = list(edge)
+  graph <- metric_graph$new(edges = edges)
+  graph$build_mesh(n = n)
+  return(graph)
+}
+```
+
+
+
+```{r}
+# Matern covariance function
+matern.covariance <- function(h, kappa, nu, sigma) {
+  if (nu == 1 / 2) {
+    C <- sigma^2 * exp(-kappa * abs(h))
+  } else {
+    C <- (sigma^2 / (2^(nu - 1) * gamma(nu))) *
+      ((kappa * abs(h))^nu) * besselK(kappa * abs(h), nu)
+  }
+  C[h == 0] <- sigma^2
+  return(as.matrix(C))
+}
+
+# Folded.matern.covariance.1d 
+folded.matern.covariance.1d.local <- function(x, kappa, nu, sigma, L = 1, N = 10, boundary = c("neumann",
+                                                           "dirichlet", "periodic")) {
+  boundary <- tolower(boundary[1])
+  if (!(boundary %in% c("neumann", "dirichlet", "periodic"))) {
+    stop("The possible boundary conditions are 'neumann',
+    'dirichlet' or 'periodic'!")
+  }
+  addi = t(outer(x, x, "+"))
+  diff = t(outer(x, x, "-"))
+  s1 <- sapply(-N:N, function(j) { # s1 is a matrix of size length(h)x(2N+1)
+    diff + 2 * j * L
+  })
+  s2 <- sapply(-N:N, function(j) {
+    addi + 2 * j * L
+  })
+  if (boundary == "neumann") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) +
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else if (boundary == "dirichlet") {
+    C <- rowSums(matern.covariance(h = s1, kappa = kappa,
+                                   nu = nu, sigma = sigma) -
+                   matern.covariance(h = s2, kappa = kappa,
+                                     nu = nu, sigma = sigma))
+  } else {
+    C <- rowSums(matern.covariance(h = s1,
+                                   kappa = kappa, nu = nu, sigma = sigma))
+  }
+  return(matrix(C, nrow = length(x)))
+}
+
+# Function to get the true covariance matrix
+gets_true_cov_mat = function(graph, kappa, nu, sigma, N, boundary){
+  h = c(0,graph$get_edge_lengths()[1]*graph$mesh$PtE[,2])
+  true_cov_mat = folded.matern.covariance.1d.local(x = h, kappa = kappa, nu = nu, sigma = sigma, N = N, boundary = boundary)
+  return(true_cov_mat)
+}
+
+
+# Parameters of the approximation
+n = 666
+type = "covariance"
+type_rational_approximation = "chebfun"
+rho = 1
+m = 4
+nu = 0.6
+sigma = 1
+N.folded = 10
+boundary = "periodic"
+
+# Get the graph and build the mesh
+graph = gets_graph_circle(n = n)
+
+
+kappa = sqrt(8*nu)/rho
+tau = sqrt(gamma(nu) / (sigma^2 * kappa^(2*nu) * (4*pi)^(1/2) * gamma(nu + 1/2)))  #sigma = 1, d = 1
+alpha = nu + 1/2
+
+# Get the "true" covariance matrix
+true_cov_mat = gets_true_cov_mat(graph = graph,
+                                 kappa = kappa,
+                                 nu = nu,
+                                 sigma = sigma,
+                                 N = N.folded,
+                                 boundary = boundary)
+
+# Get the approximate covariance matrix
+op = matern.operators(alpha = alpha, 
+                      kappa = kappa, 
+                      tau = tau,
+                      m = m, 
+                      graph = graph,
+                      type = type,
+                      type_rational_approximation = type_rational_approximation)
+appr_cov_mat = covariance_mesh(op)
+
+# Plot the true covariance and the approximation
+point  <- c(1,0)
+c_cov <- cov_function_mesh(op, matrix(point,1,2))
+loc <- graph$coordinates(PtE = point)
+m1 <- which.min((graph$mesh$V[,1]-loc[1])^2 + (graph$mesh$V[,2]-loc[2])^2)
+p = graph$plot_function(true_cov_mat[m1,], type = "plotly", line_width = 7, edge_width = 7, vertex_size =7)
+p_cir <- graph$plot_function(c_cov,p = p, line_color = "red", type = "plotly",line_width = 7, edge_width = 7, vertex_size =7) %>% 
+  config(mathjax = 'cdn') %>% 
+  layout(font = list(family = "Palatino"),
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              camera = list(eye = list(x = 2.3*asppp, 
+                                       y = 2.3*asppp, 
+                                       z = 2.3*asppp),
+                            center = list(x = 0, 
+                                          y = 0, 
+                                          z = 0)),
+           annotations = list(
+             list(
+               x = 0, y = 1, z = 0,
+               text = TeX("v_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+             list(
+               x = 0, y = 1 + 2/pi, z = 0,
+               text = TeX("e_1"),
+               textangle = 0, ax = 0, ay = 35,
+               font = list(color = "black", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = -0.05, y = 1.085, z = 0.95,
+               text = TeX("\\bullet\\mbox{ exact}"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = -0.05, y = 1.2, z = 0.9,
+               text = TeX("\\bullet\\mbox{ approximated}"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"))))
+
+save(p_cir, file = here::here("data_files/p_cir.Rdata"))
+
+```
+
+
+```{r, collapse = TRUE}
+# Compute the errors
+L_inf_error = max(abs(true_cov_mat - appr_cov_mat))
+L_2_error = sqrt(as.double(t(graph$mesh$weights)%*%(true_cov_mat - appr_cov_mat)^2%*%graph$mesh$weights))
+print(L_inf_error)
+print(L_2_error)
+```
+
+# Tadpole graph
+
+```{r}
+# Function to build a tadpole graph and create a mesh
+gets_graph_tadpole <- function(h){
+  edge1 <- rbind(c(0,0),c(1,0))
+  theta <- seq(from=-pi,to=pi,length.out = 100)
+  edge2 <- cbind(1+1/pi+cos(theta)/pi,sin(theta)/pi)
+  edges = list(edge1, edge2)
+  graph <- metric_graph$new(edges = edges)
+  graph$build_mesh(h = h)
+  return(graph)
+}
+```
+
+
+
+
+
+```{r}
+# Function to compute the eigenfunctions 
+tadpole.eig <- function(k,graph){
+x1 <- c(0,graph$get_edge_lengths()[1]*graph$mesh$PtE[graph$mesh$PtE[,1]==1,2]) 
+x2 <- c(0,graph$get_edge_lengths()[2]*graph$mesh$PtE[graph$mesh$PtE[,1]==2,2]) 
+
+if(k==0){ 
+  f.e1 <- rep(1,length(x1)) 
+  f.e2 <- rep(1,length(x2)) 
+  f1 = c(f.e1[1],f.e2[1],f.e1[-1], f.e2[-1]) 
+  f = list(phi=f1/sqrt(3)) 
+  
+} else {
+  f.e1 <- -2*sin(pi*k*1/2)*cos(pi*k*x1/2) 
+  f.e2 <- sin(pi*k*x2/2)                  
+  
+  f1 = c(f.e1[1],f.e2[1],f.e1[-1], f.e2[-1]) 
+  
+  if((k %% 2)==1){ 
+    f = list(phi=f1/sqrt(3)) 
+  } else { 
+    f.e1 <- (-1)^{k/2}*cos(pi*k*x1/2)
+    f.e2 <- cos(pi*k*x2/2)
+    f2 = c(f.e1[1],f.e2[1],f.e1[-1],f.e2[-1]) 
+    f <- list(phi=f1,psi=f2/sqrt(3/2))
+  }
+}
+
+return(f)
+}
+
+# Function to get the true covariance matrix
+gets_true_cov_mat <- function(graph, kappa, tau, alpha, n.overkill){
+  Sigma.kl <- matrix(0,nrow = dim(graph$mesh$V)[1],ncol = dim(graph$mesh$V)[1])
+  for(i in 0:n.overkill){
+    phi <- tadpole.eig(i,graph)$phi
+    Sigma.kl <- Sigma.kl + (1/(kappa^2 + (i*pi/2)^2)^(alpha))*phi%*%t(phi)
+    if(i>0 && (i %% 2)==0){ 
+      psi <- tadpole.eig(i,graph)$psi
+      Sigma.kl <- Sigma.kl + (1/(kappa^2 + (i*pi/2)^2)^(alpha))*psi%*%t(psi)
+    }
+    
+  }
+  Sigma.kl <- Sigma.kl/tau^2
+  return(Sigma.kl)
+}
+
+# Parameters of the approximation
+h = 0.003
+type = "covariance"
+type_rational_approximation = "chebfun"
+rho = 1
+m = 4
+nu = 0.6
+
+# Get the graph and build the mesh
+graph = gets_graph_tadpole(h = h)
+
+
+n.overkill = 10000
+kappa = sqrt(8*nu)/rho
+tau = sqrt(gamma(nu) / (1^2 * kappa^(2*nu) * (4*pi)^(1/2) * gamma(nu + 1/2)))  #sigma = 1, d = 1
+alpha = nu + 1/2
+
+
+# Get the true covariance
+true_cov_mat = gets_true_cov_mat(graph = graph,
+                                 kappa = kappa,
+                                 tau = tau,
+                                 alpha = alpha,
+                                 n.overkill = n.overkill)
+
+# Get the approximate covariance matrix
+op = matern.operators(alpha = alpha, 
+                      kappa = kappa, 
+                      tau = tau,
+                      m = m, 
+                      graph = graph,
+                      type = type,
+                      type_rational_approximation = type_rational_approximation)
+
+appr_cov_mat = covariance_mesh(op)
+
+
+# Plot the true covariance and the approximation
+point  <- c(1,1)
+c_cov <- cov_function_mesh(op, matrix(point,1,2))
+loc <- graph$coordinates(PtE = point)
+m1 <- which.min((graph$mesh$V[,1]-loc[1])^2 + (graph$mesh$V[,2]-loc[2])^2)
+p <- graph$plot_function(true_cov_mat[m1,], type = "plotly", line_width = 7, edge_width = 7, vertex_size =7) # blue is the true one
+p_tad <- graph$plot_function(c_cov, p = p, line_color = "red", type = "plotly",line_width = 7, edge_width = 7, vertex_size =7) %>% 
+  config(mathjax = 'cdn') %>% 
+  layout(font = list(family = "Palatino"),
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              camera = list(eye = list(x = 2.3*asppp, 
+                                       y = 2.3*asppp, 
+                                       z = 2.3*asppp),
+                            center = list(x = 0, 
+                                          y = 0, 
+                                          z = 0)),
+           annotations = list(
+                  list(
+                     y = 0, x = 0, z = 0,
+                     text = TeX("v_1"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     y = 1, x = 0, z = 0,
+                     text = TeX("v_2"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "gray", arrowsize = 1, arrowwidth = 0.5, arrowhead = 1),
+                   list(
+                     y = 0.5, x = 0, z = 0,
+                     text = TeX("e_1"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+                   list(
+                     y = 1+2/pi, x = 0, z = 0,
+                     text = TeX("e_2"),
+                     textangle = 0, ax = 0, ay = 35,
+                     font = list(color = "black", size = gfsize),
+                     arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = -0.08, y = 1.135, z = 0.65,
+               text = TeX("\\bullet\\mbox{ exact}"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "#0000C8", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"),
+             list(
+               x = -0.08, y = 1.25, z = 0.6,
+               text = TeX("\\bullet\\mbox{ approximated}"),
+               textangle = 0, ax = 60, ay = 0,
+               font = list(color = "red", size = gfsize),
+               arrowcolor = "rgba(0,0,0,0)"))))
+
+save(p_tad, file = here::here("data_files/p_tad.Rdata"))
+
+```
+
+
+```{r, collapse = TRUE}
+# Compute the errors
+L_inf_error = max(abs(true_cov_mat - appr_cov_mat))
+L_2_error = sqrt(as.double(t(graph$mesh$weights)%*%(true_cov_mat - appr_cov_mat)^2%*%graph$mesh$weights))
+print(L_inf_error)
+print(L_2_error)
+```
+
+
+
+# Exact vs Approximated
+
+
+:::: {style="display: grid; grid-template-columns: 585px 525px 690px; grid-column-gap: 0px;"}
+
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Exact and approximated covariance function on the interval graph.")}
+load(here::here("data_files/p_int.Rdata"))
+p_int
+```
+
+:::
+
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Exact and approximated covariance function on the circle graph.")}
+load(here::here("data_files/p_cir.Rdata"))
+p_cir
+```
+
+
+:::
+
+
+
+::: {}
+
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Exact and approximated covariance function on the tadpole graph.")}
+load(here::here("data_files/p_tad.Rdata"))
+p_tad
+```
+
+
+:::
+
+
+::::
+
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+
+

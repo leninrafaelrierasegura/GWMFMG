@@ -1,0 +1,771 @@
+---
+title: "The rol of $\\tau$"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+Below we set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(593) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+
+
+Below we load the necessary libraries and define the auxiliary functions.
+
+```{r, eval = TRUE}
+library(rSPDE)
+library(MetricGraph)
+
+library(dplyr)
+library(plotly)
+library(scales)
+library(patchwork)
+library(tidyr)
+
+library(here)
+library(rmarkdown)
+# Cite all loaded packages
+library(grateful)
+
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
+```
+
+
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
+
+```{r}
+gets_f_in_dist_mesh <- function(graph, f_values){
+  VtE <- graph$mesh$VtE
+  E <- graph$E
+  nE <- graph$nE
+  nV <- graph$nV
+  E_ext <- data.frame(edge_number = 1:nE, vertex_start = E[,1], vertex_end = E[,2])
+  
+  original_vertex <- VtE[1:nV,]
+  f <- f_values[1:nV]
+  
+  no_vertices <- cbind(VtE[(nV+1):length(f_values),], f_values[(nV+1):length(f_values)])
+  
+  same_vertex_list <- list()
+  for (i in 1:nE) {
+    same_vertex_list[[i]] <- E_ext %>% 
+      filter(vertex_start == i | vertex_end == i) %>%
+      mutate(lor = case_when(vertex_start == i ~ 0,vertex_end == i ~ 1)) %>% 
+      dplyr::select(edge_number, lor) %>% 
+      as.matrix()
+  }
+  
+  for (i in seq_len(nrow(original_vertex))) {
+    current_row <- original_vertex[i, ]
+    # Find which matrix in same_vertex_list contains this row
+    for (j in seq_along(same_vertex_list)) {
+      if (any(apply(same_vertex_list[[j]], 1, function(x) all(x == current_row)))) {
+        # Add a new column with the corresponding value from f
+        same_vertex_list[[j]] <- cbind(same_vertex_list[[j]], f[i])
+        break
+      }
+    }
+  }
+  
+  result_matrix <- do.call(rbind, same_vertex_list)
+  return(rbind(no_vertices, result_matrix))
+}
+```
+
+
+Let's build a small graph to illustrate the effect of $\tau$ on the graph.
+
+```{r}
+edge1 <- rbind(c(0,0),c(1,0))
+edge2 <- rbind(c(0,0),c(0,1))
+edge3 <- rbind(c(0,1),c(-1,1))
+theta <- seq(from = pi,to = 3*pi/2,length.out = 50)
+edge4 <- cbind(sin(theta),1+ cos(theta))
+edges <- list(edge1, edge2, edge3, edge4)
+```
+
+```{r}
+h = 0.01
+graph <- metric_graph$new(edges = edges)
+aux_graph <- graph$clone()
+graph$build_mesh(h=h, continuous = TRUE)
+edge_number <- graph$mesh$VtE
+XY_graph <- graph$mesh$V
+
+aux_graph$build_mesh(h=h, continuous = FALSE)
+aux_edge_number <- aux_graph$mesh$VtE
+aux_XY_graph <- aux_graph$mesh$V
+```
+
+
+Let $f(s) = \mathrm{edge.number}(s)/4$ and $g(s) = 0.5 \cdot (x^2(s) - y^2(s)) + 0.5$, where $(x(s), y(s))$ denote the Euclidean coordinates on the plane (see Figures 1 and 2). Clearly, $f$ is continuous, whereas $g$ is discontinuous. These functions serve as covariates in the analysis.
+
+```{r}
+f <- edge_number[,1]/4 # discontinuous covariate
+g <- 0.5*(XY_graph[, 1]^2 - XY_graph[, 2]^2) + 0.5 # continuous covariate
+
+aux_f <- aux_edge_number[,1]/4# discontinuous covariate
+aux_g <- 0.5*(aux_XY_graph[, 1]^2 - aux_XY_graph[, 2]^2) + 0.5 # continuous covariate
+```
+
+
+```{r}
+a = 2
+```
+
+
+
+# Plot the covariates.
+
+
+```{r}
+cov_f <- aux_graph$plot_function(aux_f, vertex_size = 1, type = "plotly", line_color = "#0000C8", line_width = gsw, continuous = FALSE, interpolate_plot = FALSE, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("f(s) = \\mathrm{edge.number}(s)/4"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+cov_g <- graph$plot_function(g, vertex_size = 1, type = "plotly", line_color = "red", line_width = gsw, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("g(s) = 0.5 \\cdot (x^2(s) - y^2(s)) + 0.5"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+save(cov_f, file = here::here("data_files/cov_f.Rdata"))
+save(cov_g, file = here::here("data_files/cov_g.Rdata"))
+```
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Discontinuous covariate $f(s) = \\mathrm{edge.number}(s)/4$.")}
+load(here::here("data_files/cov_f.Rdata"))
+cov_f
+```
+
+
+:::
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Continuous covariate $g(s) = 0.5 \\cdot (x^2(s) - y^2(s)) + 0.5$.")}
+load(here::here("data_files/cov_g.Rdata"))
+cov_g
+```
+
+
+:::
+
+::::
+
+
+```{r}
+normal_sample <- rnorm(length(g))
+```
+
+
+# Both covariates are continuous
+
+We now consider the case where both covariates are continuous, that is $\tau(s) = \exp(g(s))$ and $\kappa(s) = \exp(g(s))$. Using these, we simulate $u(s)$. See Figures 3,4, and 5.
+
+
+```{r}
+# Define the matrices B.tau and B.kappa
+B.tau =   cbind(0, 1, 0, g, 0)
+B.kappa = cbind(0, 0, 1, 0, g)
+# Log-regression coefficients
+theta <- c(0, 0, 1, 1) 
+# Choose alpha
+nu = 2.5
+alpha = nu + 1/2
+# Compute the operator
+op <- rSPDE::spde.matern.operators(graph = graph,
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta,
+                                      alpha = alpha)
+# Simulate the non-stationary field
+Sigma <- precision(op)
+R <- chol(Sigma)
+u = solve(R, normal_sample)
+
+model_for_tau <- exp(B.tau[,-1]%*%theta)
+model_for_kappa <- exp(B.kappa[,-1]%*%theta)
+```
+
+
+```{r}
+kkk1 <- graph$plot_function(model_for_tau, vertex_size = 1, type = "plotly", line_color = "#0000C8", line_width = gsw, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("\\tau(s) = \\exp(g(s))"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk2 <- graph$plot_function(model_for_kappa, vertex_size = 1, type = "plotly", line_color = "red", line_width = gsw, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("\\kappa(s) = \\exp(g(s))"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk3 <- graph$plot_function(X = u, vertex_size = 1, type = "plotly", line_color = "darkgreen", line_width = gsw, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("u(s)"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+
+save(kkk1, file = here::here("data_files/kkk1.Rdata"))
+save(kkk2, file = here::here("data_files/kkk2.Rdata"))
+save(kkk3, file = here::here("data_files/kkk3.Rdata"))
+```
+
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Model for $\\tau(s)$.")}
+load(here::here("data_files/kkk1.Rdata"))
+kkk1
+```
+
+:::
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Model for $\\kappa(s)$.")}
+load(here::here("data_files/kkk2.Rdata"))
+kkk2
+```
+
+
+:::
+
+::: {}
+
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Simulated field $u(s)$.")}
+load(here::here("data_files/kkk3.Rdata"))
+kkk3
+```
+
+:::
+
+::::
+
+
+# Both covariates are discontinuos
+
+We now consider the case where both covariates are discontinuous, that is $\tau(s) = \exp(f(s))$ and $\kappa(s) = \exp(f(s))$. Using these, we simulate $u(s)$. See Figures 6,7, and 8.
+
+```{r}
+tau <- 1
+# Define the matrices B.tau and B.kappa
+B.tau <- cbind(0, 1, 0, log(tau)*rep(1, length(f)), 0)
+realB.tau <- cbind(0, 1, 0, f, 0)
+B.kappa = cbind(0, 0, 1, 0, f)
+# Log-regression coefficients
+theta <- c(0, 0, 1, 1) 
+# Compute the operator
+op1 <- rSPDE::spde.matern.operators(graph = graph,
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta,
+                                      alpha = alpha)
+
+realmodel_for_tau <- exp(realB.tau[,-1]%*%theta)
+normal_sample1 <- normal_sample #rnorm(length(g))
+
+Sigma1 <- precision(op1)
+R1 <- chol(Sigma1)
+u1cont <- solve(R1, normal_sample1)
+u1 <-u1cont*tau/realmodel_for_tau
+
+op2 <- rSPDE::spde.matern.operators(graph = graph,
+                                      B.tau = realB.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta,
+                                      alpha = alpha)
+Sigma2 <- precision(op2)
+R2 <- chol(Sigma2)
+u2 = solve(R2, normal_sample1)
+
+# To plot the models for tau and kappa
+aux_B.tau =   cbind(0, 1, 0, aux_f, 0)
+aux_B.kappa = cbind(0, 0, 1, 0, aux_f)
+model_for_tau <- exp(aux_B.tau[,-1]%*%theta)
+model_for_kappa <- exp(aux_B.kappa[,-1]%*%theta)
+```
+
+
+
+
+```{r}
+gg <- gets_f_in_dist_mesh(graph, u1cont)
+aux_df <- data.frame(.edge_number = gg[,1], .distance_on_edge = gg[,2], f = gg[,3])
+another_df <- cbind(tau/model_for_tau, aux_graph$mesh$VtE)
+colnames(another_df) <- c("tau_rel", ".edge_number", ".distance_on_edge")
+another_df <- as.data.frame(another_df)
+# Step 1: Sort aux_df by the four columns
+aux_df_sorted <- aux_df %>%
+  arrange(.edge_number, .distance_on_edge)
+
+another_df_sorted <- another_df %>%
+  arrange(.edge_number, .distance_on_edge)
+# Merge
+merged_df <- cbind(aux_df_sorted, another_df_sorted)[c(1:4)] %>% mutate(final_f = f*tau_rel) %>% dplyr::select(-tau_rel, -f) %>% rename(edge_number = .edge_number, distance_on_edge = .distance_on_edge, f = final_f)
+
+prod <- aux_graph$process_data(data = merged_df, normalized = TRUE)
+```
+
+
+```{r}
+kkk4 <- aux_graph$plot_function(model_for_tau, vertex_size = 1, type = "plotly", line_color = "#0000C8", line_width = gsw, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("\\tau(s) = \\exp(f(s))"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk5 <- aux_graph$plot_function(model_for_kappa, vertex_size = 1, type = "plotly", line_color = "red", line_width = gsw, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("\\kappa(s) = \\exp(f(s))"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk6 <- aux_graph$plot_function(data = "f", newdata= prod, vertex_size = 1, type = "plotly", line_color = "darkgreen", line_width = gsw, continuous = FALSE, edge_width = gsw) %>%  
+  config(mathjax = 'cdn') %>% 
+  layout(title = list(text = TeX("u(s)"), y = 0.85),
+font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+
+save(kkk4, file = here::here("data_files/kkk4.Rdata"))
+save(kkk5, file = here::here("data_files/kkk5.Rdata"))
+save(kkk6, file = here::here("data_files/kkk6.Rdata"))
+```
+
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Model for $\\tau(s)$.")}
+load(here::here("data_files/kkk4.Rdata"))
+kkk4
+```
+
+:::
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Model for $\\kappa(s)$.")}
+load(here::here("data_files/kkk5.Rdata"))
+kkk5
+```
+
+
+:::
+
+::: {}
+
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%", fig.cap = captioner("Simulated field $u(s)$.")}
+load(here::here("data_files/kkk6.Rdata"))
+kkk6
+```
+
+:::
+
+::::
+
+
+
+
+# The covariate for $\tau$ is discontinuous and the covariate for $\kappa$ is continuous
+
+We now consider the case where the covariate for $\tau$ is discontinuous and the covariate for $\kappa$ is continuous, that is $\tau(s) = \exp(f(s))$ and $\kappa(s) = \exp(g(s))$. Using these, we simulate $u(s)$. See Figures 12, 13, and 14.
+
+```{r}
+# Define the matrices B.tau and B.kappa
+B.tau <- cbind(0, 1, 0, log(tau)*rep(1, length(f)), 0)
+realB.tau <- cbind(0, 1, 0, f, 0)
+B.kappa = cbind(0, 0, 1, 0, g)
+# Log-regression coefficients
+theta <- c(0, 0, 1, 1)
+# Compute the operator
+op1 <- rSPDE::spde.matern.operators(graph = graph,
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta,
+                                      alpha = alpha)
+
+realmodel_for_tau <- exp(realB.tau[,-1]%*%theta)
+normal_sample2 <- normal_sample#rnorm(length(g))
+
+Sigma1 <- precision(op1)
+R1 <- chol(Sigma1)
+u1cont <- solve(R1, normal_sample2)
+u1 <-u1cont*tau/realmodel_for_tau
+
+op2 <- rSPDE::spde.matern.operators(graph = graph,
+                                    B.tau = realB.tau,
+                                    B.kappa =  B.kappa,
+                                    parameterization = "spde",
+                                    theta = theta,
+                                    alpha = alpha)
+Sigma2 <- precision(op2)
+R2 <- chol(Sigma2)
+u2 = solve(R2, normal_sample2)
+
+# To plot the models for tau and kappa
+aux_B.tau =   cbind(0, 1, 0, aux_f, 0)
+model_for_tau <- exp(aux_B.tau[,-1]%*%theta)
+model_for_kappa <- exp(B.kappa[,-1]%*%theta)
+```
+
+```{r}
+gg <- gets_f_in_dist_mesh(graph, u1cont)
+aux_df <- data.frame(.edge_number = gg[,1], .distance_on_edge = gg[,2], f = gg[,3])
+another_df <- cbind(tau/model_for_tau, aux_graph$mesh$VtE)
+colnames(another_df) <- c("tau_rel", ".edge_number", ".distance_on_edge")
+another_df <- as.data.frame(another_df)
+# Step 1: Sort aux_df by the four columns
+aux_df_sorted <- aux_df %>%
+  arrange(.edge_number, .distance_on_edge)
+
+another_df_sorted <- another_df %>%
+  arrange(.edge_number, .distance_on_edge)
+# Merge
+merged_df <- cbind(aux_df_sorted, another_df_sorted)[c(1:4)] %>% mutate(final_f = f*tau_rel) %>% dplyr::select(-tau_rel, -f) %>% rename(edge_number = .edge_number, distance_on_edge = .distance_on_edge, f = final_f)
+
+prod <- aux_graph$process_data(data = merged_df, normalized = TRUE)
+```
+
+
+```{r}
+kkk7 <- aux_graph$plot_function(model_for_tau, vertex_size = 1, type = "plotly", line_color = "#0000C8", line_width = gsw, edge_color = "black", edge_width = gsw) %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk8 <- graph$plot_function(model_for_kappa, vertex_size = 1, type = "plotly", line_color = "red", line_width = gsw, edge_color = "black", edge_width = gsw) %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk9 <- aux_graph$plot_function(data = "f", newdata= prod, vertex_size = 1, type = "plotly", line_color = "darkgreen", line_width = gsw, continuous = FALSE, interpolate_plot = FALSE, edge_color = "black", edge_width = gsw) %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+save(kkk7, file = here::here("data_files/kkk7.Rdata"))
+save(kkk8, file = here::here("data_files/kkk8.Rdata"))
+save(kkk9, file = here::here("data_files/kkk9.Rdata"))
+```
+
+
+
+# The covariate for $\tau$ is continuous and the covariate for $\kappa$ is discontinuous
+
+We now consider the case where the covariate for $\tau$ is continuous and the covariate for $\kappa$ is discontinuous, that is $\tau(s) = \exp(g(s))$ and $\kappa(s) = \exp(f(s))$. Using these, we simulate $u(s)$. See Figures 9, 10, and 11.
+
+```{r}
+# Define the matrices B.tau and B.kappa
+B.tau =   cbind(0, 1, 0, g, 0) #rep(1, length(f))
+B.kappa = cbind(0, 0, 1, 0, f)
+# Log-regression coefficients
+theta <- c(0, 0, 1, 1)
+# Compute the operator
+op <- rSPDE::spde.matern.operators(graph = graph,
+                                      B.tau = B.tau,
+                                      B.kappa =  B.kappa,
+                                      parameterization = "spde",
+                                      theta = theta,
+                                      alpha = alpha)
+# Simulate the non-stationary field
+Sigma <- precision(op)
+R <- chol(Sigma)
+u = solve(R, normal_sample)
+
+aux_B.kappa = cbind(0, 0, 1, 0, aux_f)
+model_for_tau <- exp(B.tau[,-1]%*%theta)
+model_for_kappa <- exp(aux_B.kappa[,-1]%*%theta)
+```
+
+
+```{r}
+kkk10 <- graph$plot_function(model_for_tau, vertex_size = 1, type = "plotly", line_color = "#0000C8", line_width = gsw, edge_color = "black", edge_width = gsw) %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk11 <- aux_graph$plot_function(model_for_kappa, vertex_size = 1, type = "plotly", line_color = "red", line_width = gsw, edge_color = "black", edge_width = gsw) %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+kkk12 <- graph$plot_function(X = u, vertex_size = 1, type = "plotly", line_color = "darkgreen", line_width = gsw, edge_color = "black", edge_width = gsw) %>%
+  config(mathjax = 'cdn') %>%
+  layout(font = list(family = "Palatino"),
+         showlegend = FALSE,
+         scene = list(xaxis = list(title = list(text = "x", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              yaxis = list(title = list(text = "y", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+              zaxis = list(title = list(text = "z", font = list(color = colaxnn)),  tickfont = list(color = colaxnn)),
+           aspectratio = list(x = 1/2, y = 1, z = 1),
+camera = list(
+      eye = list(x = -1*a, y = 0.5*a, z = 0.7*a))))
+
+save(kkk10, file = here::here("data_files/kkk10.Rdata"))
+save(kkk11, file = here::here("data_files/kkk11.Rdata"))
+save(kkk12, file = here::here("data_files/kkk12.Rdata"))
+```
+
+
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+::: {}
+
+```{r, echo = FALSE, eval =TRUE, fig.height = 7, out.width = "100%"}
+load(here::here("data_files/kkk10.Rdata"))
+kkk10
+```
+
+:::
+
+::: {}
+
+```{r, echo = FALSE, eval =TRUE, fig.height = 7, out.width = "100%"}
+load(here::here("data_files/kkk11.Rdata"))
+kkk11
+```
+
+
+:::
+
+::: {}
+
+
+```{r, echo = FALSE, eval =TRUE, fig.height = 7, out.width = "100%"}
+load(here::here("data_files/kkk12.Rdata"))
+kkk12
+```
+
+:::
+
+::::
+
+
+
+:::: {style="display: grid; grid-template-columns: 485px 485px 485px; grid-column-gap: 0px;"}
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%"}
+load(here::here("data_files/kkk7.Rdata"))
+kkk7
+```
+
+:::
+
+::: {}
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%"}
+load(here::here("data_files/kkk8.Rdata"))
+kkk8
+```
+
+
+:::
+
+::: {}
+
+
+```{r, eval =TRUE, fig.height = 7, out.width = "100%"}
+load(here::here("data_files/kkk9.Rdata"))
+kkk9
+```
+
+:::
+
+::::
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+
+
