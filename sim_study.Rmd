@@ -59,7 +59,7 @@ knitr::opts_chunk$set(
   # Include both R code and its results in output
   include = TRUE,     
   # Evaluate R code chunks
-  eval = TRUE,       
+  eval = FALSE,       
   # Enable caching of R code chunks for faster rendering
   cache = FALSE,      
   # Align figures in the center of the output
@@ -345,7 +345,9 @@ GROUPS <- NEW_GROUPS
 
 slackr_msg(text = "Groups computed", channel = "#research")
 
-list_models_before_cv <- list(mean_and_mode_params_statnuest = mean_and_mode_params_statnuest,
+list_models_before_cv <- list(mean_and_mode_params_statnu0.5 = mean_and_mode_params_statnu0.5,
+                              mean_and_mode_params_statnu1.5 = mean_and_mode_params_statnu1.5,
+                              mean_and_mode_params_statnuest = mean_and_mode_params_statnuest,
               rspde_fit_statnu0.5 = rspde_fit_statnu0.5,
               rspde_fit_statnu1.5 = rspde_fit_statnu1.5,
               rspde_fit_statnuest = rspde_fit_statnuest,
@@ -356,8 +358,33 @@ save(list_models_before_cv, file = here::here("data_files/cv_models.RData"))
 ```
 
 
-```{r, eval = FALSE}
+```{r, eval = TRUE}
 load(here::here("data_files/cv_models.RData"))
+```
+
+
+# Estimated values
+
+### Estimated parameters for the model with $\nu = 0.5$
+
+```{r, eval = TRUE}
+list_models_before_cv$mean_and_mode_params_statnu0.5
+```
+
+### Estimated parameters for the model with $\nu = 0.5$
+
+```{r, eval = TRUE}
+list_models_before_cv$mean_and_mode_params_statnu1.5
+```
+
+### Estimated parameters for the model with $\nu$ estimated
+
+```{r, eval = TRUE}
+list_models_before_cv$mean_and_mode_params_statnuest
+```
+
+
+```{r, eval = FALSE}
 GROUPS <- list_models_before_cv$GROUPS
 data <- list_models_before_cv$data
 point_of_interest <- 1 # Any number between 1 and nrow(data)
