@@ -865,6 +865,62 @@ mean_and_mode_params_statnuest
 mean_and_mode_params_nonstatnuest
 ```
 
+
+# Simple linear regression
+
+```{r, eval = TRUE}
+# Load the data
+load(here::here("data_files/pems_repl1_data.RData"))
+# Extract the data from the graph
+data <- graph$get_data() |> as.data.frame() |> select(y, mean_value, repl)
+
+
+model_simple <- lm(y ~ mean_value, data = data)
+summary(model_simple)
+
+model_replicates <- lme4::lmer(y ~ mean_value + (1 | repl), data = data)
+summary(model_replicates)
+```
+
+```{r, eval = FALSE}
+library(lme4)
+
+n <- nrow(data)
+
+pred_loocv <- numeric(n)
+pred_loocv_repl <- numeric(n)
+
+for(i in 1:n){
+  train_data <- data[-i, ]
+  test_data  <- data[i, , drop = FALSE]
+  
+  model <- lm(y ~ mean_value, data = train_data)
+  pred_loocv[i] <- predict(model, newdata = test_data)
+  
+  model <- lmer(y ~ mean_value + (1 | repl), data = train_data)
+  pred_loocv_repl[i] <- predict(model, newdata = test_data, re.form = NULL)
+  print(paste("Processed observation", i, "out of", n))
+}
+
+mse_loocv_lm <- mean((data$y - pred_loocv)^2)
+mse_loocv_lm
+
+mse_loocv_lmer <- mean((data$y - pred_loocv_repl)^2)
+mse_loocv_lmer
+
+save(mse_loocv_lm, mse_loocv_lmer, file = here("data_files/simple_linear_regression_results.RData"))
+```
+
+Below we show the MSE results for the simple linear regression `mse_loocv_lm` and the linear mixed effects model with replicates as random effects `mse_loocv_lmer`.
+
+
+```{r, eval = TRUE}
+load(here("data_files/simple_linear_regression_results.RData"))
+mse_loocv_lm
+mse_loocv_lmer
+```
+
+
 # References
 
 
