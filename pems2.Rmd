@@ -86,6 +86,7 @@ captioner <- function(caption) {
   paste0("Figure ", fig_count, ": ", caption)
 }
 
+
 # Define the function to truncate a number to two decimal places
 truncate_to_two <- function(x) {
   truncated <- floor(x * 100) / 100
@@ -866,20 +867,41 @@ mean_and_mode_params_nonstatnuest
 ```
 
 
-# Simple linear regression
+# Linear regression and kNN regression
 
 ```{r, eval = TRUE}
 # Load the data
 load(here::here("data_files/pems_repl1_data.RData"))
 # Extract the data from the graph
-data <- graph$get_data() |> as.data.frame() |> select(y, mean_value, repl)
 
+initial_data <- graph$get_data()
+data <- initial_data |> as.data.frame() |> select(y, mean_value, repl)
+
+
+aux <- initial_data |> filter(repl == 1) |>
+  rename(distance_on_edge = .distance_on_edge, 
+         edge_number = .edge_number) |> 
+  as.data.frame() |> 
+  dplyr::select(edge_number, 
+                distance_on_edge)
+
+D <- graph$compute_geodist_PtE(
+  PtE = aux,
+  normalized = TRUE,
+  include_vertices = FALSE)
+
+n <- length(data |> filter(repl == 1) |> pull(y))
+data$repl <- factor(rep(1:13, each = n))
 
 model_simple <- lm(y ~ mean_value, data = data)
 summary(model_simple)
 
 model_replicates <- lme4::lmer(y ~ mean_value + (1 | repl), data = data)
 summary(model_replicates)
+
+
+fit <- lm(y ~ mean_value + repl, data = data)
+summary(fit)
 ```
 
 ```{r, eval = FALSE}
@@ -908,7 +930,88 @@ mse_loocv_lm
 mse_loocv_lmer <- mean((data$y - pred_loocv_repl)^2)
 mse_loocv_lmer
 
-save(mse_loocv_lm, mse_loocv_lmer, file = here("data_files/simple_linear_regression_results.RData"))
+library(FNN)
+
+# -----------------------------------------------------------
+# 0. Setup
+# -----------------------------------------------------------
+n_loc  <- 314
+n_repl <- 13
+n_obs  <- nrow(data)  # 4082
+
+# Location index for each observation in data
+# (assumes data is ordered: all 314 locations for repl 1, then repl 2, etc.)
+loc_idx <- rep(1:n_loc, times = n_repl)
+
+# -----------------------------------------------------------
+# 1. Build normalized distance matrices
+# -----------------------------------------------------------
+
+# Spatial: expand 314x314 -> 4082x4082 using location indices
+D_space_full <- D[loc_idx, loc_idx]
+D_space_norm <- D_space_full / max(D_space_full)
+
+# Covariate: pairwise distances on mean_value across all 4082 observations
+D_cov_full <- as.matrix(dist(scale(data$mean_value)))
+D_cov_norm <- D_cov_full / max(D_cov_full)
+
+# -----------------------------------------------------------
+# 2. Combined distance (precomputed, outside all loops)
+# -----------------------------------------------------------
+alpha <- 0.5  # 0 = pure spatial, 1 = pure covariate
+D_combined <- alpha * D_cov_norm + (1 - alpha) * D_space_norm
+
+# -----------------------------------------------------------
+# 3. LOO cross-validation over k
+# -----------------------------------------------------------
+k_values <- 1:30
+
+loo_mse <- sapply(k_values, function(k) {
+  pred <- numeric(n_obs)
+  
+  for (i in 1:n_obs) {
+    neighbors <- order(D_combined[i, -i])[1:k]
+    pred[i]   <- mean(data$y[-i][neighbors])
+  }
+  
+  mean((data$y - pred)^2)
+})
+
+# -----------------------------------------------------------
+# 4. Results
+# -----------------------------------------------------------
+
+best_k    <- k_values[which.min(loo_mse)]
+best_KNN_mse <- loo_mse[which.min(loo_mse)]
+
+
+# Another approach
+
+k_values <- 1:30
+
+loo_mse <- sapply(k_values, function(k) {
+  n <- nrow(data)
+  pred <- numeric(n)
+  
+  for (i in 1:n) {
+    pred[i] <- knn.reg(
+      train = matrix(data$mean_value[-i]),
+      y     = data$y[-i],
+      test  = matrix(data$mean_value[i]),
+      k     = k
+    )$pred
+  }
+  
+  mean((data$y - pred)^2)
+})
+
+plot(k_values, loo_mse, type = "b", xlab = "k", ylab = "LOO RMSE")
+
+best_k    <- k_values[which.min(loo_mse)]
+best_knn_mse <- loo_mse[which.min(loo_mse)]
+
+
+save(mse_loocv_lm, mse_loocv_lmer, best_KNN_mse, best_knn_mse, file = here("data_files/simple_linear_regression_results.RData"))
 ```
 
 Below we show the MSE results for the simple linear regression `mse_loocv_lm` and the linear mixed effects model with replicates as random effects `mse_loocv_lmer`.
@@ -916,8 +1019,11 @@ Below we show the MSE results for the simple linear regression `mse_loocv_lm` an
 
 ```{r, eval = TRUE}
 load(here("data_files/simple_linear_regression_results.RData"))
-mse_loocv_lm
-mse_loocv_lmer
+cbind(mse_df[1,-1], data.frame(LM = mse_loocv_lm, 
+                               LMrepl = mse_loocv_lmer,
+                               kNNsimple = best_knn_mse,
+                               kNNdistMAT = best_KNN_mse))
+best_KNN_mse
 ```
 
 
