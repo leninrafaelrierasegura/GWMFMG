@@ -228,7 +228,9 @@ all_same <- function(col) {
 cols_to_keep <- apply(Y, 2, function(col) !all_same(col))
 
 Y <- Y[, cols_to_keep]
+Y_raw <- Y
 PtE <- PtE[cols_to_keep,]
+PtE_raw <- PtE
 ```
 
 
@@ -241,7 +243,7 @@ Y_for_summary <- Y[sampled_numbers,]
 Y_logstd <- apply(Y_for_summary, 2, sd) |> as.vector() |> log()
 Y_mean <- apply(Y_for_summary, 2, mean) |> as.vector()
 Y <- Y[not_sampled_numbers,]
-save(Y_mean, file = here::here("data_files/Y_mean.RData"))
+save(Y_mean,Y_raw, PtE_raw, file = here::here("data_files/Y_mean.RData"))
 ```
 
 
