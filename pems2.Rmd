@@ -97,6 +97,8 @@ truncate_to_two <- function(x) {
 Below we load the necessary libraries.
 
 ```{r, eval = TRUE}
+# remotes::install_github("davidbolin/rspde", ref = "devel")
+# remotes::install_github("davidbolin/metricgraph", ref = "devel")
 library(INLA)
 library(inlabru)
 library(rSPDE)
@@ -869,7 +871,47 @@ mean_and_mode_params_nonstatnuest
 
 # Linear regression and kNN regression
 
-```{r, eval = TRUE}
+
+```{r, eval = FALSE}
+library(lme4)
+
+load(here::here("data_files/Y_mean.RData")) # was created in pems1.Rmd
+
+Y_mu <- apply(Y_raw[1:13,], 2, mean)
+
+data_simple <- data.frame(y = c(t(Y_raw[14:26,])), 
+                          mean_value = rep(Y_mu, times = 13), 
+                          repl = rep(1:13, each = 314))
+
+data_simple$repl <- factor(data_simple$repl)
+
+
+n <- nrow(data_simple)
+
+pred_loocv <- numeric(n)
+#pred_loocv_repl <- numeric(n)
+
+for(i in 1:n){
+  train_data <- data_simple[-i, ]
+  test_data  <- data_simple[i, , drop = FALSE]
+  
+  model <- lm(y ~ mean_value, data = train_data)
+  pred_loocv[i] <- predict(model, newdata = test_data)
+  
+  # model <- lmer(y ~ mean_value + (1 | repl), data = train_data)
+  # pred_loocv_repl[i] <- predict(model, newdata = test_data, re.form = NULL)
+  print(paste("Processed observation", i, "out of", n))
+}
+
+mse_loocv_lm <- mean((data_simple$y - pred_loocv)^2)
+mse_loocv_lm
+
+# mse_loocv_lmer <- mean((data_simple$y - pred_loocv_repl)^2)
+# mse_loocv_lmer
+```
+
+
+```{r, eval = FALSE}
 # Load the data
 load(here::here("data_files/pems_repl1_data.RData"))
 # Extract the data from the graph
@@ -877,6 +919,13 @@ load(here::here("data_files/pems_repl1_data.RData"))
 initial_data <- graph$get_data()
 data <- initial_data |> as.data.frame() |> select(y, mean_value, repl)
 
+n <- length(data |> filter(repl == 1) |> pull(y))
+data$repl <- factor(rep(1:13, each = n))
+
+```
+
+```{r, eval = FALSE}
+library(FNN)
 
 aux <- initial_data |> filter(repl == 1) |>
   rename(distance_on_edge = .distance_on_edge, 
@@ -889,48 +938,6 @@ D <- graph$compute_geodist_PtE(
   PtE = aux,
   normalized = TRUE,
   include_vertices = FALSE)
-
-n <- length(data |> filter(repl == 1) |> pull(y))
-data$repl <- factor(rep(1:13, each = n))
-
-model_simple <- lm(y ~ mean_value, data = data)
-summary(model_simple)
-
-model_replicates <- lme4::lmer(y ~ mean_value + (1 | repl), data = data)
-summary(model_replicates)
-
-
-fit <- lm(y ~ mean_value + repl, data = data)
-summary(fit)
-```
-
-```{r, eval = FALSE}
-library(lme4)
-
-n <- nrow(data)
-
-pred_loocv <- numeric(n)
-pred_loocv_repl <- numeric(n)
-
-for(i in 1:n){
-  train_data <- data[-i, ]
-  test_data  <- data[i, , drop = FALSE]
-  
-  model <- lm(y ~ mean_value, data = train_data)
-  pred_loocv[i] <- predict(model, newdata = test_data)
-  
-  model <- lmer(y ~ mean_value + (1 | repl), data = train_data)
-  pred_loocv_repl[i] <- predict(model, newdata = test_data, re.form = NULL)
-  print(paste("Processed observation", i, "out of", n))
-}
-
-mse_loocv_lm <- mean((data$y - pred_loocv)^2)
-mse_loocv_lm
-
-mse_loocv_lmer <- mean((data$y - pred_loocv_repl)^2)
-mse_loocv_lmer
-
-library(FNN)
 
 # -----------------------------------------------------------
 # 0. Setup
@@ -958,7 +965,7 @@ D_cov_norm <- D_cov_full / max(D_cov_full)
 # -----------------------------------------------------------
 # 2. Combined distance (precomputed, outside all loops)
 # -----------------------------------------------------------
-alpha <- 0.5  # 0 = pure spatial, 1 = pure covariate
+alpha <- 0  # 0 = pure spatial, 1 = pure covariate
 D_combined <- alpha * D_cov_norm + (1 - alpha) * D_space_norm
 
 # -----------------------------------------------------------
@@ -986,44 +993,42 @@ best_KNN_mse <- loo_mse[which.min(loo_mse)]
 
 
 # Another approach
+# 
+# k_values <- 1:30
+# 
+# loo_mse <- sapply(k_values, function(k) {
+#   n <- nrow(data)
+#   pred <- numeric(n)
+#   
+#   for (i in 1:n) {
+#     pred[i] <- knn.reg(
+#       train = matrix(data$mean_value[-i]),
+#       y     = data$y[-i],
+#       test  = matrix(data$mean_value[i]),
+#       k     = k
+#     )$pred
+#   }
+#   
+#   mean((data$y - pred)^2)
+# })
+# 
+# plot(k_values, loo_mse, type = "b", xlab = "k", ylab = "LOO RMSE")
+# 
+# best_k    <- k_values[which.min(loo_mse)]
+# best_knn_mse <- loo_mse[which.min(loo_mse)]
 
-k_values <- 1:30
 
-loo_mse <- sapply(k_values, function(k) {
-  n <- nrow(data)
-  pred <- numeric(n)
-  
-  for (i in 1:n) {
-    pred[i] <- knn.reg(
-      train = matrix(data$mean_value[-i]),
-      y     = data$y[-i],
-      test  = matrix(data$mean_value[i]),
-      k     = k
-    )$pred
-  }
-  
-  mean((data$y - pred)^2)
-})
-
-plot(k_values, loo_mse, type = "b", xlab = "k", ylab = "LOO RMSE")
-
-best_k    <- k_values[which.min(loo_mse)]
-best_knn_mse <- loo_mse[which.min(loo_mse)]
-
-
-save(mse_loocv_lm, mse_loocv_lmer, best_KNN_mse, best_knn_mse, file = here("data_files/simple_linear_regression_results.RData"))
+save(mse_loocv_lm, best_KNN_mse, file = here("data_files/simple_linear_regression_results.RData"))
 ```
 
-Below we show the MSE results for the simple linear regression `mse_loocv_lm` and the linear mixed effects model with replicates as random effects `mse_loocv_lmer`.
+Below we show the MSE results for the simple linear regression `mse_loocv_lm` and the kNN regression `best_KNN_mse`.
 
 
 ```{r, eval = TRUE}
 load(here("data_files/simple_linear_regression_results.RData"))
-cbind(mse_df[1,-1], data.frame(LM = mse_loocv_lm, 
-                               LMrepl = mse_loocv_lmer,
-                               kNNsimple = best_knn_mse,
-                               kNNdistMAT = best_KNN_mse))
-best_KNN_mse
+mse_df[1,-1]
+data.frame(LM = mse_loocv_lm, 
+           kNNdistMAT = best_KNN_mse)
 ```
 
 

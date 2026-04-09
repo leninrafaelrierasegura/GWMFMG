@@ -7,3 +7,4 @@ This website is a companion to the paper "A new class of non-stationary Gaussian
 Visit this [GitHub](https://github.com/leninrafaelrierasegura/GWMFMG) repository for all the necessary files to reproduce the results presented in this website and paper.
 
 Go to the [About](about.html) page for the description of the content of this website.
+
