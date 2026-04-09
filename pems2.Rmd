@@ -872,23 +872,12 @@ mean_and_mode_params_nonstatnuest
 # Linear regression and kNN regression
 
 
-```{r, eval = FALSE}
-library(lme4)
-# Load the data
 
+
+```{r, eval = FALSE}
 load(here::here("data_files/Y_mean.RData")) # was created in pems1.Rmd
 
 Y_mu <- apply(Y_raw[1:13,], 2, mean)
-
-data_simple <- data.frame(y = c(t(Y_raw[14:26,])), 
-                          mean_value = rep(Y_mu, times = 13), 
-                          repl = rep(1:13, each = 314))
-
-data_simple$repl <- factor(data_simple$repl)
-```
-
-
-```{r, eval = FALSE}
 load(here::here("data_files/pems_repl1_data.RData"))
 df_isocov <- data.frame(y = Y_mu, 
                         edge_number = PtE_raw[,1], 
@@ -927,12 +916,28 @@ graph$add_observations(data = DF_ISOCOV,
 
 RES_EXP <- graph_lme(y ~ mean_value, graph = graph, which_repl = 1:13, model = list(type = "isoCov"))
 summary(RES_EXP)
-POST <- posterior_crossvalidation_loo(RES_EXP)
+POST <- posterior_crossvalidation_loo(object = RES_EXP, which_repl = 1:13)
 MSE_ISOCOV <- POST$scores$rmse^2
 ```
 
 
 ```{r, eval = FALSE}
+# Load the data
+
+load(here::here("data_files/Y_mean.RData")) # was created in pems1.Rmd
+
+Y_mu <- apply(Y_raw[1:13,], 2, mean)
+
+data_simple <- data.frame(y = c(t(Y_raw[14:26,])), 
+                          mean_value = rep(Y_mu, times = 13), 
+                          repl = rep(1:13, each = 314))
+
+data_simple$repl <- factor(data_simple$repl)
+```
+
+
+```{r, eval = FALSE}
+library(lme4)
 n <- nrow(data_simple)
 
 pred_loocv <- numeric(n)
