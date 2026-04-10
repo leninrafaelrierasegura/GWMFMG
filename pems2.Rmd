@@ -922,6 +922,43 @@ MSE_ISOCOV <- POST$scores$rmse^2
 
 
 ```{r, eval = FALSE}
+load(here::here("data_files/pems_repl1_data.RData"))
+data <- graph$get_data()
+rspde_model_stat <- rspde.metric_graph(graph,
+                                       parameterization = "spde",
+                                       nu = 0.5)
+# Prepare the data for fitting
+data_rspde_bru_stat <- graph_data_rspde(rspde_model_stat,
+                                        repl = ".all",
+                                        bru = TRUE,
+                                        repl_col = "repl")
+# Define the component
+cmp_stat <- y ~ -1 +
+  Intercept(1) +
+  mean_value +
+  field(cbind(.edge_number, .distance_on_edge), 
+        model = rspde_model_stat,
+        replicate = repl)
+# Fit the model
+rspde_fit_stat <-
+  bru(cmp_stat,
+      data = data_rspde_bru_stat[["data"]],
+      family = "gaussian",
+      options = list(verbose = FALSE)
+  )
+
+load(here::here("data_files/groups_for_cv.RData"))
+
+my_group <- GROUPS[[1]]
+
+cv.statnu0.5 <- inla.group.cv(rspde_fit_stat, groups = my_group)$mean
+
+new_mse <- mean((cv.statnu0.5 - data$y)^2)
+
+```
+
+
+```{r, eval = FALSE}
 # Load the data
 
 load(here::here("data_files/Y_mean.RData")) # was created in pems1.Rmd
