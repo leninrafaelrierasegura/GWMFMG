@@ -723,12 +723,12 @@ cv_mse_nonstatnu0.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu0.5)
 cv_mse_nonstatnu1.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu1.5)
 cv_mse_nonstatnuest <- rSPDE::cross_validation(models = rspde_fit_nonstatnuest)
 mse_CV <- data.frame(
-  cv_mse_statnu0.5 = cv_mse_statnu0.5,
-  cv_mse_statnu1.5 = cv_mse_statnu1.5,
-  cv_mse_statnuest = cv_mse_statnuest,
-  cv_mse_nonstatnu0.5 = cv_mse_nonstatnu0.5,
-  cv_mse_nonstatnu1.5 = cv_mse_nonstatnu1.5,
-  cv_mse_nonstatnuest = cv_mse_nonstatnuest
+  cv_mse_statnu0.5 = cv_mse_statnu0.5$mse[1],
+  cv_mse_statnu1.5 = cv_mse_statnu1.5$mse[1],
+  cv_mse_statnuest = cv_mse_statnuest$mse[1],
+  cv_mse_nonstatnu0.5 = cv_mse_nonstatnu0.5$mse[1],
+  cv_mse_nonstatnu1.5 = cv_mse_nonstatnu1.5$mse[1],
+  cv_mse_nonstatnuest = cv_mse_nonstatnuest$mse[1]
 )
 save(mse_CV, file = here("data_files/new_mse_cv_results.RData"))
 ```
@@ -992,6 +992,7 @@ RES_EXP <- graph_lme(y ~ mean_value, graph = graph, which_repl = 1:13, model = l
 summary(RES_EXP)
 POST <- posterior_crossvalidation_loo(object = RES_EXP, which_repl = 1:13)
 MSE_ISOCOV <- POST$scores$rmse^2
+save(RES_EXP, file = "~/Desktop/new_graph_lme_results.RData")
 ```
 
 
