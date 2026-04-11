@@ -128,6 +128,14 @@ library(grateful) # Cite all loaded packages
 ```
 
 
+```{r}
+capture.output(
+  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+  file = here::here("old/purl_log.txt")
+)
+source(here::here("functionality1.R"))
+```
+
 Below we define function `process_model_results()` to extract the summary of the parameters of the model.
 
 
@@ -610,6 +618,8 @@ parameters_statistics_statnuest <- output_from_models$allparams
 rspde_fit_statnuest <- rspde_fit_stat
 save(rspde_fit_statnuest, file = "~/Desktop/rspde_fit_statnuest.RData")
 save(parameters_statistics_statnuest, file = here::here("data_files/parameters_statistics_statnuest.RData"))
+alpha_stat <- parameters_statistics_statnuest[5,1] + 0.5
+save(alpha_stat, file = here::here("data_files/alpha_stat.RData"))
 ```
 
 
@@ -651,6 +661,8 @@ parameters_statistics_nonstatnuest <- output_from_models$allparams
 rspde_fit_nonstatnuest <- rspde_fit_nonstat
 save(rspde_fit_nonstatnuest, file = "~/Desktop/rspde_fit_nonstatnuest.RData")
 save(parameters_statistics_nonstatnuest, file = here::here("data_files/parameters_statistics_nonstatnuest.RData"))
+alpha_nonstat <- parameters_statistics_nonstatnuest[7,1] + 0.5
+save(alpha_nonstat, file = here::here("data_files/alpha_nonstat.RData"))
 ```
 
 
@@ -668,7 +680,11 @@ load("~/Desktop/rspde_fit_statnu1.5.RData")
 load("~/Desktop/rspde_fit_nonstatnu1.5.RData")
 load("~/Desktop/rspde_fit_statnuest.RData")
 load("~/Desktop/rspde_fit_nonstatnuest.RData")
+```
 
+
+
+```{r, eval = FALSE}
 j = 1
 cv.statnu0.5 <- inla.group.cv(rspde_fit_statnu0.5, groups = GROUPS[[j]])
 cv.statnu1.5 <- inla.group.cv(rspde_fit_statnu1.5, groups = GROUPS[[j]])
@@ -695,8 +711,30 @@ MSE_LOO <- data.frame(
 )
 
 save(MSE_LOO, file = here("data_files/new_mse_loo_results.RData"))
-  
+```
 
+
+
+```{r, eval = FALSE}
+cv_mse_statnu0.5 <- rSPDE::cross_validation(models = rspde_fit_statnu0.5)
+cv_mse_statnu1.5 <- rSPDE::cross_validation(models = rspde_fit_statnu1.5)
+cv_mse_statnuest <- rSPDE::cross_validation(models = rspde_fit_statnuest)
+cv_mse_nonstatnu0.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu0.5)
+cv_mse_nonstatnu1.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu1.5)
+cv_mse_nonstatnuest <- rSPDE::cross_validation(models = rspde_fit_nonstatnuest)
+mse_CV <- data.frame(
+  cv_mse_statnu0.5 = cv_mse_statnu0.5,
+  cv_mse_statnu1.5 = cv_mse_statnu1.5,
+  cv_mse_statnuest = cv_mse_statnuest,
+  cv_mse_nonstatnu0.5 = cv_mse_nonstatnu0.5,
+  cv_mse_nonstatnu1.5 = cv_mse_nonstatnu1.5,
+  cv_mse_nonstatnuest = cv_mse_nonstatnuest
+)
+save(mse_CV, file = here("data_files/new_mse_cv_results.RData"))
+```
+
+
+```{r, eval = FALSE}
 mse.statnu0.5 <- mse.nonstatnu0.5 <- ls.statnu0.5 <- ls.nonstatnu0.5 <- rep(0,length(distance))
 mse.statnu1.5 <- mse.nonstatnu1.5 <- ls.statnu1.5 <- ls.nonstatnu1.5 <- rep(0,length(distance))
 mse.statnuest <- mse.nonstatnuest <- ls.statnuest <- ls.nonstatnuest <- rep(0,length(distance))
@@ -781,6 +819,8 @@ Below we plot the cross-validation results.
 
 
 ```{r, eval = FALSE}
+load(here::here("data_files/alpha_stat.RData"))
+load(here::here("data_files/alpha_nonstat.RData"))
 choose_index <- seq(2, nrow(mse_df), by = 3)
 mse_df_red <- mse_df[choose_index,]
 ls_df_red <- ls_df[choose_index,]
@@ -798,8 +838,8 @@ label_mapping <- c(
   "Nonstatnu0.5" = "1", 
   "Statnu1.5" = "2", 
   "Nonstatnu1.5" = "2", 
-  "Statnuest" = paste(round(mean_and_mode_params_statnuest[5,1]+0.5, 3), "(est)"), 
-  "Nonstatnuest" = paste(round(mean_and_mode_params_nonstatnuest[7,1]+0.5, 3), "(est)")
+  "Statnuest" = paste(round(alpha_stat, 3), "(est)"), 
+  "Nonstatnuest" = paste(round(alpha_nonstat, 3), "(est)")
 )
 
 # Define color and linetype mapping
@@ -1114,6 +1154,8 @@ Below we show the MSE results for the simple linear regression `mse_loocv_lm` an
 ```{r, eval = TRUE}
 load(here::here("data_files/new_simple_linear_regression_results.RData"))
 load(here::here("data_files/new_mse_loo_results.RData"))
+load(here::here("data_files/new_mse_cv_results.RData"))
+mse_CV
 MSE_LOO
 data.frame(LM = mse_loocv_lm, 
            kNNdistMAT = best_KNN_mse,
