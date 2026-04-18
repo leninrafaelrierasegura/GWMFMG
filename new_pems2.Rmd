@@ -287,6 +287,72 @@ For each of the two classes of models, we consider three cases: when (1) $\nu$ i
 
 Below `cov` refers to $\text{std.cov}(s)$ and `mean_value` refers to $\text{mean.cov}(s)$.
 
+
+
+# With `graph_lme()` function
+
+
+```{r, eval = FALSE}
+load(here::here("data_files/new_Y_mean.RData")) # was created in pems1.Rmd
+
+Y_mu <- apply(Y_raw[1:13,], 2, mean)
+load(here::here("data_files/new_pems_repl1_data.RData"))
+df_isocov <- data.frame(y = Y_mu, 
+                        edge_number = PtE_raw[,1], 
+                        distance_on_edge = PtE_raw[,2])
+
+graph$add_observations(data = df_isocov,
+                       edge_number = "edge_number",
+                       distance_on_edge = "distance_on_edge",
+                       data_coords = "PtE",
+                       normalized = TRUE, 
+                       clear_obs = TRUE)
+# graph$check_euclidean()
+# graph
+res_exp <- graph_lme(y ~ 1, graph = graph, model = list(type = "isoCov"))
+summary(res_exp)
+u_est_exp_mean <- predict(res_exp, df_isocov, normalized = TRUE)$mean
+
+plot(Y_mu, type = "l", col = "darkblue")
+lines(u_est_exp_mean, col = "darkred")
+
+Y2part <- Y_raw[14:26,]
+DF_ISOCOV <- lapply(1:nrow(Y2part), function(i){data.frame(y = Y2part[i,],
+                                                   mean_value = u_est_exp_mean,
+                                                   edge_number = PtE_raw[,1],
+                                                   distance_on_edge = PtE_raw[,2],
+                                                   repl = i)})
+DF_ISOCOV <- do.call(rbind, DF_ISOCOV)
+
+graph$add_observations(data = DF_ISOCOV, 
+                       edge_number = "edge_number",
+                       distance_on_edge = "distance_on_edge",
+                       data_coords = "PtE",
+                       normalized = TRUE, 
+                       clear_obs = TRUE, 
+                       group = "repl")
+
+RES_EXP <- graph_lme(y ~ mean_value, graph = graph, which_repl = 1:13, model = list(type = "isoCov"))
+summary(RES_EXP)
+POST <- posterior_crossvalidation_loo(object = RES_EXP, which_repl = 1:13)
+MSE_ISOCOV <- POST$scores$rmse^2
+save(MSE_ISOCOV, file = here::here("data_files/new_MSE_ISOCOV.RData"))
+save(RES_EXP, file = "~/Desktop/new_graph_lme_results.RData")
+
+tau_from_graphlme <- RES_EXP$coeff$random_effects[1]
+kappa_from_graphlme <- RES_EXP$coeff$random_effects[2]
+save(tau_from_graphlme, file = here::here("data_files/tau_from_graphlme.RData"))
+```
+
+
+```{r, eval = FALSE}
+load(here::here("data_files/tau_from_graphlme.RData"))
+log_tau_from_graphlme <- log(tau_from_graphlme)
+log_kappa_from_graphlme <- log(kappa_from_graphlme)
+```
+
+
+
 # Case $\nu = 0.5$
 
 
@@ -298,6 +364,8 @@ We first consider the stationary model.
 ```{r, eval = FALSE}
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
+                                       start.ltau = log_tau_from_graphlme,
+                                       start.lkappa = log_kappa_from_graphlme,
                                        parameterization = "spde",
                                        nu = 0.5)
 # Prepare the data for fitting
@@ -510,6 +578,8 @@ We first consider the stationary model.
 ```{r, eval = FALSE}
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
+                                       start.ltau = log_tau_from_graphlme,
+                                       start.lkappa = log_kappa_from_graphlme,
                                        parameterization = "spde",
                                        nu = 1.5)
 # Prepare the data for fitting
@@ -592,6 +662,8 @@ We first consider the stationary model.
 ```{r, eval = FALSE}
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
+                                       start.ltau = log_tau_from_graphlme,
+                                       start.lkappa = log_kappa_from_graphlme,
                                        parameterization = "spde")
 # Prepare the data for fitting
 data_rspde_bru_stat <- graph_data_rspde(rspde_model_stat,
@@ -948,53 +1020,6 @@ parameters_statistics_nonstatnuest
 
 
 
-```{r, eval = FALSE}
-load(here::here("data_files/new_Y_mean.RData")) # was created in pems1.Rmd
-
-Y_mu <- apply(Y_raw[1:13,], 2, mean)
-load(here::here("data_files/new_pems_repl1_data.RData"))
-df_isocov <- data.frame(y = Y_mu, 
-                        edge_number = PtE_raw[,1], 
-                        distance_on_edge = PtE_raw[,2])
-
-graph$add_observations(data = df_isocov,
-                       edge_number = "edge_number",
-                       distance_on_edge = "distance_on_edge",
-                       data_coords = "PtE",
-                       normalized = TRUE, 
-                       clear_obs = TRUE)
-# graph$check_euclidean()
-# graph
-res_exp <- graph_lme(y ~ 1, graph = graph, model = list(type = "isoCov"))
-summary(res_exp)
-u_est_exp_mean <- predict(res_exp, df_isocov, normalized = TRUE)$mean
-
-plot(Y_mu, type = "l", col = "darkblue")
-lines(u_est_exp_mean, col = "darkred")
-
-Y2part <- Y_raw[14:26,]
-DF_ISOCOV <- lapply(1:nrow(Y2part), function(i){data.frame(y = Y2part[i,],
-                                                   mean_value = u_est_exp_mean,
-                                                   edge_number = PtE_raw[,1],
-                                                   distance_on_edge = PtE_raw[,2],
-                                                   repl = i)})
-DF_ISOCOV <- do.call(rbind, DF_ISOCOV)
-
-graph$add_observations(data = DF_ISOCOV, 
-                       edge_number = "edge_number",
-                       distance_on_edge = "distance_on_edge",
-                       data_coords = "PtE",
-                       normalized = TRUE, 
-                       clear_obs = TRUE, 
-                       group = "repl")
-
-RES_EXP <- graph_lme(y ~ mean_value, graph = graph, which_repl = 1:13, model = list(type = "isoCov"))
-summary(RES_EXP)
-POST <- posterior_crossvalidation_loo(object = RES_EXP, which_repl = 1:13)
-MSE_ISOCOV <- POST$scores$rmse^2
-save(RES_EXP, file = "~/Desktop/new_graph_lme_results.RData")
-```
-
 
 
 ```{r, eval = FALSE}
@@ -1146,7 +1171,7 @@ best_KNN_mse <- loo_mse[which.min(loo_mse)]
 # best_knn_mse <- loo_mse[which.min(loo_mse)]
 
 
-save(mse_loocv_lm, best_KNN_mse, MSE_ISOCOV, file = here("data_files/new_simple_linear_regression_results.RData"))
+save(mse_loocv_lm, best_KNN_mse, file = here("data_files/new_simple_linear_regression_results.RData"))
 ```
 
 Below we show the MSE results for the simple linear regression `mse_loocv_lm` and the kNN regression `best_KNN_mse`.
@@ -1156,6 +1181,7 @@ Below we show the MSE results for the simple linear regression `mse_loocv_lm` an
 load(here::here("data_files/new_simple_linear_regression_results.RData"))
 load(here::here("data_files/new_mse_loo_results.RData"))
 load(here::here("data_files/new_mse_cv_results.RData"))
+load(here::here("data_files/new_MSE_ISOCOV.RData"))
 mse_CV
 MSE_LOO
 data.frame(LM = mse_loocv_lm, 
