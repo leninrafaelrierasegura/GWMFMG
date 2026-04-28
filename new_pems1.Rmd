@@ -244,6 +244,7 @@ Y_logstd <- apply(Y_for_summary, 2, sd) |> as.vector() |> log()
 Y_mean <- apply(Y_for_summary, 2, mean) |> as.vector()
 Y <- Y[not_sampled_numbers,]
 save(Y_mean,Y_raw, PtE_raw, file = here::here("data_files/new_Y_mean.RData"))
+save(Y_logstd, file = here::here("data_files/Y_logstd.RData"))
 ```
 
 
@@ -313,10 +314,24 @@ y_pred <- predict(rspde_fit_stat_logstd, newdata = data_prd_list_mesh, ~Intercep
 cov_almost <- y_pred$mean
 # Standardize the kriging predictor of the log standard deviation
 cov <- (cov_almost - mean(cov_almost))/sd(cov_almost)
+
+# this is just to check
+auxxx <- predict(rspde_fit_stat_logstd, newdata = rename(PtE, .edge_number = E, .distance_on_edge = length), ~Intercept + field)
+tocompatewithlogstd <- auxxx$mean
+save(tocompatewithlogstd, file = here::here("data_files/tocompatewithlogstd.RData"))
 ```
 
-Below we plot the results. We first generate two maps, one for zoom level 12 and the other for zoom level 13. 
 
+```{r, eval =TRUE, fig.width = 24, fig.height = 4, fig.cap = captioner("Predicted log std and observed log std")}
+load(here::here("data_files/Y_logstd.RData"))
+load(here::here("data_files/tocompatewithlogstd.RData"))
+plot(Y_logstd, type = "l", col = "darkblue")
+lines(tocompatewithlogstd, col = "darkred")
+```
+
+
+
+Below we plot the results. We first generate two maps, one for zoom level 12 and the other for zoom level 13. 
 
 
 

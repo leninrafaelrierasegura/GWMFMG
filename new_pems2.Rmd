@@ -755,6 +755,7 @@ load("~/Desktop/rspde_fit_nonstatnuest.RData")
 ```
 
 
+### Using `inla.group.cv()`
 
 ```{r, eval = FALSE}
 j = 1
@@ -786,6 +787,8 @@ save(MSE_LOO, file = here("data_files/new_mse_loo_results.RData"))
 ```
 
 
+### Using `rSPDE::cross_validation()`
+
 
 ```{r, eval = FALSE}
 cv_mse_statnu0.5 <- rSPDE::cross_validation(models = rspde_fit_statnu0.5)
@@ -804,6 +807,29 @@ mse_CV <- data.frame(
 )
 save(mse_CV, file = here("data_files/new_mse_cv_results.RData"))
 ```
+
+
+### Using `MetricGraph::cross_validation()`
+
+
+```{r, eval = FALSE}
+cv_mse_statnu0.5 <- MetricGraph::cross_validation(models = MetricGraph_fit_statnu0.5)
+cv_mse_statnu1.5 <- MetricGraph::cross_validation(models = MetricGraph_fit_statnu1.5)
+cv_mse_statnuest <- MetricGraph::cross_validation(models = MetricGraph_fit_statnuest)
+cv_mse_nonstatnu0.5 <- MetricGraph::cross_validation(models = MetricGraph_fit_nonstatnu0.5)
+cv_mse_nonstatnu1.5 <- MetricGraph::cross_validation(models = MetricGraph_fit_nonstatnu1.5)
+cv_mse_nonstatnuest <- MetricGraph::cross_validation(models = MetricGraph_fit_nonstatnuest)
+mse_CV <- data.frame(
+  cv_mse_statnu0.5 = cv_mse_statnu0.5$mse[1],
+  cv_mse_statnu1.5 = cv_mse_statnu1.5$mse[1],
+  cv_mse_statnuest = cv_mse_statnuest$mse[1],
+  cv_mse_nonstatnu0.5 = cv_mse_nonstatnu0.5$mse[1],
+  cv_mse_nonstatnu1.5 = cv_mse_nonstatnu1.5$mse[1],
+  cv_mse_nonstatnuest = cv_mse_nonstatnuest$mse[1]
+)
+save(mse_CV, file = here("data_files/new_mse_cv_results.RData"))
+```
+
 
 
 ```{r, eval = FALSE}
