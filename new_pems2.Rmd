@@ -817,29 +817,52 @@ library(slackr)
 source("keys.R")
 slackr_setup(token = token) # token comes from keys.R
 
-
-cv_mse_statnu0.5 <- MetricGraph::cross_validation(models = rspde_fit_statnu0.5)
-slackr::slackr_msg( text = "It did run 1",channel = "#research")
+output <- capture.output({
+withCallingHandlers({cv_mse_statnu0.5 <- MetricGraph::cross_validation(models = rspde_fit_statnu0.5)},
+                    message = function(m) {slackr::slackr_msg(text = conditionMessage(m), channel = "#research")},
+                    warning = function(w) {slackr::slackr_msg(text = conditionMessage(w), channel = "#research")})
+})
+slackr::slackr_msg(text = paste(output, collapse = "\n"),channel = "#research")
 save(cv_mse_statnu0.5, file = here("data_files/mse_CV_from_MetricGraph.RData"))
 
-cv_mse_statnu1.5 <- MetricGraph::cross_validation(models = rspde_fit_statnu1.5)
-slackr::slackr_msg( text = "It did run 2",channel = "#research")
+output <- capture.output({
+withCallingHandlers({cv_mse_statnu1.5 <- MetricGraph::cross_validation(models = rspde_fit_statnu1.5)},
+                    message = function(m) {slackr::slackr_msg(text = conditionMessage(m), channel = "#research")},
+                    warning = function(w) {slackr::slackr_msg(text = conditionMessage(w), channel = "#research")})
+})
+slackr::slackr_msg(text = paste(output, collapse = "\n"),channel = "#research")
 save(cv_mse_statnu1.5, file = here("data_files/mse_CV_from_MetricGraph.RData"))
 
-cv_mse_statnuest <- MetricGraph::cross_validation(models = rspde_fit_statnuest)
-slackr::slackr_msg( text = "It did run 3",channel = "#research")
+output <- capture.output({
+withCallingHandlers({cv_mse_statnuest <- MetricGraph::cross_validation(models = rspde_fit_statnuest)},
+                    message = function(m) {slackr::slackr_msg(text = conditionMessage(m), channel = "#research")},
+                    warning = function(w) {slackr::slackr_msg(text = conditionMessage(w), channel = "#research")})
+})
+slackr::slackr_msg(text = paste(output, collapse = "\n"),channel = "#research")
 save(cv_mse_statnuest, file = here("data_files/mse_CV_from_MetricGraph.RData"))
 
-cv_mse_nonstatnu0.5 <- MetricGraph::cross_validation(models = rspde_fit_nonstatnu0.5)
-slackr::slackr_msg( text = "It did run 4",channel = "#research")
+output <- capture.output({
+withCallingHandlers({cv_mse_nonstatnu0.5 <- MetricGraph::cross_validation(models = rspde_fit_nonstatnu0.5)},
+                    message = function(m) {slackr::slackr_msg(text = conditionMessage(m), channel = "#research")},
+                    warning = function(w) {slackr::slackr_msg(text = conditionMessage(w), channel = "#research")})
+})
+slackr::slackr_msg(text = paste(output, collapse = "\n"),channel = "#research")
 save(cv_mse_nonstatnu0.5, file = here("data_files/mse_CV_from_MetricGraph.RData"))
 
-cv_mse_nonstatnu1.5 <- MetricGraph::cross_validation(models = rspde_fit_nonstatnu1.5)
-slackr::slackr_msg( text = "It did run 5",channel = "#research")
+output <- capture.output({
+withCallingHandlers({cv_mse_nonstatnu1.5 <- MetricGraph::cross_validation(models = rspde_fit_nonstatnu1.5)},
+                    message = function(m) {slackr::slackr_msg(text = conditionMessage(m), channel = "#research")},
+                    warning = function(w) {slackr::slackr_msg(text = conditionMessage(w), channel = "#research")})
+})
+slackr::slackr_msg(text = paste(output, collapse = "\n"),channel = "#research")
 save(cv_mse_nonstatnu1.5, file = here("data_files/mse_CV_from_MetricGraph.RData"))
 
-cv_mse_nonstatnuest <- MetricGraph::cross_validation(models = rspde_fit_nonstatnuest)
-slackr::slackr_msg( text = "It did run 6",channel = "#research")
+output <- capture.output({
+withCallingHandlers({cv_mse_nonstatnuest <- MetricGraph::cross_validation(models = rspde_fit_nonstatnuest)},
+                    message = function(m) {slackr::slackr_msg(text = conditionMessage(m), channel = "#research")},
+                    warning = function(w) {slackr::slackr_msg(text = conditionMessage(w), channel = "#research")})
+})
+slackr::slackr_msg(text = paste(output, collapse = "\n"),channel = "#research")
 save(cv_mse_nonstatnuest, file = here("data_files/mse_CV_from_MetricGraph.RData"))
 
 mse_CV_from_MetricGraph <- data.frame(
@@ -850,7 +873,7 @@ mse_CV_from_MetricGraph <- data.frame(
   cv_mse_nonstatnu1.5 = cv_mse_nonstatnu1.5$mse[1],
   cv_mse_nonstatnuest = cv_mse_nonstatnuest$mse[1]
 )
-save(mse_CV_from_MetricGraph, file = here("data_files/mse_CV_from_MetricGraph.RData"))
+save(mse_CV_from_MetricGraph, file = here::here("data_files/mse_CV_from_MetricGraph.RData"))
 ```
 
 
@@ -1231,7 +1254,9 @@ load(here::here("data_files/new_simple_linear_regression_results.RData"))
 load(here::here("data_files/new_mse_loo_results.RData"))
 load(here::here("data_files/new_mse_cv_results.RData"))
 load(here::here("data_files/new_MSE_ISOCOV.RData"))
+load(here::here("data_files/mse_CV_from_MetricGraph.RData"))
 mse_CV
+mse_CV_from_MetricGraph
 MSE_LOO
 data.frame(LM = mse_loocv_lm, 
            kNNdistMAT = best_KNN_mse,
