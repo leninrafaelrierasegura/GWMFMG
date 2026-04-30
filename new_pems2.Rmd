@@ -97,6 +97,9 @@ truncate_to_two <- function(x) {
 Below we load the necessary libraries.
 
 ```{r, eval = TRUE}
+
+# inla.upgrade(testing = TRUE)
+# remotes::install_github("inlabru-org/inlabru", ref = "devel")
 # remotes::install_github("davidbolin/rspde", ref = "devel")
 # remotes::install_github("davidbolin/metricgraph", ref = "devel")
 library(INLA)
@@ -934,12 +937,7 @@ ls_df <- data.frame(
   Statnuest = -ls.statnuest,
   Nonstatnuest = -ls.nonstatnuest
 )
-```
 
-
-Save some of the objects to be used in the next vignette.
-
-```{r, eval = FALSE}
 # Save the results
 list_to_save <- list(mse_df = mse_df, 
                      ls_df = ls_df, 
