@@ -132,11 +132,40 @@ library(grateful) # Cite all loaded packages
 
 
 ```{r}
-capture.output(
-  knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
-  file = here::here("old/purl_log.txt")
-)
-source(here::here("functionality1.R"))
+source_if_updated <- function(name) {
+  rmd_file  <- here::here(paste0(name, ".Rmd"))
+  hash_file <- here::here(paste0(name, ".hash"))
+  r_file    <- here::here(paste0(name, ".R"))
+  purl_file <- here::here("old/purl_log.txt")
+  
+  new_hash <- digest::digest(file = rmd_file, algo = "md5")
+  
+  old_hash <- if (file.exists(hash_file)) {
+    readLines(hash_file, warn = FALSE)
+  } else {
+    ""
+  }
+  
+  if (!identical(new_hash, old_hash)) {
+    capture.output(
+      knitr::purl(rmd_file, output = r_file),
+      file = purl_file
+    )
+    writeLines(new_hash, hash_file)
+  }
+  
+  source(r_file)
+}
+```
+
+
+```{r}
+# capture.output(
+#   knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+#   file = here::here("old/purl_log.txt")
+# )
+# source(here::here("functionality1.R"))
+source_if_updated("functionality1")
 ```
 
 Below we define function `process_model_results()` to extract the summary of the parameters of the model.
@@ -665,8 +694,8 @@ We first consider the stationary model.
 ```{r, eval = FALSE}
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
-                                       start.ltau = log_tau_from_graphlme,
-                                       start.lkappa = log_kappa_from_graphlme,
+                                       # start.ltau = log_tau_from_graphlme,
+                                       # start.lkappa = log_kappa_from_graphlme,
                                        parameterization = "spde")
 # Prepare the data for fitting
 data_rspde_bru_stat <- graph_data_rspde(rspde_model_stat,
@@ -761,7 +790,7 @@ load("~/Desktop/rspde_fit_nonstatnuest.RData")
 ### Using `inla.group.cv()`
 
 ```{r, eval = FALSE}
-j = 1
+j = 2
 cv.statnu0.5 <- inla.group.cv(rspde_fit_statnu0.5, groups = GROUPS[[j]])
 cv.statnu1.5 <- inla.group.cv(rspde_fit_statnu1.5, groups = GROUPS[[j]])
 cv.statnuest <- inla.group.cv(rspde_fit_statnuest, groups = GROUPS[[j]])
@@ -793,22 +822,29 @@ save(MSE_LOO, file = here("data_files/new_mse_loo_results.RData"))
 ### Using `rSPDE::cross_validation()`
 
 
-```{r, eval = FALSE}
-cv_mse_statnu0.5 <- rSPDE::cross_validation(models = rspde_fit_statnu0.5)
-cv_mse_statnu1.5 <- rSPDE::cross_validation(models = rspde_fit_statnu1.5)
-cv_mse_statnuest <- rSPDE::cross_validation(models = rspde_fit_statnuest)
-cv_mse_nonstatnu0.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu0.5)
-cv_mse_nonstatnu1.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu1.5)
-cv_mse_nonstatnuest <- rSPDE::cross_validation(models = rspde_fit_nonstatnuest)
+```
+{r, eval = FALSE}
+rSPDE_cv_mse_statnu0.5 <- rSPDE::cross_validation(models = rspde_fit_statnu0.5)
+rSPDE_cv_mse_statnu1.5 <- rSPDE::cross_validation(models = rspde_fit_statnu1.5)
+rSPDE_cv_mse_statnuest <- rSPDE::cross_validation(models = rspde_fit_statnuest)
+rSPDE_cv_mse_nonstatnu0.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu0.5)
+rSPDE_cv_mse_nonstatnu1.5 <- rSPDE::cross_validation(models = rspde_fit_nonstatnu1.5)
+rSPDE_cv_mse_nonstatnuest <- rSPDE::cross_validation(models = rspde_fit_nonstatnuest)
 mse_CV <- data.frame(
-  cv_mse_statnu0.5 = cv_mse_statnu0.5$mse[1],
-  cv_mse_statnu1.5 = cv_mse_statnu1.5$mse[1],
-  cv_mse_statnuest = cv_mse_statnuest$mse[1],
-  cv_mse_nonstatnu0.5 = cv_mse_nonstatnu0.5$mse[1],
-  cv_mse_nonstatnu1.5 = cv_mse_nonstatnu1.5$mse[1],
-  cv_mse_nonstatnuest = cv_mse_nonstatnuest$mse[1]
+  cv_mse_statnu0.5 = rSPDE_cv_mse_statnu0.5$mse[1],
+  cv_mse_statnu1.5 = rSPDE_cv_mse_statnu1.5$mse[1],
+  cv_mse_statnuest = rSPDE_cv_mse_statnuest$mse[1],
+  cv_mse_nonstatnu0.5 = rSPDE_cv_mse_nonstatnu0.5$mse[1],
+  cv_mse_nonstatnu1.5 = rSPDE_cv_mse_nonstatnu1.5$mse[1],
+  cv_mse_nonstatnuest = rSPDE_cv_mse_nonstatnuest$mse[1]
 )
 save(mse_CV, file = here("data_files/new_mse_cv_results.RData"))
+```
+
+```{r, eval = FALSE}
+rSPDE_cv_mse_statnu0.5 <- rSPDE::cross_validation(models = rspde_fit_statnu0.5, return_train_test = TRUE)
+train_test_aux <- rSPDE_cv_mse_statnu0.5$train_test
+MG_cv_mse_statnu0.5 <- MetricGraph::cross_validation(models = rspde_fit_statnu0.5, train_test_indexes = train_test_aux)
 ```
 
 
