@@ -172,7 +172,7 @@ op <- matern.operators(nu = nu, range = range, sigma = sigma,
 n.rep <- 2
 u.rep <- simulate(op, nsim = n.rep)
 
-obs.per.edge <- 25
+obs.per.edge <- 2
 obs.loc <- NULL
 for(i in 1:graph$nE) {
   obs.loc <- rbind(obs.loc,
@@ -446,12 +446,13 @@ p
 ```
 
 
-```
-{r, eval = FALSE}
+```{r, eval = FALSE}
 rSPDE_cv_mse_statnu0.5 <- rSPDE::cross_validation(models = rspde_fit_statnu0.5, return_train_test = TRUE)
 train_test_aux <- rSPDE_cv_mse_statnu0.5$train_test
 MG_cv_mse_statnu0.5 <- MetricGraph::cross_validation(models = rspde_fit_statnu0.5, train_test_indexes = train_test_aux)
 ```
+
+
 ```{r}
 AUXX0 <- list_models_before_cv$GROUPS2
 train_test_indices_from_GROUP2 <- list()

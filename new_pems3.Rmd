@@ -1,0 +1,519 @@
+---
+title: "PeMS 3, modeling"
+date: "Last modified: `r format(Sys.time(), '%d-%m-%Y.')`"
+output:
+  html_document:
+    mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    highlight: pygments
+    theme: flatly
+    code_folding: hide # class.source = "fold-hide" to hide code and add a button to show it
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    fig_caption: true
+    code_download: true
+    css: visual.css
+always_allow_html: true
+bibliography: 
+  - references.bib
+  - grateful-refs.bib
+header-includes:
+  - \newcommand{\ar}{\mathbb{R}}
+  - \newcommand{\llav}[1]{\left\{#1\right\}}
+  - \newcommand{\pare}[1]{\left(#1\right)}
+  - \newcommand{\Ncal}{\mathcal{N}}
+  - \newcommand{\Vcal}{\mathcal{V}}
+  - \newcommand{\Ecal}{\mathcal{E}}
+  - \newcommand{\Wcal}{\mathcal{W}}
+  - \newcommand{\almosteverywhere}{\mathrm{a.e.}\;}
+---
+
+Go back to the [Contents](about.html) page.
+
+<div style="color: #2c3e50; text-align: right;">
+********  
+<strong>Press Show to reveal the code chunks.</strong>  
+
+********
+</div>
+
+
+
+Go back to the [About page](about.html). 
+
+
+This vignette compares different models for PeMS data. It uses [**`pems_repl1_data.RData`**](https://github.com/leninrafaelrierasegura/GWMF/blob/main/data_files/pems_repl1_data.RData), which is a file with a graph and data created in [pems_repl1.html](pems_repl1.html).
+
+Let us set some global options for all code chunks in this document.
+
+
+```{r}
+# Create a clipboard button on the rendered HTML page
+source(here::here("clipboard.R")); clipboard
+# Set seed for reproducibility
+set.seed(1938) 
+# Set global options for all code chunks
+knitr::opts_chunk$set(
+  # Disable messages printed by R code chunks
+  message = FALSE,    
+  # Disable warnings printed by R code chunks
+  warning = FALSE,    
+  # Show R code within code chunks in output
+  echo = TRUE,        
+  # Include both R code and its results in output
+  include = TRUE,     
+  # Evaluate R code chunks
+  eval = FALSE,       
+  # Enable caching of R code chunks for faster rendering
+  cache = FALSE,      
+  # Align figures in the center of the output
+  fig.align = "center",
+  # Enable retina display for high-resolution figures
+  retina = 2,
+  # Show errors in the output instead of stopping rendering
+  error = TRUE,
+  # Do not collapse code and output into a single block
+  collapse = FALSE
+)
+# Start the figure counter
+fig_count <- 0
+# Define the captioner function
+captioner <- function(caption) {
+  fig_count <<- fig_count + 1
+  paste0("Figure ", fig_count, ": ", caption)
+}
+
+
+# Define the function to truncate a number to two decimal places
+truncate_to_two <- function(x) {
+  truncated <- floor(x * 100) / 100
+  sprintf("%.2f", truncated)
+}
+```
+
+Below we load the necessary libraries.
+
+```{r, eval = TRUE}
+
+# inla.upgrade(testing = TRUE)
+# remotes::install_github("inlabru-org/inlabru", ref = "devel")
+# remotes::install_github("davidbolin/rspde", ref = "devel")
+# remotes::install_github("davidbolin/metricgraph", ref = "devel")
+library(INLA)
+library(inlabru)
+library(rSPDE)
+library(MetricGraph)
+
+library(dplyr)
+library(plotly)
+library(scales)
+library(patchwork)
+
+library(ggplot2)
+library(cowplot)
+library(ggpubr) #annotate_figure()
+library(grid) #textGrob()
+library(ggmap)
+
+library(viridis)
+library(OpenStreetMap)
+
+
+library(tidyr)
+library(sf)
+
+library(here)
+library(rmarkdown)
+library(grateful) # Cite all loaded packages
+```
+
+
+```{r}
+source_if_updated <- function(name) {
+  rmd_file  <- here::here(paste0(name, ".Rmd"))
+  hash_file <- here::here(paste0(name, ".hash"))
+  r_file    <- here::here(paste0(name, ".R"))
+  purl_file <- here::here("old/purl_log.txt")
+  
+  new_hash <- digest::digest(file = rmd_file, algo = "md5")
+  
+  old_hash <- if (file.exists(hash_file)) {
+    readLines(hash_file, warn = FALSE)
+  } else {
+    ""
+  }
+  
+  if (!identical(new_hash, old_hash)) {
+    capture.output(
+      knitr::purl(rmd_file, output = r_file),
+      file = purl_file
+    )
+    writeLines(new_hash, hash_file)
+  }
+  
+  source(r_file)
+}
+```
+
+
+```{r}
+# capture.output(
+#   knitr::purl(here::here("functionality1.Rmd"), output = here::here("functionality1.R")),
+#   file = here::here("old/purl_log.txt")
+# )
+# source(here::here("functionality1.R"))
+source_if_updated("functionality1")
+```
+
+Below we define function `process_model_results()` to extract the summary of the parameters of the model.
+
+
+
+```{r}
+process_model_results <- function(fit, model) {
+  fit_spde <- rspde.result(fit, "field", model, parameterization = "spde")
+  fit_matern <- rspde.result(fit, "field", model, parameterization = "matern")
+  df_for_plot_spde <- gg_df(fit_spde)
+  df_for_plot_matern <- gg_df(fit_matern)
+  param_spde <- summary(fit_spde)
+  param_matern <- summary(fit_matern)
+  param_fixed <- fit$summary.fixed[,1:6]
+  marginal.posterior.sigma_e = inla.tmarginal(
+    fun = function(x) exp(-x/2), 
+    marginal = fit[["internal.marginals.hyperpar"]][["Log precision for the Gaussian observations"]])
+  quant.sigma_e <- capture.output({result_tmp <- inla.zmarginal(marginal.posterior.sigma_e)}, file = "/dev/null") 
+  quant.sigma_e <- result_tmp
+  statistics.sigma_e <- unlist(quant.sigma_e)[c(1,2,3,5,7)]
+  mode.sigma_e <- inla.mmarginal(marginal.posterior.sigma_e)
+  allparams <- rbind(param_fixed, param_spde, param_matern, c(statistics.sigma_e, mode.sigma_e))
+  rownames(allparams)[nrow(allparams)] <- "sigma_e"
+  return(list(allparams = allparams, df_for_plot_spde = df_for_plot_spde, df_for_plot_matern = df_for_plot_matern))
+}
+```
+
+We first load the data in the file `pems_repl1_data.RData` and extract the data from the graph.
+
+```{r}
+# Load the data
+load(here("data_files/new_pems_repl1_data.RData"))
+# Extract the data from the graph
+data <- graph$get_data()
+```
+
+Below we define the non-stationary parameters.
+
+```{r}
+# Non-stationary parameters
+B.tau = cbind(0, 1, 0, cov, 0)
+B.kappa = cbind(0, 0, 1, 0, cov)
+```
+
+We now model the speed records $y_i$ as 13 independent replicates satisfying
+\begin{equation}
+\label{applimodel}
+    y_i|u(\cdot)\sim N(\beta_0 + \beta_1\text{mean.cov}(s_i) + u(s_i),\sigma_\epsilon^2),\;i = 1,\dots, 314,
+\end{equation} 
+where $u(\cdot)$ is a Gaussian process on the highway network. We consider stationary models with $\kappa,\tau>0$ and non-stationary models where $\tau$ and $\kappa$ are given by
+\begin{equation}
+\label{logregressions}
+    \begin{aligned}
+    \log(\tau(s)) &= \theta_1 + \theta_3 \text{std.cov}(s),\\
+    \log(\kappa(s)) &= \theta_2 + \theta_4 \text{std.cov}(s).
+\end{aligned}
+\end{equation}
+
+For each of the two classes of models, we consider three cases: when (1) $\nu$ is fixed to 0.5 or (2) 1.5, and (3) $\nu$ is estimated from the data. 
+
+Below `cov` refers to $\text{std.cov}(s)$ and `mean_value` refers to $\text{mean.cov}(s)$.
+
+
+```{r}
+load(here::here("data_files/tau_from_graphlme.RData"))
+log_tau_from_graphlme <- log(tau_from_graphlme)
+log_kappa_from_graphlme <- log(kappa_from_graphlme)
+```
+
+
+```{r}
+distance = seq(from = 0, to = 10, by = 0.1)
+```
+
+```{r}
+# Define aux data frame to compute the distance matrix
+aux <- data |> filter(repl == 1) |>
+  rename(distance_on_edge = .distance_on_edge, edge_number = .edge_number) |> # Rename the variables (because graph$compute_geodist_PtE() requires so)
+  as.data.frame() |> # Transform to a data frame (i.e., remove the metric_graph class)
+  dplyr::select(edge_number, distance_on_edge)
+
+# Compute the distance matrix
+distmatrix <- graph$compute_geodist_PtE(PtE = aux,
+                                             normalized = TRUE,
+                                             include_vertices = FALSE)
+
+# Compute the groups for one replicate
+GROUPS <- list()
+GROUPS2 <- list()
+for (j in 1:length(distance)) {
+  GROUPS[[j]] = list()
+  GROUPS2[[j]] = list()
+  for (i in 1:nrow(aux)) {
+    GROUPS[[j]][[i]] <- which(as.vector(distmatrix[i, ]) <= distance[j])
+    GROUPS2[[j]][[i]] <- which(as.vector(distmatrix[i, ]) > distance[j])
+  }
+}
+# Compute the groups for all replicates, based on the groups of the first replicate
+nrowY <- length(unique(data$repl))
+ncolY <- nrow(filter(data, repl == 1))
+
+NEW_GROUPS <- list()
+for (j in 1:length(distance)) {
+  my_list <- GROUPS[[j]]
+  aux_list <- list()
+  for (i in 0:(nrowY - 1)) {
+  added_vectors <- lapply(my_list, function(vec) vec + i*ncolY)
+  aux_list <- c(aux_list, added_vectors)
+  }
+  NEW_GROUPS[[j]] <- aux_list
+}
+GROUPS <- NEW_GROUPS
+
+NEW_GROUPS2 <- list()
+for (j in 1:length(distance)) {
+  my_list <- GROUPS2[[j]]
+  aux_list <- list()
+  for (i in 0:(nrowY - 1)) {
+    added_vectors <- lapply(my_list, function(vec) vec + i*ncolY)
+    aux_list <- c(aux_list, added_vectors)
+  }
+  NEW_GROUPS2[[j]] <- aux_list
+}
+GROUPS2 <- NEW_GROUPS2
+
+save(GROUPS, GROUPS2, file = here::here("data_files/new_groups_for_cv_new_pems_3.RData"))
+```
+
+
+```{r}
+load(here::here("data_files/new_groups_for_cv_new_pems_3.RData"))
+AUXX0 <- GROUPS2
+train_test_indices_from_GROUP2 <- list()
+for (i in seq_along(AUXX0)) {
+  AUXX1 <- AUXX0[[i]]
+  train_test_indices_from_GROUP2[[i]] <- list()
+  for (j in seq_along(AUXX1)) {
+    train_test_indices_from_GROUP2[[i]][[j]] <- list(train = list(AUXX1[[j]]), test = list(j))
+  }
+}
+```
+
+
+# Case $\nu = 0.5$
+
+
+We first consider the stationary model.
+
+
+
+
+```{r}
+# Build the model
+GRAPH_LME_statnu0.5 <-  graph_lme(y ~ mean_value, 
+                                  graph = graph, 
+                                  which_repl = 1:13, 
+                                  model = list(type = "WhittleMatern", 
+                                               fem = TRUE,
+                                               alpha = 1,
+                                               start.ltau = log_tau_from_graphlme,
+                                               start.lkappa = log_kappa_from_graphlme))
+summary(GRAPH_LME_statnu0.5)
+
+POST <- posterior_crossvalidation(object = GRAPH_LME_statnu0.5, train_test_indices = train_test_indices_from_GROUP2[[1]], true_CV = FALSE)
+MSE_GRAPH_LME_statnu0.5 <- POST$scores$rmse^2
+
+
+save(GRAPH_LME_statnu0.5, file = "~/Desktop/GRAPH_LME_statnu0.5.RData")
+```
+
+
+
+
+We now fit the non-stationary model.
+
+
+
+
+```{r}
+# Build the model
+GRAPH_LME_nonstatnu0.5 <-  graph_lme(y ~ mean_value, 
+                                  graph = graph, 
+                                  which_repl = 1:13, 
+                                  model = list(type = "WhittleMatern", 
+                                               fem = TRUE,
+                                               alpha = 1,
+                                               B.tau = B.tau,
+                                               B.kappa =  B.kappa))
+summary(GRAPH_LME_nonstatnu0.5)
+
+POST <- posterior_crossvalidation(object = GRAPH_LME_nonstatnu0.5, mode = "loo", true_CV = FALSE)
+MSE_GRAPH_LME_nonstatnu0.5 <- POST$scores$rmse^2
+
+
+save(GRAPH_LME_nonstatnu0.5, file = "~/Desktop/GRAPH_LME_nonstatnu0.5.RData")
+```
+
+
+
+
+# Case $\nu = 1.5$
+
+
+We first consider the stationary model.
+
+
+
+
+```{r}
+# Build the model
+GRAPH_LME_statnu1.5 <-  graph_lme(y ~ mean_value, 
+                                  graph = graph, 
+                                  which_repl = 1:13, 
+                                  model = list(type = "WhittleMatern", 
+                                               fem = TRUE,
+                                               alpha = 2,
+                                               start.ltau = log_tau_from_graphlme,
+                                               start.lkappa = log_kappa_from_graphlme))
+summary(GRAPH_LME_statnu1.5)
+
+POST <- posterior_crossvalidation(object = GRAPH_LME_statnu1.5, mode = "loo", true_CV = FALSE)
+MSE_GRAPH_LME_statnu1.5 <- POST$scores$rmse^2
+
+
+save(GRAPH_LME_statnu1.5, file = "~/Desktop/GRAPH_LME_statnu1.5.RData")
+```
+
+
+We now fit the non-stationary model.
+
+
+
+
+
+```{r}
+# Build the model
+GRAPH_LME_nonstatnu1.5 <-  graph_lme(y ~ mean_value, 
+                                  graph = graph, 
+                                  which_repl = 1:13, 
+                                  model = list(type = "WhittleMatern", 
+                                               fem = TRUE,
+                                               alpha = 2,
+                                               B.tau = B.tau,
+                                               B.kappa =  B.kappa))
+summary(GRAPH_LME_nonstatnu1.5)
+
+POST <- posterior_crossvalidation(object = GRAPH_LME_nonstatnu1.5, mode = "loo", true_CV = FALSE)
+MSE_GRAPH_LME_nonstatnu1.5 <- POST$scores$rmse^2
+
+save(GRAPH_LME_nonstatnu1.5, file = "~/Desktop/GRAPH_LME_nonstatnu1.5.RData")
+```
+
+
+
+# Case $\nu$ estimated
+
+We first consider the stationary model.
+
+
+
+
+```{r}
+# Build the model
+GRAPH_LME_statnuest <-  graph_lme(y ~ mean_value, 
+                                  graph = graph, 
+                                  which_repl = 1:13, 
+                                  model = list(type = "WhittleMatern", 
+                                               fem = TRUE,
+                                               start.ltau = log_tau_from_graphlme,
+                                               start.lkappa = log_kappa_from_graphlme))
+summary(GRAPH_LME_statnuest)
+
+POST <- posterior_crossvalidation(object = GRAPH_LME_statnuest, mode = "loo", true_CV = FALSE)
+MSE_GRAPH_LME_statnuest <- POST$scores$rmse^2
+
+save(GRAPH_LME_statnuest, file = "~/Desktop/GRAPH_LME_statnuest.RData")
+```
+
+
+
+We now fit the non-stationary model.
+
+
+
+
+
+```{r}
+# Build the model
+GRAPH_LME_nonstatnuest <-  graph_lme(y ~ mean_value, 
+                                  graph = graph, 
+                                  which_repl = 1:13, 
+                                  previous_fit = GRAPH_LME_nonstatnu1.5,
+                                  model = list(type = "WhittleMatern", 
+                                               fem = TRUE,
+                                               B.tau = B.tau,
+                                               B.kappa =  B.kappa))
+summary(GRAPH_LME_nonstatnuest)
+
+POST <- posterior_crossvalidation(object = GRAPH_LME_nonstatnuest, mode = "loo", true_CV = FALSE)
+MSE_GRAPH_LME_nonstatnuest <- POST$scores$rmse^2
+
+save(GRAPH_LME_nonstatnuest, file = "~/Desktop/GRAPH_LME_nonstatnuest.RData")
+```
+
+
+```{r}
+list_MSE_GRAPH_LME <- list(
+  MSE_GRAPH_LME_statnu0.5 = MSE_GRAPH_LME_statnu0.5,
+  MSE_GRAPH_LME_nonstatnu0.5 = MSE_GRAPH_LME_nonstatnu0.5,
+  MSE_GRAPH_LME_statnu1.5 = MSE_GRAPH_LME_statnu1.5,
+  MSE_GRAPH_LME_nonstatnu1.5 = MSE_GRAPH_LME_nonstatnu1.5,
+  MSE_GRAPH_LME_statnuest = MSE_GRAPH_LME_statnuest,
+  MSE_GRAPH_LME_nonstatnuest = MSE_GRAPH_LME_nonstatnuest
+)
+save(list_MSE_GRAPH_LME, file = here::here("data_files/list_MSE_GRAPH_LME.RData"))
+```
+
+
+
+```{r, eval = TRUE}
+load(here::here("data_files/list_MSE_GRAPH_LME.RData"))
+list_MSE_GRAPH_LME
+```
+
+Below we show the MSE results for the simple linear regression `mse_loocv_lm` and the kNN regression `best_KNN_mse`.
+
+
+```{r, eval = TRUE}
+load(here::here("data_files/new_simple_linear_regression_results.RData"))
+load(here::here("data_files/new_mse_loo_results.RData"))
+#load(here::here("data_files/new_mse_cv_results.RData"))
+load(here::here("data_files/new_MSE_ISOCOV.RData"))
+#load(here::here("data_files/mse_CV_from_MetricGraph.RData"))
+#mse_CV
+#mse_CV_from_MetricGraph
+MSE_LOO
+data.frame(LM = mse_loocv_lm, 
+           kNNdistMAT = best_KNN_mse,
+           MSE_ISOCOV = MSE_ISOCOV)
+```
+
+
+# References
+
+
+```{r, eval = TRUE}
+grateful::cite_packages(output = "paragraph", out.dir = ".")
+```
+
+

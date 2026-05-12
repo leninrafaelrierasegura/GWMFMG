@@ -373,7 +373,7 @@ save(RES_EXP, file = "~/Desktop/new_graph_lme_results.RData")
 
 tau_from_graphlme <- RES_EXP$coeff$random_effects[1]
 kappa_from_graphlme <- RES_EXP$coeff$random_effects[2]
-save(tau_from_graphlme, file = here::here("data_files/tau_from_graphlme.RData"))
+save(tau_from_graphlme, kappa_from_graphlme, file = here::here("data_files/tau_from_graphlme.RData"))
 ```
 
 
@@ -786,6 +786,19 @@ load("~/Desktop/rspde_fit_statnuest.RData")
 load("~/Desktop/rspde_fit_nonstatnuest.RData")
 ```
 
+
+```{r}
+dist_index <- 2
+
+df <- data.frame(
+  x = rep(seq_along(GROUPS[[dist_index]]),
+          lengths(GROUPS[[dist_index]])),
+  y = unlist(GROUPS[[dist_index]])
+)
+
+check_neig <- ggplot(df, aes(x, y)) + geom_point()
+check_neig <- ggplotly(check_neig)
+```
 
 ### Using `inla.group.cv()`
 
@@ -1286,11 +1299,11 @@ Below we show the MSE results for the simple linear regression `mse_loocv_lm` an
 ```{r, eval = TRUE}
 load(here::here("data_files/new_simple_linear_regression_results.RData"))
 load(here::here("data_files/new_mse_loo_results.RData"))
-load(here::here("data_files/new_mse_cv_results.RData"))
+#load(here::here("data_files/new_mse_cv_results.RData"))
 load(here::here("data_files/new_MSE_ISOCOV.RData"))
-load(here::here("data_files/mse_CV_from_MetricGraph.RData"))
-mse_CV
-mse_CV_from_MetricGraph
+#load(here::here("data_files/mse_CV_from_MetricGraph.RData"))
+#mse_CV
+#mse_CV_from_MetricGraph
 MSE_LOO
 data.frame(LM = mse_loocv_lm, 
            kNNdistMAT = best_KNN_mse,
