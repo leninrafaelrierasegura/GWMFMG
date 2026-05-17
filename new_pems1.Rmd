@@ -175,7 +175,7 @@ Below we define function `gets_summary_parameters()` to extract the summary of t
 
 
 
-```{r, eval = TRUE}
+```{r}
 gets_summary_parameters <- function(fit, model) {
   param_spde <- summary(rspde.result(fit, "field", model, parameterization = "spde"))
   param_matern <- summary(rspde.result(fit, "field", model, parameterization = "matern"))
@@ -305,7 +305,7 @@ Below we fit $\log(\mathrm{sd}(s_i))\sim N(\beta_0+u(s_i), \sigma_e^2)$.
 
 
 
-```{r, eval = FALSE}
+```{r}
 # Build the model
 rspde_model_stat_logstd <- rspde.metric_graph(graph,
                                        parameterization = "spde")
@@ -376,7 +376,7 @@ y_top <- range(xypoints[,2])[2]
 ```
 
 
-```{r, eval = FALSE}
+```{r}
 # Set the style of the map
 style_vector <- c(c(feature = "road", element = "geometry", visibility = "on"),
                   c("&style=", feature = "poi", element = "labels", visibility = "off"),
@@ -404,7 +404,7 @@ save(p12, p13, file = here::here("data_files/new_maps_zoom12and13from_stadia.RDa
 ```
 
 
-```{r, eval = TRUE}
+```{r}
 load(here::here("data_files/new_maps_zoom12and13from_stadia.RData"))
 ```
 
@@ -546,7 +546,7 @@ We fit the model $\mathrm{mean}(s_i)\sim N(\beta_0+u(s_i), \sigma_e^2)$.
 
 
 
-```{r, eval = FALSE}
+```{r}
 # Build the model
 rspde_model_stat_mean <- rspde.metric_graph(graph,
                                        parameterization = "spde")
