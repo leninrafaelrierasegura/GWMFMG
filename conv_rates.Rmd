@@ -724,6 +724,185 @@ conv_rates_p <- ggplot() +
 myggsave(conv_rates_p, width = 12, height = 4)
 ```
 
+
+```{r}
+upper <- 1.07
+angles <- c(9,12,14,16,18)
+ann_int <- df_melted1 %>%
+  group_by(column) %>%
+  slice(1) %>%
+  ungroup() %>%
+  rename(x = h_vector, y = value, alpha = column) %>%
+  mutate(
+    #ann = paste0("$\\mathsf{slope} = ", round(slope_interval, 2), "$"),
+    ann = paste0("$\\mathsf{slope} = ", round(slope_interval, 2), "(", truncate_to_two(theoretical_rate), ")$"),
+    angle = angles,   # <-- MANUAL ANGLE HERE (edit per group if needed)
+    graph = "Intervalgraph"
+  ) %>%
+  mutate(y = y * upper)
+
+ann_circ <- df_melted2 %>%
+  group_by(column) %>%
+  slice(1) %>%
+  ungroup() %>%
+  rename(x = h_vector, y = value, alpha = column) %>%
+  mutate(
+    #ann = paste0("$\\mathsf{slope} = ", round(slope_circle, 2), "$"),
+    ann = paste0("$\\mathsf{slope} = ", round(slope_circle, 2), "(", truncate_to_two(theoretical_rate), ")$"),
+    angle = angles,   # <-- MANUAL ANGLE HERE
+    graph = "Circlegraph"
+  ) %>%
+  mutate(y = y * upper)
+
+ann_tad <- df_melted3 %>%
+  group_by(column) %>%
+  slice(1) %>%
+  ungroup() %>%
+  rename(x = h_vector, y = value, alpha = column) %>%
+  mutate(
+    #ann = paste0("$\\mathsf{slope} = ", round(slope_tadpole, 2), "$"),
+    ann = paste0("$\\mathsf{slope} = ", round(slope_tadpole, 2), "(", truncate_to_two(theoretical_rate), ")$"),
+    angle = angles,  # <-- MANUAL ANGLE HERE
+    graph = "Tadpolegraph"
+  ) %>%
+  mutate(y = y * upper)
+
+ann_all <- bind_rows(ann_int, ann_circ, ann_tad) %>%
+  mutate(
+    graph = factor(graph, levels = c("Intervalgraph", "Circlegraph", "Tadpolegraph"))
+  )
+
+ff_data <- bind_rows(
+  mutate(df_melted1, graph = "Intervalgraph"),
+  mutate(df_melted2, graph = "Circlegraph"),
+  mutate(df_melted3, graph = "Tadpolegraph")
+) %>%
+  mutate(
+    graph = factor(graph, levels = c("Intervalgraph", "Circlegraph", "Tadpolegraph"))
+  )
+
+glines <- c(
+  as.vector(guiding_lines1),
+  as.vector(guiding_lines2),
+  as.vector(guiding_lines3)
+)
+
+gg_data <- ff_data %>%
+  mutate(
+    value = glines,
+    theo = as.factor(theoretical_rate[column])
+  )
+
+graph_labels <- c(
+  "Intervalgraph" = "Interval graph",
+  "Circlegraph" = "Circle graph",
+  "Tadpolegraph" = "Tadpole graph"
+)
+
+conv_rates_p <- ggplot() +
+
+  geom_line(
+    data = ff_data,
+    aes(h_vector, value, colour = as.factor(column)),
+    linewidth = 1.6
+  ) +
+
+  geom_point(
+    data = ff_data,
+    aes(h_vector, value, colour = as.factor(column)),
+    size = 2
+  ) +
+
+  geom_line(
+    data = gg_data,
+    aes(
+      h_vector,
+      value,
+      colour = as.factor(column),
+      linetype = theo
+    ),
+    linewidth = 0.8
+  ) +
+
+  geom_text(
+    data = ann_all,
+    aes(
+      x = x,
+      y = y,
+      label = ann,
+      colour = as.factor(alpha),
+      angle = angle   # <-- IMPORTANT: mapped here
+    ),
+    inherit.aes = FALSE,
+    hjust = 0,
+    vjust = -0.5,
+    size = 4,
+    show.legend = FALSE
+  ) +
+
+  facet_grid(
+    ~ graph,
+    labeller = as_labeller(graph_labels)
+  ) +
+
+  scale_y_log10() +
+
+  scale_x_log10(
+    breaks = h_vector,
+    labels = round(h_vector, 3)
+  ) +
+
+  scale_linetype_manual(
+    values = rep(
+      "dashed",
+      length(unique(gg_data$theo))
+    )
+  ) +
+
+  guides(
+    linetype = "none",
+    # linetype = guide_legend(
+    #   title = "$\\mathsf{theo}$",
+    #   #title = "$\\min\\{2\\alpha-1/2,2\\}$",
+    #   override.aes = list(
+    #     colour = scales::hue_pal()(
+    #       length(unique(gg_data$theo))
+    #     ),
+    #     linetype = rep("dashed", length(unique(gg_data$theo))),
+    #     linewidth = 1.2
+    #   ),
+    #   order = 2
+    # ),
+    colour = guide_legend(
+      title = "$\\alpha$",
+      order = 1
+    )
+  ) +
+
+  theme_bw() +
+
+  theme(
+    panel.spacing = unit(0.4, "cm"),
+    text = element_text(family = "Palatino"),
+    strip.text = element_text(size = 16),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12)
+  ) +
+
+  labs(
+    x = "$h\\quad(\\log_{10}\\mbox{ scale})$", 
+    # y = "$\\|\\varrho^{\\alpha} - \\varrho_{h,m}^{\\alpha}\\|_{L_2(\\Gamma\\times \\Gamma)}\\quad(\\log_{10}\\mbox{ scale})$"
+    # x = "$h$",
+    y = "$\\mbox{Covariance Error}\\quad(\\log_{10}\\mbox{ scale})$"
+  )
+
+myggsave(conv_rates_p, width = 12, height = 4, use_mathpazo = FALSE)
+```
+
+
+
 ```{r, eval = TRUE, out.width="1200px", out.height="400px", fig.cap = captioner("Observed covariance error for different values of $\\alpha$ as functions of the mesh size $h$.")}
 knitr::include_graphics(here::here("data_files/tikzpic/conv_rates_p.pdf"))
 ```
