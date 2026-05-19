@@ -936,7 +936,7 @@ new_combined_plot_pems <- mse_plot + ls_plot +
 
 # Save combined plot
 # ggsave(here("data_files/crossval_pems.png"), plot = combined_plot_pems, width = 9.22, height = 4.01, dpi = 500)
-myggsave(new_combined_plot_pems, width = 9.22, height = 4.01)
+myggsave(new_combined_plot_pems, width = 9.22, height = 4.01, use_mathpazo = FALSE)
 ```
 
 
