@@ -175,7 +175,7 @@ Below we define function `gets_summary_parameters()` to extract the summary of t
 
 
 
-```{r}
+```{r, eval = TRUE}
 gets_summary_parameters <- function(fit, model) {
   param_spde <- summary(rspde.result(fit, "field", model, parameterization = "spde"))
   param_matern <- summary(rspde.result(fit, "field", model, parameterization = "matern"))

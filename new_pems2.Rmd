@@ -378,6 +378,8 @@ save(tau_from_graphlme, kappa_from_graphlme, file = here::here("data_files/tau_f
 
 
 ```{r}
+load("~/Desktop/new_graph_lme_results.RData")
+summary(RES_EXP)
 load(here::here("data_files/tau_from_graphlme.RData"))
 log_tau_from_graphlme <- log(tau_from_graphlme)
 log_kappa_from_graphlme <- log(kappa_from_graphlme)
