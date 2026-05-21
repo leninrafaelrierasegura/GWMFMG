@@ -76,13 +76,18 @@ library(rmarkdown)
 library(grateful) # Cite all loaded packages
 
 
+library(slackr)
+source("keys.R")
+slackr_setup(token = token) # token comes from keys.R
 
 
 ## ---------------------------
 # Load the data
 load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/new_pems_repl1_data.RData"))
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/tau_from_graphlme.RData"))
 
-
+load(here::here("data_files/new_pems_repl1_data.RData"))
+load(here::here("data_files/tau_from_graphlme.RData"))
 
 # ---------------------------
 # Non-stationary parameters
@@ -90,8 +95,7 @@ B.tau = cbind(0, 1, 0, cov, 0)
 B.kappa = cbind(0, 0, 1, 0, cov)
 
 
-# ---------------------------
-load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/tau_from_graphlme.RData"))
+
 log_tau_from_graphlme <- log(tau_from_graphlme)
 log_kappa_from_graphlme <- log(kappa_from_graphlme)
 
@@ -106,18 +110,35 @@ GRAPH_LME_statnu0.5 <-  graph_lme(y ~ mean_value,
                                   graph = graph,
                                   which_repl = 1:13,
                                   parallel = TRUE,
-                                  improve_hessian = TRUE,
+                                  #improve_hessian = TRUE,
+                                  # model_options = list(start_tau = tau_from_graphlme,
+                                  #                      start_kappa = kappa_from_graphlme),
                                   model = list(type = "WhittleMatern",
                                                fem = TRUE,
-                                               alpha = 1),
-                                  model_options = list(start_tau = tau_from_graphlme,
-                                                       start_kappa = kappa_from_graphlme))
+                                               alpha = 1)
+                                  )
 summary(GRAPH_LME_statnu0.5)
 
 POST <- posterior_crossvalidation(object = GRAPH_LME_statnu0.5, mode = "loo", true_CV = FALSE)
 MSE_GRAPH_LME_statnu0.5 <- POST$scores$rmse^2
 
+slackr_msg(text = paste0("MSE_GRAPH_LME_statnu0.5 = ", 
+                         MSE_GRAPH_LME_statnu0.5), 
+           channel = "#research")
 
+slackr_msg(
+  text = paste(
+    capture.output(print(GRAPH_LME_statnu0.5)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
+
+sigma_e_statnu0.5 <- GRAPH_LME_statnu0.5$coeff$measurement_error |> as.numeric()
+tau_statnu0.5 <- GRAPH_LME_statnu0.5$coeff$random_effects["tau"] |> as.numeric()
+kappa_statnu0.5 <- GRAPH_LME_statnu0.5$coeff$random_effects["kappa"] |> as.numeric()
+
+save(sigma_e_statnu0.5, tau_statnu0.5, kappa_statnu0.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnu0.5_parameters.RData"))
 save(GRAPH_LME_statnu0.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnu0.5.RData"))
 
 
@@ -127,7 +148,7 @@ GRAPH_LME_nonstatnu0.5 <-  graph_lme(y ~ mean_value,
                                   graph = graph,
                                   which_repl = 1:13,
                                   parallel = TRUE,
-                                  improve_hessian = TRUE,
+                                  #improve_hessian = TRUE,
                                   model = list(type = "WhittleMatern",
                                                fem = TRUE,
                                                alpha = 1,
@@ -139,6 +160,21 @@ POST <- posterior_crossvalidation(object = GRAPH_LME_nonstatnu0.5, mode = "loo",
 MSE_GRAPH_LME_nonstatnu0.5 <- POST$scores$rmse^2
 
 
+slackr_msg(text = paste0("MSE_GRAPH_LME_nonstatnu0.5 = ", 
+                         MSE_GRAPH_LME_nonstatnu0.5), 
+           channel = "#research")
+slackr_msg(
+  text = paste(
+    capture.output(print(GRAPH_LME_nonstatnu0.5)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
+
+sigma_e_nonstatnu0.5 <- GRAPH_LME_nonstatnu0.5$coeff$measurement_error |> as.numeric()
+theta_nonstatnu0.5 <- c(0,GRAPH_LME_nonstatnu0.5$coeff$random_effects[2:5]) |> as.vector()
+
+save(sigma_e_nonstatnu0.5, theta_nonstatnu0.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnu0.5_parameters.RData"))
 save(GRAPH_LME_nonstatnu0.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnu0.5.RData"))
 
 
@@ -152,18 +188,34 @@ GRAPH_LME_statnu1.5 <-  graph_lme(y ~ mean_value,
                                   graph = graph,
                                   which_repl = 1:13,
                                   parallel = TRUE,
-                                  improve_hessian = TRUE,
+                                  #improve_hessian = TRUE,
+                                  # model_options = list(start_tau = tau_from_graphlme,
+                                  #                      start_kappa = kappa_from_graphlme),
                                   model = list(type = "WhittleMatern",
                                                fem = TRUE,
-                                               alpha = 2),
-                                  model_options = list(start_tau = tau_from_graphlme,
-                                                       start_kappa = kappa_from_graphlme))
+                                               alpha = 2))
 summary(GRAPH_LME_statnu1.5)
 
 POST <- posterior_crossvalidation(object = GRAPH_LME_statnu1.5, mode = "loo", true_CV = FALSE)
 MSE_GRAPH_LME_statnu1.5 <- POST$scores$rmse^2
 
+slackr_msg(text = paste0("MSE_GRAPH_LME_statnu1.5 = ", 
+                         MSE_GRAPH_LME_statnu1.5), 
+           channel = "#research")
 
+slackr_msg(
+  text = paste(
+    capture.output(print(GRAPH_LME_statnu1.5)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
+
+sigma_e_statnu1.5 <- GRAPH_LME_statnu1.5$coeff$measurement_error |> as.numeric()
+tau_statnu1.5 <- GRAPH_LME_statnu1.5$coeff$random_effects["tau"] |> as.numeric()
+kappa_statnu1.5 <- GRAPH_LME_statnu1.5$coeff$random_effects["kappa"] |> as.numeric()
+
+save(sigma_e_statnu1.5, tau_statnu1.5, kappa_statnu1.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnu1.5_parameters.RData"))
 save(GRAPH_LME_statnu1.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnu1.5.RData"))
 
 
@@ -173,7 +225,7 @@ GRAPH_LME_nonstatnu1.5 <-  graph_lme(y ~ mean_value,
                                   graph = graph,
                                   which_repl = 1:13,
                                   parallel = TRUE,
-                                  improve_hessian = TRUE,
+                                  #improve_hessian = TRUE,
                                   model = list(type = "WhittleMatern",
                                                fem = TRUE,
                                                alpha = 2,
@@ -184,6 +236,23 @@ summary(GRAPH_LME_nonstatnu1.5)
 POST <- posterior_crossvalidation(object = GRAPH_LME_nonstatnu1.5, mode = "loo", true_CV = FALSE)
 MSE_GRAPH_LME_nonstatnu1.5 <- POST$scores$rmse^2
 
+
+slackr_msg(text = paste0("MSE_GRAPH_LME_nonstatnu1.5 = ", 
+                         MSE_GRAPH_LME_nonstatnu1.5), 
+           channel = "#research")
+
+slackr_msg(
+  text = paste(
+    capture.output(print(GRAPH_LME_nonstatnu1.5)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
+
+sigma_e_nonstatnu1.5 <- GRAPH_LME_nonstatnu1.5$coeff$measurement_error |> as.numeric()
+theta_nonstatnu1.5 <- c(0,GRAPH_LME_nonstatnu1.5$coeff$random_effects[2:5]) |> as.vector()
+
+save(sigma_e_nonstatnu1.5, theta_nonstatnu1.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnu1.5_parameters.RData"))
 save(GRAPH_LME_nonstatnu1.5, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnu1.5.RData"))
 
 
@@ -198,15 +267,34 @@ GRAPH_LME_statnuest <-  graph_lme(y ~ mean_value,
                                   which_repl = 1:13,
                                   parallel = TRUE,
                                   improve_hessian = TRUE,
+                                  # model_options = list(start_tau = tau_from_graphlme,
+                                  #                      start_kappa = kappa_from_graphlme),
                                   model = list(type = "WhittleMatern",
-                                               fem = TRUE),
-                                  model_options = list(start_tau = tau_from_graphlme,
-                                                       start_kappa = kappa_from_graphlme))
+                                               fem = TRUE))
 summary(GRAPH_LME_statnuest)
 
 POST <- posterior_crossvalidation(object = GRAPH_LME_statnuest, mode = "loo", true_CV = FALSE)
 MSE_GRAPH_LME_statnuest <- POST$scores$rmse^2
 
+
+slackr_msg(text = paste0("MSE_GRAPH_LME_statnuest = ", 
+                         MSE_GRAPH_LME_statnuest), 
+           channel = "#research")
+
+slackr_msg(
+  text = paste(
+    capture.output(print(GRAPH_LME_statnuest)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
+
+sigma_e_statnuest <- GRAPH_LME_statnuest$coeff$measurement_error |> as.numeric()
+alpha_statnuest <- GRAPH_LME_statnuest$coeff$random_effects["alpha"] |> as.numeric()
+tau_statnuest <- GRAPH_LME_statnuest$coeff$random_effects["tau"] |> as.numeric()
+kappa_statnuest <- GRAPH_LME_statnuest$coeff$random_effects["kappa"] |> as.numeric()
+
+save(sigma_e_statnuest, tau_statnuest, kappa_statnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnuest_parameters.RData"))
 save(GRAPH_LME_statnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnuest.RData"))
 
 
@@ -216,8 +304,8 @@ GRAPH_LME_nonstatnuest <-  graph_lme(y ~ mean_value,
                                   graph = graph,
                                   which_repl = 1:13,
                                   parallel = TRUE,
-                                  improve_hessian = TRUE,
-                                  #previous_fit = GRAPH_LME_nonstatnu1.5,
+                                  #improve_hessian = TRUE,
+                                  previous_fit = GRAPH_LME_nonstatnu1.5,
                                   model = list(type = "WhittleMatern",
                                                fem = TRUE,
                                                B.tau = B.tau,
@@ -227,6 +315,24 @@ summary(GRAPH_LME_nonstatnuest)
 POST <- posterior_crossvalidation(object = GRAPH_LME_nonstatnuest, mode = "loo", true_CV = FALSE)
 MSE_GRAPH_LME_nonstatnuest <- POST$scores$rmse^2
 
+
+slackr_msg(text = paste0("MSE_GRAPH_LME_nonstatnuest = ", 
+                         MSE_GRAPH_LME_nonstatnuest), 
+           channel = "#research")
+
+slackr_msg(
+  text = paste(
+    capture.output(print(GRAPH_LME_nonstatnuest)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
+
+sigma_e_nonstatnuest <- GRAPH_LME_nonstatnuest$coeff$measurement_error |> as.numeric()
+alpha_nonstatnuest <- GRAPH_LME_nonstatnuest$coeff$random_effects["alpha"] |> as.numeric()
+theta_nonstatnuest <- c(0,GRAPH_LME_nonstatnuest$coeff$random_effects[2:5]) |> as.vector()
+
+save(sigma_e_nonstatnuest, theta_nonstatnuest, alpha_nonstatnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnuest_parameters.RData"))
 save(GRAPH_LME_nonstatnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnuest.RData"))
 
 
@@ -243,6 +349,17 @@ res_exp <- graph_lme(y ~ mean_value,
 POST2 <- posterior_crossvalidation_loo(object = res_exp)
 MSE_ISOCOV <- POST2$scores$rmse^2
 
+slackr_msg(text = paste0("MSE_ISOCOV = ", 
+                         MSE_ISOCOV), 
+           channel = "#research")
+
+slackr_msg(
+  text = paste(
+    capture.output(print(res_exp)),
+    collapse = "\n"
+  ),
+  channel = "#research"
+)
 
 # ---------------------------
 list_MSE_GRAPH_LME <- list(
@@ -260,6 +377,7 @@ save(list_MSE_GRAPH_LME, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/lis
 # ---------------------------
 # Load the data
 load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/new_pems_repl1_data.RData"))
+load(here::here("data_files/new_pems_repl1_data.RData"))
 # graph <- update_graph(graph)
 # Extract the data from the graph
 data <- graph$get_data()
@@ -278,7 +396,7 @@ for(i in 1:n){
 
   model <- lm(y ~ mean_value, data = train_data)
   pred_loocv[i] <- predict(model, newdata = test_data)
-  print(paste("Processed observation", i, "out of", n))
+  #print(paste("Processed observation", i, "out of", n))
 }
 
 mse_loocv_lm <- mean((data_simple$y - pred_loocv)^2)
@@ -287,6 +405,7 @@ mse_loocv_lm <- mean((data_simple$y - pred_loocv)^2)
 # ---------------------------
 # Load the data
 load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/new_pems_repl1_data.RData"))
+load(here::here("data_files/new_pems_repl1_data.RData"))
 # Extract the data from the graph
 
 initial_data <- graph$get_data()

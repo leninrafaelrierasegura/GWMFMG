@@ -75,34 +75,6 @@ source("keys.R")
 slackr_setup(token = token) # token comes from keys.R
 
 
-# ---------------------------
-source_if_updated <- function(name) {
-  rmd_file  <- here::here(paste0(name, ".Rmd"))
-  hash_file <- here::here(paste0(name, ".hash"))
-  r_file    <- here::here(paste0(name, ".R"))
-  purl_file <- here::here("old/purl_log.txt")
-
-  new_hash <- digest::digest(file = rmd_file, algo = "md5")
-
-  old_hash <- if (file.exists(hash_file)) {
-    readLines(hash_file, warn = FALSE)
-  } else {
-    ""
-  }
-
-  if (!identical(new_hash, old_hash)) {
-    capture.output(
-      knitr::purl(rmd_file, output = r_file),
-      file = purl_file
-    )
-    writeLines(new_hash, hash_file)
-  }
-
-  source(r_file)
-}
-
-source_if_updated("functionality1")
-
 
 # ---------------------------
 gets_summary_parameters <- function(fit, model) {
@@ -289,7 +261,7 @@ save(graph, cov, cov_for_mean_to_plot, file = paste0("~/Desktop/folder_aux/exp",
 
 
 
-Y_mu <- apply(Y_raw[1:13,], 2, mean)
+Y_mu <- apply(Y_raw[1:13,], 2, mean) |> as.vector()
 
 
 df_isocov <- data.frame(y = Y_mu, 
@@ -303,7 +275,10 @@ graph$add_observations(data = df_isocov,
                        normalized = TRUE, 
                        clear_obs = TRUE)
 
-res_exp <- graph_lme(y ~ 1, graph = graph, model = list(type = "isoCov"), parallel = TRUE)
+res_exp <- graph_lme(y ~ 1, 
+                     graph = graph, 
+                     model = list(type = "isoCov"), 
+                     parallel = TRUE)
 summary(res_exp)
 u_est_exp_mean <- predict(res_exp, df_isocov[,c("edge_number", "distance_on_edge")], normalized = TRUE)$mean
 
@@ -327,11 +302,15 @@ graph$add_observations(data = DF_ISOCOV,
                        clear_obs = TRUE, 
                        group = "repl")
 
-RES_EXP <- graph_lme(y ~ mean_value, graph = graph, which_repl = 1:13, model = list(type = "isoCov"), parallel = TRUE)
+RES_EXP <- graph_lme(y ~ mean_value, 
+                     graph = graph, 
+                     which_repl = 1:13, 
+                     model = list(type = "isoCov"), 
+                     parallel = TRUE)
 summary(RES_EXP)
 
-tau_from_graphlme <- RES_EXP$coeff$random_effects[1]
-kappa_from_graphlme <- RES_EXP$coeff$random_effects[2]
+tau_from_graphlme <- RES_EXP$coeff$random_effects[1] |> as.numeric()
+kappa_from_graphlme <- RES_EXP$coeff$random_effects[2] |> as.numeric()
 save(tau_from_graphlme, kappa_from_graphlme, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/tau_from_graphlme.RData"))
 
 
