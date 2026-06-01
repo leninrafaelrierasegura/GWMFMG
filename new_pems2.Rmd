@@ -92,6 +92,10 @@ truncate_to_two <- function(x) {
   truncated <- floor(x * 100) / 100
   sprintf("%.2f", truncated)
 }
+truncate_to_three <- function(x) {
+  truncated <- floor(x * 1000) / 1000
+  sprintf("%.3f", truncated)
+}
 ```
 
 Below we load the necessary libraries.
@@ -872,7 +876,7 @@ Below we plot the cross-validation results.
 ```{r}
 load(here::here("data_files/alpha_stat.RData"))
 load(here::here("data_files/alpha_nonstat.RData"))
-choose_index <- seq(2, nrow(mse_df), by = 3)
+choose_index <- seq(2, nrow(mse_df), by = 3)[1:17]
 mse_df_red <- mse_df[choose_index,]
 ls_df_red <- ls_df[choose_index,]
 # Convert to long format
@@ -889,8 +893,8 @@ label_mapping <- c(
   "Nonstatnu0.5" = "1", 
   "Statnu1.5" = "2", 
   "Nonstatnu1.5" = "2", 
-  "Statnuest" = paste(round(alpha_stat, 3), "(est)"), 
-  "Nonstatnuest" = paste(round(alpha_nonstat, 3), "(est)")
+  "Statnuest" = paste0("$", truncate_to_three(alpha_stat), "\\;(\\mathtt{est})$"), 
+  "Nonstatnuest" = paste0("$", truncate_to_three(alpha_nonstat), "\\;(\\mathtt{est})$")
 )
 
 # Define color and linetype mapping
@@ -904,11 +908,11 @@ color_mapping <- c(
 )
 
 linetype_mapping <- c(
-  "Statnu0.5" = "dotdash", 
+  "Statnu0.5" = "dashed", 
   "Nonstatnu0.5" = "solid", 
-  "Statnu1.5" = "dotdash", 
+  "Statnu1.5" = "dashed", 
   "Nonstatnu1.5" = "solid", 
-  "Statnuest" = "dotdash", 
+  "Statnuest" = "dashed", 
   "Nonstatnuest" = "solid"
 )
 
@@ -933,7 +937,8 @@ ls_plot <- ggplot(ls_long, aes(x = distance, y = LogScore, color = nu, linetype 
 # Combine plots with a shared legend at the top in a single line
 new_combined_plot_pems <- mse_plot + ls_plot + 
   plot_layout(guides = 'collect') & 
-  theme(legend.position = 'right') & 
+  theme(legend.position = 'right',
+        legend.key.width = unit(0.5, "cm")) & 
   guides(color = guide_legend(ncol = 1), linetype = guide_legend(nrow = 1))
 
 # Save combined plot
