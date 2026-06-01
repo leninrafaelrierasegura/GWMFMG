@@ -473,10 +473,13 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="pems1.html">PeMS 1</a>
+      <a href="new_pems1.html">PeMS 1</a>
     </li>
     <li>
-      <a href="pems2.html">PeMS 2</a>
+      <a href="new_pems2.html">PeMS 2</a>
+    </li>
+    <li>
+      <a href="new_pems3.html">PeMS 3</a>
     </li>
   </ul>
 </li>
@@ -553,7 +556,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">M plots</h1>
-<h4 class="date">Last modified: 08-03-2026.</h4>
+<h4 class="date">Last modified: 01-06-2026.</h4>
 
 </div>
 
@@ -848,26 +851,29 @@ class="math inline">\(2m_1(\alpha)-1\)</span> (right) as functions of
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>grateful<span class="sc">::</span><span class="fu">cite_packages</span>(<span class="at">output =</span> <span class="st">&quot;paragraph&quot;</span>, <span class="at">out.dir =</span> <span class="st">&quot;.&quot;</span>)</span></code></pre></div>
 <p>We used R version 4.5.2 <span class="citation">(R Core Team
 2025a)</span> and the following R packages: cowplot v. 1.2.0 <span
-class="citation">(Wilke 2025)</span>, ggmap v. 4.0.2 <span
+class="citation">(Wilke 2025)</span>, digest v. 0.6.37 <span
+class="citation">(Eddelbuettel 2024)</span>, FNN v. 1.1.4.1 <span
+class="citation">(Beygelzimer et al. 2024)</span>, ggmap v. 4.0.2 <span
 class="citation">(Kahle and Wickham 2013)</span>, ggpubr v. 0.6.3 <span
 class="citation">(Kassambara 2026)</span>, ggtext v. 0.1.2 <span
-class="citation">(Wilke and Wiernik 2022)</span>, glue v. 1.8.0 <span
-class="citation">(Hester and Bryan 2024)</span>, grid v. 4.5.2 <span
+class="citation">(Wilke and Wiernik 2022)</span>, glue v. 1.8.1 <span
+class="citation">(Hester and Bryan 2026)</span>, grid v. 4.5.2 <span
 class="citation">(R Core Team 2025b)</span>, here v. 1.0.1 <span
 class="citation">(Müller 2020)</span>, htmltools v. 0.5.8.1 <span
-class="citation">(Cheng et al. 2024)</span>, INLA v. 25.11.22 <span
+class="citation">(Cheng et al. 2024)</span>, INLA v. 26.5.10 <span
 class="citation">(Rue, Martino, and Chopin 2009; Lindgren, Rue, and
 Lindström 2011; Martins et al. 2013; Lindgren and Rue 2015; De Coninck
 et al. 2016; Rue et al. 2017; Verbosio et al. 2017; Bakka et al. 2018;
-Kourounis, Fuchs, and Schenk 2018)</span>, inlabru v. 2.13.0 <span
+Kourounis, Fuchs, and Schenk 2018)</span>, inlabru v. 2.14.1.9003 <span
 class="citation">(Yuan et al. 2017; Bachl et al. 2019)</span>, knitr v.
 1.50 <span class="citation">(Xie 2014, 2015, 2025)</span>, latex2exp v.
 0.9.8 <span class="citation">(Meschiari 2026)</span>, Matrix v. 1.7.3
 <span class="citation">(Bates, Maechler, and Jagan 2025)</span>,
-MetricGraph v. 1.5.0.9000 <span class="citation">(Bolin, Simas, and
+MetricGraph v. 1.6.0.9000 <span class="citation">(Bolin, Simas, and
 Wallin 2023a, 2023b, 2024, 2025; Bolin et al. 2024)</span>,
 OpenStreetMap v. 0.4.1 <span class="citation">(Fellows and Stotz
-2025)</span>, patchwork v. 1.3.1 <span class="citation">(Pedersen
+2025)</span>, parallel v. 4.5.2 <span class="citation">(R Core Team
+2025c)</span>, patchwork v. 1.3.1 <span class="citation">(Pedersen
 2025)</span>, plotly v. 4.11.0 <span class="citation">(Sievert
 2020)</span>, plotrix v. 3.8.14 <span class="citation">(J 2006)</span>,
 renv v. 1.1.7 <span class="citation">(Ushey and Wickham 2026)</span>,
@@ -878,7 +884,7 @@ and Grolemund 2018; Xie, Dervieux, and Riederer 2020; Allaire et al.
 2025)</span>, rSPDE v. 2.5.2.9000 <span class="citation">(Bolin and
 Kirchner 2020; Bolin and Simas 2023; Bolin, Simas, and Xiong
 2024)</span>, scales v. 1.4.0 <span class="citation">(Wickham, Pedersen,
-and Seidel 2025)</span>, sf v. 1.1.0 <span class="citation">(E. Pebesma
+and Seidel 2025)</span>, sf v. 1.1.1 <span class="citation">(E. Pebesma
 2018; E. Pebesma and Bivand 2023)</span>, slackr v. 3.4.0 <span
 class="citation">(Kaye et al. 2025)</span>, sp v. 2.2.1 <span
 class="citation">(E. J. Pebesma and Bivand 2005; Bivand, Pebesma, and
@@ -923,6 +929,12 @@ Bates, Douglas, Martin Maechler, and Mikael Jagan. 2025.
 <em><span>Matrix</span>: Sparse and Dense Matrix Classes and
 Methods</em>. <a
 href="https://doi.org/10.32614/CRAN.package.Matrix">https://doi.org/10.32614/CRAN.package.Matrix</a>.
+</div>
+<div id="ref-FNN" class="csl-entry">
+Beygelzimer, Alina, Sham Kakadet, John Langford, Sunil Arya, David
+Mount, and Shengqiao Li. 2024. <em><span>FNN</span>: Fast Nearest
+Neighbor Search Algorithms and Applications</em>. <a
+href="https://doi.org/10.32614/CRAN.package.FNN">https://doi.org/10.32614/CRAN.package.FNN</a>.
 </div>
 <div id="ref-sp2013" class="csl-entry">
 Bivand, Roger S., Edzer Pebesma, and Virgilio Gomez-Rubio. 2013.
@@ -992,6 +1004,11 @@ Marker-by-Environment Interaction.”</span> <em>Genetics</em> 203 (1):
 543–55. <a
 href="https://doi.org/10.1534/genetics.115.179887">https://doi.org/10.1534/genetics.115.179887</a>.
 </div>
+<div id="ref-digest" class="csl-entry">
+Eddelbuettel, Dirk. 2024. <em><span class="nocase">digest</span>: Create
+Compact Hash Digests of r Objects</em>. <a
+href="https://github.com/eddelbuettel/digest">https://github.com/eddelbuettel/digest</a>.
+</div>
 <div id="ref-OpenStreetMap" class="csl-entry">
 Fellows, Ian, and Jan-Peter Stotz. 2025. <em><span>OpenStreetMap</span>:
 Access to Open Street Map Raster Images</em>. <a
@@ -1004,9 +1021,9 @@ Color Maps for r</em>. <a
 href="https://doi.org/10.5281/zenodo.4679423">https://doi.org/10.5281/zenodo.4679423</a>.
 </div>
 <div id="ref-glue" class="csl-entry">
-Hester, Jim, and Jennifer Bryan. 2024. <em><span
+Hester, Jim, and Jennifer Bryan. 2026. <em><span
 class="nocase">glue</span>: Interpreted String Literals</em>. <a
-href="https://glue.tidyverse.org/">https://glue.tidyverse.org/</a>.
+href="https://doi.org/10.32614/CRAN.package.glue">https://doi.org/10.32614/CRAN.package.glue</a>.
 </div>
 <div id="ref-plotrix" class="csl-entry">
 J, Lemon. 2006. <span>“<span>Plotrix</span>: A Package in the Red Light
@@ -1096,6 +1113,12 @@ href="https://www.R-project.org/">https://www.R-project.org/</a>.
 </div>
 <div id="ref-grid" class="csl-entry">
 ———. 2025b. <em><span>R</span>: A Language and Environment for
+Statistical Computing</em>. Vienna, Austria: R Foundation for
+Statistical Computing. <a
+href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-parallel" class="csl-entry">
+———. 2025c. <em><span>R</span>: A Language and Environment for
 Statistical Computing</em>. Vienna, Austria: R Foundation for
 Statistical Computing. <a
 href="https://www.R-project.org/">https://www.R-project.org/</a>.

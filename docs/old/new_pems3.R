@@ -290,6 +290,7 @@ slackr_msg(
 )
 
 sigma_e_statnuest <- GRAPH_LME_statnuest$coeff$measurement_error |> as.numeric()
+alpha_statnuest <- GRAPH_LME_statnuest$coeff$random_effects["alpha"] |> as.numeric()
 tau_statnuest <- GRAPH_LME_statnuest$coeff$random_effects["tau"] |> as.numeric()
 kappa_statnuest <- GRAPH_LME_statnuest$coeff$random_effects["kappa"] |> as.numeric()
 
@@ -328,9 +329,10 @@ slackr_msg(
 )
 
 sigma_e_nonstatnuest <- GRAPH_LME_nonstatnuest$coeff$measurement_error |> as.numeric()
+alpha_nonstatnuest <- GRAPH_LME_nonstatnuest$coeff$random_effects["alpha"] |> as.numeric()
 theta_nonstatnuest <- c(0,GRAPH_LME_nonstatnuest$coeff$random_effects[2:5]) |> as.vector()
 
-save(sigma_e_nonstatnuest, theta_nonstatnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnuest_parameters.RData"))
+save(sigma_e_nonstatnuest, theta_nonstatnuest, alpha_nonstatnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnuest_parameters.RData"))
 save(GRAPH_LME_nonstatnuest, file = paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnuest.RData"))
 
 

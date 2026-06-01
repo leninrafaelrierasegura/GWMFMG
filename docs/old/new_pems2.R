@@ -119,14 +119,17 @@ B.kappa = cbind(0, 0, 1, 0, cov)
 log_tau_from_graphlme <- log(tau_from_graphlme)
 log_kappa_from_graphlme <- log(kappa_from_graphlme)
 
+
 #####################################
 #############nu=0.5##################
 #####################################
 
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnu0.5_parameters.RData"))
+
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
-                                       start.ltau = log_tau_from_graphlme,
-                                       start.lkappa = log_kappa_from_graphlme,
+                                       start.ltau = log(tau_statnu0.5),
+                                       start.lkappa = log(kappa_statnu0.5),
                                        parameterization = "spde",
                                        nu = 0.5)
 # Prepare the data for fitting
@@ -169,7 +172,9 @@ start.theta <- c(log(parameters_statistics_statnu0.5["tau","mean"]),
                  log(parameters_statistics_statnu0.5["kappa","mean"]), 
                  rep(0, (ncol(B.tau)-3)))
 
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnu0.5_parameters.RData"))
 
+start.theta <- theta_nonstatnu0.5
 
 # Build the model
 rspde_model_nonstat <- rspde.metric_graph(graph,
@@ -219,11 +224,12 @@ parameters_statistics_nonstatnu0.5
 #############nu=1.5##################
 #####################################
 
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnu1.5_parameters.RData"))
 
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
-                                       start.ltau = log_tau_from_graphlme,
-                                       start.lkappa = log_kappa_from_graphlme,
+                                       start.ltau = log(tau_statnu1.5),
+                                       start.lkappa = log(kappa_statnu1.5),
                                        parameterization = "spde",
                                        nu = 1.5)
 # Prepare the data for fitting
@@ -266,6 +272,9 @@ start.theta <- c(log(parameters_statistics_statnu1.5["tau","mean"]),
                  log(parameters_statistics_statnu1.5["kappa","mean"]), 
                  rep(0, (ncol(B.tau)-3)))
 
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnu1.5_parameters.RData"))
+
+start.theta <- theta_nonstatnu1.5
 
 # Build the model
 rspde_model_nonstat <- rspde.metric_graph(graph,
@@ -314,12 +323,19 @@ parameters_statistics_nonstatnu1.5
 #############nu=est##################
 #####################################
 
+#try 
+
+# take the estimates from the model with alpha 1 and 2
+# starl.nu = 0.5
+
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_statnuest_parameters.RData"))
 
 
 # Build the model
 rspde_model_stat <- rspde.metric_graph(graph,
-                                       start.ltau = log_tau_from_graphlme,
-                                       start.lkappa = log_kappa_from_graphlme,
+                                       start.ltau = log(tau_statnuest),
+                                       start.lkappa = log(kappa_statnuest),
+                                       start.nu = alpha_statnuest - 0.5,
                                        parameterization = "spde")
 # Prepare the data for fitting
 data_rspde_bru_stat <- graph_data_rspde(rspde_model_stat,
@@ -363,9 +379,12 @@ start.theta <- c(log(parameters_statistics_statnuest["tau","mean"]),
                  log(parameters_statistics_statnuest["kappa","mean"]), 
                  rep(0, (ncol(B.tau)-3)))
 
+load(paste0("~/Desktop/folder_aux/exp", EXPNUM, "/GRAPH_LME_nonstatnuest_parameters.RData"))
+start.theta <- theta_nonstatnuest
+
 # Build the model
 rspde_model_nonstat <- rspde.metric_graph(graph,
-                                          start.nu = parameters_statistics_statnuest[5,1],
+                                          start.nu = alpha_nonstatnuest - 0.5,
                                           start.theta = start.theta,
                                           B.tau = B.tau,
                                           B.kappa =  B.kappa,

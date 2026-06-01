@@ -10,9 +10,11 @@ navbar:
     - text: "PeMS"
       menu:
         - text: "PeMS 1"
-          href: pems1.html
+          href: new_pems1.html
         - text: "PeMS 2"
-          href: pems2.html
+          href: new_pems2.html
+        - text: "PeMS 3"
+          href: new_pems3.html
     - text: "Model Properties"
       menu:
         - text: "Model Properties 1"
