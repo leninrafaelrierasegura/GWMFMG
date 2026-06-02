@@ -782,8 +782,7 @@ Below we perform leave-group-out pseudo cross-validation [@Liu2025Leave] followi
 
 
 
-```
-{r}
+```{r}
 load(here::here("data_files/new_groups_for_cv.RData"))
 load("~/Desktop/rspde_fit_statnu0.5.RData")
 load("~/Desktop/rspde_fit_nonstatnu0.5.RData")

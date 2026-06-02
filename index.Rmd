@@ -2,7 +2,7 @@
 title: "A new class of non-stationary Gaussian fields with arbitrary smoothness on metric graphs"
 ---
 
-This website is a companion to the paper "A new class of non-stationary Gaussian fields with arbitrary smoothness on metric graphs" by David Bolin, Lenin Rafael Riera Segura, and Alexandre B. Simas.
+This website is a companion to the paper "A new class of non-stationary Gaussian fields with arbitrary smoothness on metric graphs" by David Bolin, Lenin Rafael Riera Segura, and Alexandre B. Simas, available at [arXiv](https://arxiv.org/abs/2406.03528). 
 
 Visit this [GitHub](https://github.com/leninrafaelrierasegura/GWMFMG) repository for all the necessary files to reproduce the results presented in this website and paper.
 
