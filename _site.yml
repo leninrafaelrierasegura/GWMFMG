@@ -39,7 +39,7 @@ navbar:
       href: mplots.html
   right:
     - icon: fa-file-pdf
-      href: https://arxiv.org/abs/0000.00000
+      href: https://arxiv.org/pdf/2501.11738
     - icon: fa-github
       href: https://github.com/leninrafaelrierasegura/GWMFMG
 output:
